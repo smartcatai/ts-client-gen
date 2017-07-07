@@ -1,0 +1,3 @@
+type project
+include-referenced-projects true
+include-pdbs true

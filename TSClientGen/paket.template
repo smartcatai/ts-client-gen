@@ -1,0 +1,5 @@
+type project
+files
+  bin\*.* ==> tools
+  !bin\*.vshost.*
+  !bin\*.xml

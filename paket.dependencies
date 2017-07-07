@@ -1,0 +1,11 @@
+framework: net461
+source \\nuget.sc.local\NuGet.Packages
+
+nuget CommandLineParser 1.9.71
+nuget AbbyyLS.LanguageProperties ~> 1.9
+nuget Microsoft.AspNet.Mvc 5.2.2
+nuget Microsoft.AspNet.WebApi 5.2.3
+nuget Microsoft.AspNet.WebApi.Client 5.2.3
+nuget Microsoft.AspNet.WebApi.Core 5.2.3
+nuget Microsoft.AspNet.WebApi.WebHost 5.2.3
+nuget Newtonsoft.Json 6.0.8
