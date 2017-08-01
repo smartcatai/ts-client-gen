@@ -1,3 +1,4 @@
 type project
 include-referenced-projects true
 include-pdbs true
+projectUrl http://gitlab.sc.local/commontools/TSClientGen
