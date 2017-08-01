@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Serialization;
 using System.Text;
 using System.Web.Http;
 using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
 namespace TSClientGen
 {

@@ -18,5 +18,8 @@ namespace TSClientGen
 
 		[OptionArray('n', "asm-name")]
 		public string[] AssemblyNames { get; set; }
+
+		[OptionArray('l', "loc-lang")]
+		public string[] LocalizationLanguages { get; set; }
 	}
 }

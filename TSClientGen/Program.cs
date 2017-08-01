@@ -8,7 +8,6 @@ using System.Reflection;
 using System.Text;
 using System.Web.Http.Controllers;
 using System.Web.Mvc;
-using AbbyyLS.Core;
 using CommandLine;
 
 namespace TSClientGen
@@ -109,7 +108,7 @@ namespace TSClientGen
 				enumsDefinition.Clear();
 			}
 
-			foreach (var culture in LocalizationLanguages.CultureNames)
+			foreach (var culture in args.LocalizationLanguages)
 			{
 				CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(culture);
 				var enumPoFile = new StringBuilder(2048);
