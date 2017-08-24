@@ -7,7 +7,7 @@ namespace TSClientGen
 	/// их маппинга на тип в TypeScript. Есть 2 варианта - явно указать строку с TS типом,
 	/// либо тип .NET, который будет использован при сериализации.
 	/// </summary>
-	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Property, AllowMultiple = true)]
+	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct |AttributeTargets.Property, AllowMultiple = true)]
 	public class TypeScriptTypeAttribute : Attribute
 	{
 		public TypeScriptTypeAttribute(Type substituteType)
