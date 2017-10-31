@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Resources;
 using System.Text;
 using System.Web.Http.Controllers;
 using System.Web.Mvc;
@@ -46,6 +47,11 @@ namespace TSClientGen
 				foreach (var attr in asm.GetCustomAttributes().OfType<TypeScriptExtendEnumAttribute>())
 				{
 					enumStaticMemberProviders.Add(attr);
+					enumMapper.SaveEnum(asm, attr.EnumType);
+				}
+
+				foreach (var attr in asm.GetCustomAttributes().OfType<TypeScriptEnumModuleAttribute>())
+				{
 					enumMapper.SaveEnum(asm, attr.EnumType);
 				}
 			}
@@ -111,9 +117,11 @@ namespace TSClientGen
 			foreach (var culture in args.LocalizationLanguages)
 			{
 				CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(culture);
-				var enumPoFile = new StringBuilder(2048);
-				enumPoFile.GenerateEnumLocalizations(staticMemberProviders.OfType<TypeScriptEnumLocalizationAttribute>().ToList());
-				File.WriteAllText(Path.Combine(args.ResourcesOutputDirPath, $"enums.{culture}.po"), enumPoFile.ToString());
+				using (var enumResxFileWriter = new ResXResourceWriter(Path.Combine(args.ResourcesOutputDirPath, (culture == "ru") ? "enums.resx" : $"enums.{culture}.resx")))
+				{
+					enumResxFileWriter.GenerateEnumLocalizations(
+						staticMemberProviders.OfType<TypeScriptEnumLocalizationAttribute>().ToList());
+				}
 			}
 
 			Console.WriteLine($"Enums generated in {sw.ElapsedMilliseconds} ms");
@@ -146,22 +154,19 @@ namespace TSClientGen
 
 				var mapper = new TypeMapper();
 
-				var additionalTypes = controller.GetCustomAttributes<TypeScriptTypeAttribute>();
+				var additionalTypes = controller.GetCustomAttributes<RequireTypeScriptTypeAttribute>();
 				foreach (var typeAttribute in additionalTypes)
 				{
-					if (typeAttribute.SubstituteType == null)
-						throw new Exception("TypeScriptType attribute with string type declaration is not allowed on controlller");
-
-					if (typeAttribute.SubstituteType.IsEnum)
+					if (typeAttribute.GeneratedType.IsEnum)
 					{
-						enumMapper.SaveEnum(targetAsm, typeAttribute.SubstituteType);
+						enumMapper.SaveEnum(targetAsm, typeAttribute.GeneratedType);
 					}
 					else
 					{
 						if (moduleName == null || !typeof(IHttpController).IsAssignableFrom(controller))
 							throw new Exception($"Controller {controller.FullName} has invalid TypeScriptType attributes. Only enum types can be specified for MVC controllers or API controllers without TypeScriptModule attribute.");
 
-						mapper.AddType(typeAttribute.SubstituteType);
+						mapper.AddType(typeAttribute.GeneratedType);
 					}
 				}
 
@@ -187,26 +192,24 @@ namespace TSClientGen
 					var knownTypes = mapper.GetCustomTypes();
 					typesToGenerate.UnionWith(knownTypes);
 					typesToGenerate.ExceptWith(generatedTypes);
-
-					foreach (var type in typesToGenerate)
+					
+					foreach (var typeDescriptor in typesToGenerate.Select(t => mapper.GetDescriptorByType(t)))
 					{
-						if (type.IsEnum)
+						if (typeDescriptor.Type.IsEnum)
 						{
-							enumMapper.SaveEnum(targetAsm, moduleName, type);
+							enumMapper.SaveEnum(targetAsm, moduleName, typeDescriptor.Type);
 						}
 						else
 						{
-							var tsTypeAttribute = type.GetCustomAttributes<TypeScriptTypeAttribute>().FirstOrDefault();
-							if (tsTypeAttribute != null && tsTypeAttribute.TypeDefinition != null)
+							if (!string.IsNullOrWhiteSpace(typeDescriptor.TypeDefinition))
 							{
-								result.GenerateTypeDefinition(type, tsTypeAttribute.TypeDefinition, mapper, !tsModuleAttribute.LoadedAsJsonModule);
-							}
-							else
+								result.GenerateTypeDefinition(typeDescriptor, mapper, !tsModuleAttribute.LoadedAsJsonModule);
+							}else
 							{
-								result.GenerateInterface(type, mapper, !tsModuleAttribute.LoadedAsJsonModule);
+								result.GenerateInterface(typeDescriptor, mapper, !tsModuleAttribute.LoadedAsJsonModule);
 							}
 						}
-						generatedTypes.Add(type);
+						generatedTypes.Add(typeDescriptor.Type);
 					}
 				} while (typesToGenerate.Any());
 

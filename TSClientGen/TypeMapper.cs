@@ -10,42 +10,93 @@ namespace TSClientGen
 	{
 		public TypeMapper()
 		{
-			_customTypes = new HashSet<Type>();
+			_customTypes = new Dictionary<Type, CustomTypeDescriptor>();
 		}
 
 		public string GetTSType(Type type)
 		{
 			var mapping = type.GetCustomAttributes<TypeScriptTypeAttribute>().FirstOrDefault();
-			if (mapping != null && mapping.SubstituteType != null)
+
+			if (mapping?.SubstituteType != null)
 			{
 				type = mapping.SubstituteType;
 			}
-
+			
 			return tryMapPrimitiveType(type) ??
-				   tryMapDictionary(type) ??
-				   tryMapArray(type) ??
-				   tryMapKnownGenerics(type) ??
-				   mapCustomType(type);
+			   tryMapDictionary(type) ??
+			   tryMapArray(type) ??
+			   tryMapKnownGenerics(type) ??
+			   mapCustomType(type);
 		}
 
+		public string GetTSType(PropertyInfo propertyInfo)
+		{
+			var mapping = propertyInfo.GetCustomAttributes<TypeScriptTypeAttribute>().FirstOrDefault();
+
+			if (mapping == null)
+			{
+				return GetTSType(propertyInfo.PropertyType);
+			}
+
+			if (mapping.SubstituteType != null)
+			{
+				return GetTSType(mapping.SubstituteType);
+			}
+			
+			throw new InvalidOperationException(
+				$"Invalid {nameof(TypeScriptTypeAttribute)} on property: {propertyInfo.Name} in {propertyInfo.DeclaringType?.FullName}: it is permissible to use only with a {nameof(mapping.SubstituteType)}");
+		}
+		
 		public void AddType(Type type)
 		{
-			_customTypes.Add(type);
+			if (type == null || _customTypes.ContainsKey(type))
+				return;
+		
+			var mapping = type.GetCustomAttributes<TypeScriptTypeAttribute>().FirstOrDefault();
+			var baseType = tryGetBaseType(type);
+		
+			if (mapping == null)
+			{
+				AddType(baseType);
+				_customTypes.Add(type, new CustomTypeDescriptor(type, baseType));
+			}
+			else if (mapping.InheritedTypes.Any())
+			{
+				AddType(baseType);
+				_customTypes.Add(type, new CustomTypeDescriptor(type, mapping.DiscriminatorFieldType, mapping.DiscriminatorFieldName, baseType));
+				foreach (var inheritedType in mapping.InheritedTypes)
+				{
+					AddType(inheritedType);
+				}
+			}
+			else if (mapping.SubstituteType != null)
+			{
+				AddType(mapping.SubstituteType);
+			}
+			else if (!string.IsNullOrWhiteSpace(mapping.TypeDefinition))
+			{
+				_customTypes.Add(type, new CustomTypeDescriptor(type, mapping.TypeDefinition));
+			}
+			else
+			{
+				throw new InvalidOperationException(
+					$"On type {type.FullName} found {nameof(TypeScriptTypeAttribute)} with empty {nameof(TypeScriptTypeAttribute.InheritedTypes)},{nameof(TypeScriptTypeAttribute.SubstituteType)},{nameof(TypeScriptTypeAttribute.TypeDefinition)}");
+			}
 		}
 
-		public bool Contains(Type type)
+		public CustomTypeDescriptor GetDescriptorByType(Type type)
 		{
-			return _customTypes.Contains(type);
+			return _customTypes[type];
 		}
 
-		public HashSet<Type> GetCustomTypes() => _customTypes;
+		public HashSet<Type> GetCustomTypes() => new HashSet<Type>(_customTypes.Keys);
 
 		private string mapCustomType(Type type)
 		{
 			if (type.IsGenericTypeDefinition)
 				throw new Exception($"Can't map generic type definition: {type}");
 
-			_customTypes.Add(type);
+			AddType(type);
 
 			if (type.IsEnum)
 				return type.Name;
@@ -170,6 +221,11 @@ namespace TSClientGen
 			}
 		}
 
-		private readonly HashSet<Type> _customTypes;
+		private Type tryGetBaseType(Type type)
+		{
+			return type.BaseType != typeof(Object) && type.BaseType != typeof(ValueType) && type.BaseType != typeof(Enum) ? type.BaseType : null;
+		}
+		
+		private readonly Dictionary<Type, CustomTypeDescriptor> _customTypes;
 	}
 }

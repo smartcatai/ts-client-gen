@@ -1,7 +1,7 @@
 type project
 projectUrl http://gitlab.sc.local/commontools/TSClientGen
 dependencies
-  SmartCat.TSClientGen.Contract ~> 1.0
+  SmartCat.TSClientGen.Contract ~> 1.2
 files
   bin\*.* ==> tools
   !bin\*.vshost.*

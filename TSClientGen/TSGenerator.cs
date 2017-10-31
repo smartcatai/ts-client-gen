@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Resources;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Web.Http;
 using Newtonsoft.Json;
-using System.Runtime.Serialization;
 
 namespace TSClientGen
 {
@@ -26,9 +27,9 @@ namespace TSClientGen
 					continue;
 		
 				if (descriptor.GenerateUrl)
-					generateMethod(result, mapper, action, descriptor, routePrefix, true);
+					generateMethod(result, mapper, action, descriptor, routePrefix, true, false);
 
-				generateMethod(result, mapper, action, descriptor, routePrefix, false);
+				generateMethod(result, mapper, action, descriptor, routePrefix, false, descriptor.GenerateUploadProgressCallback);
 			}
 
 			result.AppendLine("}");
@@ -108,43 +109,64 @@ namespace TSClientGen
 			sb.AppendLine();
 		}
 
-		public static void GenerateEnumLocalizations(this StringBuilder sb, IReadOnlyCollection<TypeScriptEnumLocalizationAttribute> enumLocalizations)
+		public static void GenerateEnumLocalizations(this ResXResourceWriter resxWriter, IReadOnlyCollection<TypeScriptEnumLocalizationAttribute> enumLocalizations)
 		{
 			foreach (var enumLocalization in enumLocalizations)
 			{
-				var prefix = enumLocalization.EnumType.Name;
-
-				foreach (var name in Enum.GetNames(enumLocalization.EnumType))
+				generateEnumResxEntries(resxWriter, enumLocalization);
+				if (enumLocalization.AdditionalContexts != null)
 				{
-					var resourceKey = enumLocalization.UsePrefix ? $"{prefix}_{name}" : name;
-					var localization = enumLocalization.ResourceManager.GetString(resourceKey);
-					if (localization == null)
+					foreach (var context in enumLocalization.AdditionalContexts)
 					{
-						throw new Exception($"Enum value {enumLocalization.EnumType.Name}.{name} is not localized in RESX {enumLocalization.ResxName}");
+						generateEnumResxEntries(resxWriter, enumLocalization, context);
 					}
-
-					sb.Append($"msgid \"{prefix}_{name}\"");
-					sb.AppendLine();
-					sb.Append($"msgstr \"{localization}\"");
-					sb.AppendLine();
-					sb.AppendLine();
 				}
 			}
 		}
 
-		public static void GenerateInterface(this StringBuilder sb, Type modelType, TypeMapper mapper, bool export)
+		private static void generateEnumResxEntries(ResXResourceWriter resxWriter, TypeScriptEnumLocalizationAttribute enumLocalization, string context = null)
+		{
+			var enumName = enumLocalization.EnumType.Name;
+			foreach (var valueName in Enum.GetNames(enumLocalization.EnumType))
+			{
+				string valueNameWithContext = (context != null) ? $"{context}_{valueName}" : valueName;
+				string resourceKey = enumLocalization.UsePrefix ? $"{enumName}_{valueNameWithContext}" : valueNameWithContext;
+				var localization = enumLocalization.ResourceManager.GetString(resourceKey);
+				if (localization == null && context != null)
+				{
+					resourceKey = enumLocalization.UsePrefix ? $"{enumName}_{valueName}" : valueName;
+					localization = enumLocalization.ResourceManager.GetString(resourceKey);
+				}
+				if (localization == null)
+				{
+					throw new Exception(
+						$"Enum value {enumName}.{valueName} is not localized in RESX {enumLocalization.ResxName} (context - {context ?? "none"}, key - {resourceKey})");
+				}
+
+				resxWriter.AddResource($"{enumName}_{valueNameWithContext}", localization);
+			}
+		}
+
+		public static void GenerateInterface(this StringBuilder sb, CustomTypeDescriptor modelType, TypeMapper mapper, bool export)
 		{
 			if (export)
 				sb.Append("export ");
 
-			sb.Append($"interface {mapper.GetTSType(modelType)} ");
-			if (modelType.BaseType != null && mapper.Contains(modelType.BaseType))
+			sb.Append($"interface {mapper.GetTSType(modelType.Type)} ");
+
+			if (modelType.BaseType != null)
 			{
-				sb.Append($"extends {mapper.GetTSType(modelType.BaseType)} ");
+				sb.Append($"extends {mapper.GetTSType(modelType.Type.BaseType)} ");
 			}
+			
 			sb.AppendLine("{");
 
-			foreach (var property in modelType.GetProperties(BindingFlags.Instance | BindingFlags.Public))
+			if (!string.IsNullOrWhiteSpace(modelType.DiscriminatorFieldName))
+			{
+				sb.AppendLine($"\t{modelType.DiscriminatorFieldName}: {mapper.GetTSType(modelType.DiscriminatorFieldType)};");
+			}
+			
+			foreach (var property in modelType.Type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
 			{
 				var ignoreDataMember = property.GetCustomAttributes<IgnoreDataMemberAttribute>().FirstOrDefault();
 				if (ignoreDataMember != null)
@@ -155,26 +177,19 @@ namespace TSClientGen
 				if (Nullable.GetUnderlyingType(property.PropertyType) != null)
 					name += "?";
 
-				var typeAttribute = property.GetCustomAttributes<TypeScriptTypeAttribute>().FirstOrDefault();
-				var propertyType = (typeAttribute != null)
-					? ((typeAttribute.SubstituteType != null)
-						? mapper.GetTSType(typeAttribute.SubstituteType)
-						: typeAttribute.TypeDefinition)
-					: mapper.GetTSType(property.PropertyType);
-
-				sb.AppendLine($"\t{name}: {propertyType};");
+				sb.AppendLine($"\t{name}: {mapper.GetTSType(property)};");
 			}
 
 			sb.AppendLine("}");
 			sb.AppendLine("");
 		}
 
-		public static void GenerateTypeDefinition(this StringBuilder sb, Type modelType, string typeDefinition, TypeMapper mapper, bool export)
+		public static void GenerateTypeDefinition(this StringBuilder sb, CustomTypeDescriptor modelType, TypeMapper mapper, bool export)
 		{
 			if (export)
 				sb.Append("export ");
 
-			sb.AppendLine($"type {mapper.GetTSType(modelType)} = {typeDefinition}");
+			sb.AppendLine($"type {mapper.GetTSType(modelType.Type)} = {modelType.TypeDefinition}");
 			sb.AppendLine("");
 		}
 
@@ -184,7 +199,8 @@ namespace TSClientGen
 			MethodInfo action,
 			ActionDescriptor descriptor,
 			string routePrefix,
-			bool generateGetUrl)
+			bool generateGetUrl,
+			bool generateProgressCallback)
 		{
 			result.Append(generateGetUrl 
 				? $"\t{action.Name.toLowerCamelCase()}Url("
@@ -196,6 +212,10 @@ namespace TSClientGen
 				.ToList();
 			if (descriptor.IsModelWithFiles || descriptor.IsUploadedFile)
 				parameters.Add("files: File[]");
+
+			if (generateProgressCallback)
+				parameters.Add("progressCallback?: (event: ProgressEvent) => void");
+
 			if (!generateGetUrl)
 				parameters.Add("suppressAjaxError?: boolean");
 
@@ -204,7 +224,7 @@ namespace TSClientGen
 				? $"): string {{"
 				: $"): Promise<{mapper.GetTSType(action.ReturnType)}> {{");
 
-			generateMethodBody(result, routePrefix, descriptor, action, generateGetUrl);
+			generateMethodBody(result, routePrefix, descriptor, action, generateGetUrl, generateProgressCallback);
 			result.AppendLine("\t}");
 			result.AppendLine();
 		}
@@ -214,7 +234,8 @@ namespace TSClientGen
 			string routePrefix, 
 			ActionDescriptor actionDescriptor, 
 			MethodInfo action,
-			bool generateGetUrl)
+			bool generateGetUrl,
+			bool generateProgressCallback)
 		{
 			result.AppendLine($"\t\tvar url = '{routePrefix}{actionDescriptor.RouteTemplate}';");
 
@@ -263,6 +284,16 @@ namespace TSClientGen
 			result.AppendLine("\t\treturn ajax({");
 			result.AppendLine($"\t\t\turl: url,");
 			result.AppendLine("\t\t\terror: (jqXhr: JQueryXHR) => { jqXhr.suppressAjaxError = suppressAjaxError; },");
+
+			if (generateProgressCallback)
+			{
+				result.AppendLine("\t\t\txhr: function () {");
+				result.AppendLine("\t\t\t\tvar xhr = new XMLHttpRequest();");
+				result.AppendLine("\t\t\t\txhr.upload.onprogress = progressCallback;");
+				result.AppendLine("\t\t\t\treturn xhr;");
+				result.AppendLine("\t\t\t},");
+			}
+
 			result.AppendLine($"\t\t\ttype: '{actionDescriptor.HttpVerb}',");
 			if (actionDescriptor.BodyParam != null)
 			{
