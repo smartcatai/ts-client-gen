@@ -131,28 +131,33 @@ namespace TSClientGen
 
 		private string tryMapDictionary(Type type)
 		{
-			var dictionaryInterface = type
+			var dictionaryInterfaces = type
 				.GetInterfaces()
 				.Concat(new[] { type })
-				.SingleOrDefault(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>));
+				.Where(t => t.IsGenericType 
+					&& (t.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>)
+						|| t.GetGenericTypeDefinition() == typeof(IDictionary<,>)))
+				.Select(t => t.GetGenericArguments())
+				.ToArray();
 
-			if (dictionaryInterface == null)
+			if (dictionaryInterfaces.GroupBy(t => t[0], t => t[1]).Count() > 1)
+			{
+				throw new Exception(
+					$"Found implementations {typeof(IReadOnlyDictionary<,>).FullName}, {typeof(IDictionary<,>).FullName} with different parameters");
+			}
+			
+			if (dictionaryInterfaces.Length == 0)
 				return null;
 
-			var genericArgs = dictionaryInterface.GetGenericArguments();
+			var genericArgs = dictionaryInterfaces[0];
 			var keyType = genericArgs[0];
 			var valueType = genericArgs[1];
 
-			string keyTSType;
-			if (keyType == typeof(string))
-			{
-				keyTSType = GetTSType(keyType);
-			}
-			else if (keyType.IsEnum || GetTSType(keyType) == "number")
-			{
-				keyTSType = GetTSType(typeof(int));
-			}
-			else
+			var keyTSType = keyType.IsEnum 
+				? GetTSType(typeof(int))
+				: GetTSType(keyType);
+			
+			if (keyTSType != "number" && keyTSType != "string")
 			{
 				throw new Exception($"In TS only string and number can be used as index param. Can't map dictionary key: {keyType}");
 			}
