@@ -7,7 +7,7 @@ namespace TSClientGen
 	/// для отслеживания события прогресса загрузки запроса на сервер
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Method)]
-	public class TypeScriptUploadProgressEventHandlerAttribute: Attribute
+	public class TSUploadProgressEventHandlerAttribute: Attribute
 	{
 	}
 }

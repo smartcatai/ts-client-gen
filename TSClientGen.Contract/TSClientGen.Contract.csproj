@@ -37,17 +37,19 @@
     <Compile Include="..\SolutionInfo.cs">
       <Link>Properties\SolutionInfo.cs</Link>
     </Compile>
-    <Compile Include="RequireTypeScriptTypeAttribute.cs" />
-    <Compile Include="TypeScriptEnumLocalizationAttribute.cs" />
-    <Compile Include="TypeScriptEnumModuleAttribute.cs" />
-    <Compile Include="TypeScriptExtendEnumAttribute.cs" />
-    <Compile Include="TypeScriptGenerateClassModelAttribute.cs" />
-    <Compile Include="TypeScriptGenerateUrlAttribute.cs" />
-    <Compile Include="TypeScriptModuleAttribute.cs" />
-    <Compile Include="TypeScriptStaticContentAttribute.cs" />
-    <Compile Include="TypeScriptTypeAttribute.cs" />
+    <Compile Include="RequireTSTypeAttribute.cs" />
+    <Compile Include="ResxHelper.cs" />
+    <Compile Include="TSEnumLocalizationAttribute.cs" />
+    <Compile Include="TSEnumModuleAttribute.cs" />
+    <Compile Include="TSExposeResxAttribute.cs" />
+    <Compile Include="TSExtendEnumAttribute.cs" />
+    <Compile Include="TSGenerateUrlAttribute.cs" />
+    <Compile Include="TSModuleAttribute.cs" />
+    <Compile Include="TSStaticContentAttribute.cs" />
+    <Compile Include="TSPolymorphicTypeAttribute.cs" />
+    <Compile Include="TSSubstituteTypeAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TypeScriptUploadProgressEventHandlerAttribute.cs" />
+    <Compile Include="TSUploadProgressEventHandlerAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="paket.template" />

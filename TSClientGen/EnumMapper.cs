@@ -57,7 +57,7 @@ namespace TSClientGen
 						// Возможно одна из сборок помечена атрибутом локализации
 						var extendEnumAsm = (
 							from v in values
-							from attr in v.Assembly.GetCustomAttributes().OfType<TypeScriptExtendEnumAttribute>()
+							from attr in v.Assembly.GetCustomAttributes().OfType<TSExtendEnumAttribute>()
 							where attr.EnumType == v.EnumType
 							select v.Assembly).Distinct().ToList();
 
@@ -67,7 +67,7 @@ namespace TSClientGen
 						// Возможно одна из сборок явно помечена как основная для enum'а
 						var enumResolveAsm = (
 							from v in values
-							from attr in v.Assembly.GetCustomAttributes<TypeScriptEnumModuleAttribute>()
+							from attr in v.Assembly.GetCustomAttributes<TSEnumModuleAttribute>()
 							where attr.EnumType == v.EnumType
 							select v.Assembly).Distinct().ToList();
 

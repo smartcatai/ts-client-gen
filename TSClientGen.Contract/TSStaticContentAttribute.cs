@@ -7,9 +7,9 @@ namespace TSClientGen
 	/// Атрибут для генерации JSON-модуля со статическим контентом
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Assembly)]
-	public abstract class TypeScriptStaticContentAttribute : Attribute
+	public abstract class TSStaticContentAttribute : Attribute
 	{
-		protected TypeScriptStaticContentAttribute(string moduleName, Dictionary<string, object> content)
+		protected TSStaticContentAttribute(string moduleName, Dictionary<string, object> content)
 		{
 			ModuleName = moduleName;
 			Content = content;

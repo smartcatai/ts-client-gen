@@ -3,9 +3,9 @@
 namespace TSClientGen
 {
 	[AttributeUsage(AttributeTargets.Class)]
-	public class TypeScriptModuleAttribute : Attribute
+	public class TSModuleAttribute : Attribute
 	{
-		public TypeScriptModuleAttribute(string moduleName)
+		public TSModuleAttribute(string moduleName)
 		{
 			ModuleName = moduleName;
 		}

@@ -11,21 +11,15 @@ namespace TSClientGen
 	/// локализация значений этого enum'а - чтобы иметь доступ к этим локализациям на клиенте
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-	public class TypeScriptEnumLocalizationAttribute : TypeScriptExtendEnumAttribute
+	public class TSEnumLocalizationAttribute : TSExtendEnumAttribute
 	{
-		public TypeScriptEnumLocalizationAttribute(Type enumType, Type resxType, bool usePrefix = false, string[] additionalContexts = null)
+		public TSEnumLocalizationAttribute(Type enumType, Type resxType, bool usePrefix = false, string[] additionalContexts = null)
 			: base(enumType)
 		{
 			if (resxType == null) throw new ArgumentNullException(nameof(resxType));
 
-			var resourceManagerProperty = resxType.GetProperty("ResourceManager", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
-			if (resourceManagerProperty == null)
-				throw new ArgumentException($"Parameter must have static property ResourceManager (type {resxType.FullName})", nameof(resxType));
-			if (resourceManagerProperty.PropertyType != typeof(ResourceManager))
-				throw new ArgumentException("Static property ResourceManager has unexpected type (type {resxType.FullName})", nameof(resxType));
-
 			ResxName = resxType.FullName;
-			ResourceManager = (ResourceManager)resourceManagerProperty.GetValue(null);
+			ResourceManager = resxType.GetResourceManager();
 			AdditionalContexts = additionalContexts;
 			UsePrefix = usePrefix;
 		}

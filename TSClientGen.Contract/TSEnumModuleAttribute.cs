@@ -7,9 +7,9 @@ namespace TSClientGen
 	/// enum относится к модулю проекта
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-	public class TypeScriptEnumModuleAttribute : Attribute
+	public class TSEnumModuleAttribute : Attribute
 	{
-		public TypeScriptEnumModuleAttribute(Type enumType)
+		public TSEnumModuleAttribute(Type enumType)
 		{
 			EnumType = enumType;
 		}

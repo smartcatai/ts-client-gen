@@ -18,8 +18,8 @@ namespace TSClientGen
 
 			HttpVerb = getVerb(httpVerb);
 			RouteTemplate = route.Template.Replace("{action}", controllerMethod.Name);
-			GenerateUrl = controllerMethod.GetCustomAttribute<TypeScriptGenerateUrlAttribute>() != null;
-			GenerateUploadProgressCallback = controllerMethod.GetCustomAttribute<TypeScriptUploadProgressEventHandlerAttribute>() != null;
+			GenerateUrl = controllerMethod.GetCustomAttribute<TSGenerateUrlAttribute>() != null;
+			GenerateUploadProgressCallback = controllerMethod.GetCustomAttribute<TSUploadProgressEventHandlerAttribute>() != null;
 
 			RouteParamsBySections = _routeParamPattern
 				.Matches(RouteTemplate)

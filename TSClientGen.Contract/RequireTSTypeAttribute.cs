@@ -6,9 +6,9 @@ namespace TSClientGen
 	/// Атрибут, которым помечаются контроллеры для форсирования маппинга каких-либо типов на тип в TypeScript.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
-	public class RequireTypeScriptTypeAttribute : Attribute
+	public class RequireTSTypeAttribute : Attribute
 	{
-		public RequireTypeScriptTypeAttribute(Type type)
+		public RequireTSTypeAttribute(Type type)
 		{
 			GeneratedType = type;
 		}

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -7,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Resources;
 using System.Text;
+using System.Threading;
 using System.Web.Http.Controllers;
 using System.Web.Mvc;
 using CommandLine;
@@ -37,20 +39,21 @@ namespace TSClientGen
 				Directory.CreateDirectory(arguments.ResourcesOutputDirPath);
 
 			var enumMapper = new EnumMapper(arguments);
-			var enumStaticMemberProviders = new List<TypeScriptExtendEnumAttribute>();
+			var enumStaticMemberProviders = new List<TSExtendEnumAttribute>();
 
 			foreach (var asmPath in arguments.AssembliesPath)
 			{
 				var asm = Assembly.LoadFrom(asmPath);
 				generateClientsFromAsm(asm, arguments.ControllerClientsOutputDirPath, enumMapper);
+				generateResources(asm.GetCustomAttributes().OfType<TSExposeResxAttribute>().ToList(), arguments);
 
-				foreach (var attr in asm.GetCustomAttributes().OfType<TypeScriptExtendEnumAttribute>())
+				foreach (var attr in asm.GetCustomAttributes().OfType<TSExtendEnumAttribute>())
 				{
 					enumStaticMemberProviders.Add(attr);
 					enumMapper.SaveEnum(asm, attr.EnumType);
 				}
 
-				foreach (var attr in asm.GetCustomAttributes().OfType<TypeScriptEnumModuleAttribute>())
+				foreach (var attr in asm.GetCustomAttributes().OfType<TSEnumModuleAttribute>())
 				{
 					enumMapper.SaveEnum(asm, attr.EnumType);
 				}
@@ -98,7 +101,7 @@ namespace TSClientGen
 			}
 		}
 
-		private static void generateEnumsDefinition(EnumMapper enumMapper, IReadOnlyCollection<TypeScriptExtendEnumAttribute> staticMemberProviders, Arguments args)
+		private static void generateEnumsDefinition(EnumMapper enumMapper, IReadOnlyCollection<TSExtendEnumAttribute> staticMemberProviders, Arguments args)
 		{
 			var sw = new Stopwatch();
 			sw.Start();
@@ -120,11 +123,33 @@ namespace TSClientGen
 				using (var enumResxFileWriter = new ResXResourceWriter(Path.Combine(args.ResourcesOutputDirPath, (culture == "ru") ? "enums.resx" : $"enums.{culture}.resx")))
 				{
 					enumResxFileWriter.GenerateEnumLocalizations(
-						staticMemberProviders.OfType<TypeScriptEnumLocalizationAttribute>().ToList());
+						staticMemberProviders.OfType<TSEnumLocalizationAttribute>().ToList());
 				}
 			}
 
 			Console.WriteLine($"Enums generated in {sw.ElapsedMilliseconds} ms");
+		}
+
+		private static void generateResources(IReadOnlyCollection<TSExposeResxAttribute> resources, Arguments args)
+		{
+			foreach (var culture in args.LocalizationLanguages)
+			{
+				CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(culture);
+
+				foreach (var resource in resources)
+				{
+					var resxName = culture == "ru" ? $"{resource.ResxName}.resx" : $"{resource.ResxName}.{culture}.resx";
+					using (var resxFileWriter = new ResXResourceWriter(Path.Combine(args.ResourcesOutputDirPath, resxName)))
+					{
+						var resourceSet = resource.ResourceManager.GetResourceSet(CultureInfo.CurrentUICulture, true, true);
+						foreach (DictionaryEntry entry in resourceSet)
+						{
+							resxFileWriter.AddResource(entry.Key.ToString(), entry.Value);
+						}
+					}					
+				}
+				
+			}
 		}
 
 		private static void generateClientsFromAsm(Assembly targetAsm, string outDir, EnumMapper enumMapper)
@@ -137,13 +162,13 @@ namespace TSClientGen
 			var controllers = targetAsm.GetTypes()
 				.Where(t => typeof(IHttpController).IsAssignableFrom(t) || typeof(IController).IsAssignableFrom(t));
 
-			var staticContentByModuleName = targetAsm.GetCustomAttributes().OfType<TypeScriptStaticContentAttribute>()
+			var staticContentByModuleName = targetAsm.GetCustomAttributes().OfType<TSStaticContentAttribute>()
 				.ToDictionary(attr => attr.ModuleName);
 
 			// Генерация клиентов к контроллерам
 			foreach (var controller in controllers)
 			{
-				var tsModuleAttribute = controller.GetCustomAttributes<TypeScriptModuleAttribute>().SingleOrDefault();
+				var tsModuleAttribute = controller.GetCustomAttributes<TSModuleAttribute>().SingleOrDefault();
 				var moduleName = tsModuleAttribute?.ModuleName;
 				if (moduleName != null)
 				{
@@ -154,7 +179,7 @@ namespace TSClientGen
 
 				var mapper = new TypeMapper();
 
-				var additionalTypes = controller.GetCustomAttributes<RequireTypeScriptTypeAttribute>();
+				var additionalTypes = controller.GetCustomAttributes<RequireTSTypeAttribute>();
 				foreach (var typeAttribute in additionalTypes)
 				{
 					if (typeAttribute.GeneratedType.IsEnum)
@@ -215,7 +240,7 @@ namespace TSClientGen
 
 				if (!tsModuleAttribute.LoadedAsJsonModule)
 				{
-					TypeScriptStaticContentAttribute staticContentModule;
+					TSStaticContentAttribute staticContentModule;
 					if (staticContentByModuleName.TryGetValue(moduleName, out staticContentModule))
 					{
 						result.GenerateStaticContent(staticContentModule);

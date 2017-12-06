@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Reflection;
@@ -15,7 +16,7 @@ namespace TSClientGen
 
 		public string GetTSType(Type type)
 		{
-			var mapping = type.GetCustomAttributes<TypeScriptTypeAttribute>().FirstOrDefault();
+			var mapping = type.GetCustomAttributes<TSSubstituteTypeAttribute>().FirstOrDefault();
 
 			if (mapping?.SubstituteType != null)
 			{
@@ -31,7 +32,7 @@ namespace TSClientGen
 
 		public string GetTSType(PropertyInfo propertyInfo)
 		{
-			var mapping = propertyInfo.GetCustomAttributes<TypeScriptTypeAttribute>().FirstOrDefault();
+			var mapping = propertyInfo.GetCustomAttributes<TSSubstituteTypeAttribute>().FirstOrDefault();
 
 			if (mapping == null)
 			{
@@ -44,43 +45,59 @@ namespace TSClientGen
 			}
 			
 			throw new InvalidOperationException(
-				$"Invalid {nameof(TypeScriptTypeAttribute)} on property: {propertyInfo.Name} in {propertyInfo.DeclaringType?.FullName}: it is permissible to use only with a {nameof(mapping.SubstituteType)}");
+				$"Invalid {nameof(TSSubstituteTypeAttribute)} on property: {propertyInfo.Name} in " + 
+				$"{propertyInfo.DeclaringType?.FullName}: it is permissible to use only with a {nameof(mapping.SubstituteType)}");
 		}
 		
 		public void AddType(Type type)
 		{
 			if (type == null || _customTypes.ContainsKey(type))
 				return;
+			
+			if (type.Name.ToLowerInvariant().Contains("vendordelegatable")) 
+				Debugger.Break();
 		
-			var mapping = type.GetCustomAttributes<TypeScriptTypeAttribute>().FirstOrDefault();
+			var substituteTypeMapping = type.GetCustomAttributes<TSSubstituteTypeAttribute>().FirstOrDefault();
+			var polymorphicTypeMapping = type.GetCustomAttributes<TSPolymorphicTypeAttribute>().FirstOrDefault();
 			var baseType = tryGetBaseType(type);
 		
-			if (mapping == null)
+			if (substituteTypeMapping != null && polymorphicTypeMapping != null)
+				throw new InvalidOperationException(
+					$"Type can't be decorated with both {nameof(TSSubstituteTypeAttribute)} and {nameof(TSPolymorphicTypeAttribute)}");
+			
+			if (substituteTypeMapping == null && polymorphicTypeMapping == null)
 			{
-				AddType(baseType);
 				_customTypes.Add(type, new CustomTypeDescriptor(type, baseType));
-			}
-			else if (mapping.InheritedTypes.Any())
-			{
 				AddType(baseType);
-				_customTypes.Add(type, new CustomTypeDescriptor(type, mapping.DiscriminatorFieldType, mapping.DiscriminatorFieldName, baseType));
-				foreach (var inheritedType in mapping.InheritedTypes)
+				return;
+			}
+
+			if (substituteTypeMapping != null)
+			{
+				if (substituteTypeMapping.SubstituteType != null)
+				{
+					AddType(substituteTypeMapping.SubstituteType);
+				}
+				else if (!string.IsNullOrWhiteSpace(substituteTypeMapping.TypeDefinition))
+				{
+					_customTypes.Add(type, new CustomTypeDescriptor(type, substituteTypeMapping.TypeDefinition));
+				}
+			}
+
+			if (polymorphicTypeMapping != null)
+			{
+				_customTypes.Add(type, new CustomTypeDescriptor(type, polymorphicTypeMapping.DiscriminatorFieldType, polymorphicTypeMapping.DiscriminatorFieldName, baseType));
+				
+				AddType(baseType);
+				
+				var targetAsm = polymorphicTypeMapping.DescendantsAssembly ?? type.Assembly;
+				var inheritedTypes = targetAsm.GetTypes()
+					.Where(type.IsAssignableFrom);
+				
+				foreach (var inheritedType in inheritedTypes)
 				{
 					AddType(inheritedType);
 				}
-			}
-			else if (mapping.SubstituteType != null)
-			{
-				AddType(mapping.SubstituteType);
-			}
-			else if (!string.IsNullOrWhiteSpace(mapping.TypeDefinition))
-			{
-				_customTypes.Add(type, new CustomTypeDescriptor(type, mapping.TypeDefinition));
-			}
-			else
-			{
-				throw new InvalidOperationException(
-					$"On type {type.FullName} found {nameof(TypeScriptTypeAttribute)} with empty {nameof(TypeScriptTypeAttribute.InheritedTypes)},{nameof(TypeScriptTypeAttribute.SubstituteType)},{nameof(TypeScriptTypeAttribute.TypeDefinition)}");
 			}
 		}
 

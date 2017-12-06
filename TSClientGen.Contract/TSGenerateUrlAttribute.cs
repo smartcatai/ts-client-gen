@@ -3,7 +3,7 @@
 namespace TSClientGen
 {
 	[AttributeUsage(AttributeTargets.Method)]
-	public class TypeScriptGenerateUrlAttribute : Attribute
+	public class TSGenerateUrlAttribute : Attribute
 	{
 	}
 }

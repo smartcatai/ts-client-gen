@@ -50,7 +50,7 @@ namespace TSClientGen
 			result.AppendLine($"export = result");
 		}
 
-		public static void GenerateStaticContent(this StringBuilder result, TypeScriptStaticContentAttribute staticContentModule)
+		public static void GenerateStaticContent(this StringBuilder result, TSStaticContentAttribute staticContentModule)
 		{
 			foreach (var entry in staticContentModule.Content)
 			{
@@ -61,10 +61,11 @@ namespace TSClientGen
 		public static void GenerateEnums(
 			this StringBuilder sb,
 			IEnumerable<Type> enumTypes,
-			ILookup<Type, TypeScriptExtendEnumAttribute> staticMemberProvidersByEnum,
+			ILookup<Type, TSExtendEnumAttribute> staticMemberProvidersByEnum,
 			TypeMapper mapper)
 		{
-			bool requireResourceImport = false;
+			var requireResourceImport = false;
+			var customImports = new List<string>();
 
 			foreach (var @enum in enumTypes)
 			{
@@ -78,6 +79,7 @@ namespace TSClientGen
 				foreach (var provider in staticMemberProvidersByEnum[@enum])
 				{
 					provider.GenerateStaticMembers(sb);
+					customImports.AddRange(provider.Imports);
 				}
 
 				sb.AppendLine("}");
@@ -89,6 +91,11 @@ namespace TSClientGen
 			{
 				sb.AppendLine();
 				sb.AppendLine("import * as getResource from 'resource!global/enums'");
+			}
+
+			foreach (var import in customImports)
+			{
+				sb.AppendLine(import);
 			}
 		}
 
@@ -109,7 +116,7 @@ namespace TSClientGen
 			sb.AppendLine();
 		}
 
-		public static void GenerateEnumLocalizations(this ResXResourceWriter resxWriter, IReadOnlyCollection<TypeScriptEnumLocalizationAttribute> enumLocalizations)
+		public static void GenerateEnumLocalizations(this ResXResourceWriter resxWriter, IReadOnlyCollection<TSEnumLocalizationAttribute> enumLocalizations)
 		{
 			foreach (var enumLocalization in enumLocalizations)
 			{
@@ -124,7 +131,7 @@ namespace TSClientGen
 			}
 		}
 
-		private static void generateEnumResxEntries(ResXResourceWriter resxWriter, TypeScriptEnumLocalizationAttribute enumLocalization, string context = null)
+		private static void generateEnumResxEntries(ResXResourceWriter resxWriter, TSEnumLocalizationAttribute enumLocalization, string context = null)
 		{
 			var enumName = enumLocalization.EnumType.Name;
 			foreach (var valueName in Enum.GetNames(enumLocalization.EnumType))
