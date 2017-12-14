@@ -1,7 +1,8 @@
 type project
 projectUrl http://gitlab.sc.local/commontools/TSClientGen
+description Генератор WEB API клиента на TypeScript
 dependencies
-  SmartCat.TSClientGen.Contract ~> 3.0
+  SmartCat.TSClientGen.Contract ~> 3.1
 files
   bin\*.* ==> tools
   !bin\*.vshost.*

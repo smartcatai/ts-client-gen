@@ -13,3 +13,4 @@ TestResult.xml
 packages/*
 nuget/*.nupkg
 .idea/.idea.TSClientGen
+paket-files
