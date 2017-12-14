@@ -17,20 +17,29 @@ namespace TSClientGen
 		/// Тип, находящийся в сборке, откуда надо барть наследников (по умолчанию берутся из сборки, где находится тип, помеченный данным атрибутом
 		/// </param>
 		/// <param name="discriminatorFieldName">название свойства в TS типе, где будет храниться информация, идентифицирующая конкретный inheritedType</param>
-		public TSPolymorphicTypeAttribute(Type discriminatorFieldType, Type descendantsAssemblyType = null, string discriminatorFieldName = "type")
+		/// <param name="suppressDiscriminatorGeneration">Не генерировать дискриминатор - предполагается что класс уже содержит его</param>
+		public TSPolymorphicTypeAttribute(
+			Type discriminatorFieldType = null, 
+			Type descendantsAssemblyType = null, 
+			string discriminatorFieldName = "type",
+			bool suppressDiscriminatorGeneration = false)
 		{
-			if (discriminatorFieldType == null)
-				throw new ArgumentNullException(nameof(discriminatorFieldType));
+			if (!suppressDiscriminatorGeneration)
+			{
+				if (discriminatorFieldType == null)
+					throw new ArgumentNullException(nameof(discriminatorFieldType));
 			
-			if (!discriminatorFieldType.IsEnum)
-				throw new ArgumentException($"{nameof(discriminatorFieldType)} must by Enum type.");
+				if (!discriminatorFieldType.IsEnum)
+					throw new ArgumentException($"{nameof(discriminatorFieldType)} must by Enum type.");
 			
-			if (string.IsNullOrWhiteSpace(discriminatorFieldName))
-				throw new ArgumentException($"{nameof(discriminatorFieldName)} is null or whitespace");
+				if (string.IsNullOrWhiteSpace(discriminatorFieldName))
+					throw new ArgumentException($"{nameof(discriminatorFieldName)} is null or whitespace");
+			}
 			
 			DescendantsAssembly = descendantsAssemblyType?.Assembly;
 			DiscriminatorFieldType = discriminatorFieldType;
 			DiscriminatorFieldName = discriminatorFieldName;
+			SuppressDiscriminatorGeneration = suppressDiscriminatorGeneration;
 		}
 		
 		public Assembly DescendantsAssembly { get; }
@@ -38,5 +47,7 @@ namespace TSClientGen
 		public Type DiscriminatorFieldType { get; }
 		
 		public string DiscriminatorFieldName { get; }
+		
+		public bool SuppressDiscriminatorGeneration { get; }
 	}
 }

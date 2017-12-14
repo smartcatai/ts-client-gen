@@ -86,7 +86,15 @@ namespace TSClientGen
 
 			if (polymorphicTypeMapping != null)
 			{
-				_customTypes.Add(type, new CustomTypeDescriptor(type, polymorphicTypeMapping.DiscriminatorFieldType, polymorphicTypeMapping.DiscriminatorFieldName, baseType));
+				if (polymorphicTypeMapping.SuppressDiscriminatorGeneration)
+				{
+					_customTypes.Add(type, new CustomTypeDescriptor(type, baseType));
+				}
+				else
+				{
+					_customTypes.Add(type, new CustomTypeDescriptor(type, polymorphicTypeMapping.DiscriminatorFieldType, polymorphicTypeMapping.DiscriminatorFieldName, baseType));					
+				}
+				
 				
 				AddType(baseType);
 				

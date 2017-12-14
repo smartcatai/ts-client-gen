@@ -181,6 +181,11 @@ namespace TSClientGen
 
 				var dataMember = property.GetCustomAttributes<DataMemberAttribute>().FirstOrDefault();
 				var name = dataMember != null ? dataMember.Name : property.Name.toLowerCamelCase();
+
+				if (name == modelType.DiscriminatorFieldName)
+					throw new InvalidOperationException(
+						$"Discriminator field name `{modelType.DiscriminatorFieldName}` can be equal property name `{modelType.Type.Name}::{name}`");
+				
 				if (Nullable.GetUnderlyingType(property.PropertyType) != null)
 					name += "?";
 

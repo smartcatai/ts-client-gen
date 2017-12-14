@@ -18,6 +18,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{C51278
 		paket.lock = paket.lock
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TSClientGen.Tests", "TSClientGen.Tests\TSClientGen.Tests.csproj", "{F9C6B82B-AD78-4FCF-B0DD-AFA9560C2127}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +34,10 @@ Global
 		{09FADA64-936F-4639-9F46-E828FCB2889E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{09FADA64-936F-4639-9F46-E828FCB2889E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{09FADA64-936F-4639-9F46-E828FCB2889E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F9C6B82B-AD78-4FCF-B0DD-AFA9560C2127}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9C6B82B-AD78-4FCF-B0DD-AFA9560C2127}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9C6B82B-AD78-4FCF-B0DD-AFA9560C2127}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9C6B82B-AD78-4FCF-B0DD-AFA9560C2127}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

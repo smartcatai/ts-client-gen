@@ -6,3 +6,4 @@ nuget Microsoft.AspNet.Mvc 5.2.2
 nuget Microsoft.AspNet.WebApi.Client 5.2.3
 nuget Microsoft.AspNet.WebApi.Core 5.2.3
 nuget Newtonsoft.Json 6.0.8
+nuget NUnit ~> 3.2

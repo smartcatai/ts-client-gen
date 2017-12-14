@@ -15,3 +15,4 @@ NUGET
       Microsoft.Web.Infrastructure (>= 1.0)
     Microsoft.Web.Infrastructure (1.0.0)
     Newtonsoft.Json (6.0.8)
+    NUnit (3.8.1)
