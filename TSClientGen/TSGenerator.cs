@@ -253,7 +253,10 @@ namespace TSClientGen
 
 			foreach (var param in actionDescriptor.RouteParamsBySections)
 			{
-				result.AppendLine($"\t\turl = url.replace('{param.Key}', {param.Value.Name}.toString());");
+				var paramPreprocessCallString = param.Value.ParameterType == typeof(DateTime)
+					? "toISOString()"
+					: "toString()";
+				result.AppendLine($"\t\turl = url.replace('{param.Key}', {param.Value.Name}.{paramPreprocessCallString});");
 			}
 
 			if (actionDescriptor.QueryParams.Any())
