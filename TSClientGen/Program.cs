@@ -112,7 +112,7 @@ namespace TSClientGen
 
 			foreach (var enums in enumMapper.GetEnumsByModules())
 			{
-				enumsDefinition.GenerateEnums(enums, staticMemberProvidersLookup, typeMapper);
+				enumsDefinition.GenerateEnums(enums, staticMemberProvidersLookup, typeMapper, args.ForVueApp);
 				File.WriteAllText(Path.Combine(args.EnumsOutputDirPath, $"{enums.Key}.ts"), enumsDefinition.ToString());
 				enumsDefinition.Clear();
 			}

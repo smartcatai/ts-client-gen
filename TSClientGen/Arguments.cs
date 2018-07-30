@@ -21,5 +21,8 @@ namespace TSClientGen
 
 		[OptionArray('l', "loc-lang")]
 		public string[] LocalizationLanguages { get; set; }
+		
+		[Option('v', "for-vue-app")]
+		public bool ForVueApp { get; set; }		
 	}
 }

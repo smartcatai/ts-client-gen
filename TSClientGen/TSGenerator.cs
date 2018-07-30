@@ -62,10 +62,10 @@ namespace TSClientGen
 			this StringBuilder sb,
 			IEnumerable<Type> enumTypes,
 			ILookup<Type, TSExtendEnumAttribute> staticMemberProvidersByEnum,
-			TypeMapper mapper)
+			TypeMapper mapper,
+			bool forVueApp)
 		{
 			var requireResourceImport = false;
-			var customImports = new List<string>();
 
 			foreach (var @enum in enumTypes)
 			{
@@ -79,7 +79,6 @@ namespace TSClientGen
 				foreach (var provider in staticMemberProvidersByEnum[@enum])
 				{
 					provider.GenerateStaticMembers(sb);
-					customImports.AddRange(provider.Imports);
 				}
 
 				sb.AppendLine("}");
@@ -90,12 +89,20 @@ namespace TSClientGen
 			if (requireResourceImport)
 			{
 				sb.AppendLine();
-				sb.AppendLine("import * as getResource from 'resource!global/enums'");
-			}
-
-			foreach (var import in customImports)
-			{
-				sb.AppendLine(import);
+				if (forVueApp)
+				{
+					sb.AppendLine("function getResource(key: string) {");
+					sb.AppendLine("	let locale = (<any>window).locale;");
+					sb.AppendLine("	let value = resx.messages[locale][key] || resx.messages['ru'][key];");
+					sb.AppendLine("	if (!value) console.warn('Key ' + key + ' has not been found in enums.resx');");
+					sb.AppendLine("	return value || key;");
+					sb.AppendLine("}");
+					sb.AppendLine("import resx from './enums.resx'");
+				}
+				else
+				{
+					sb.AppendLine("import * as getResource from 'resource!global/enums'");
+				}
 			}
 		}
 
