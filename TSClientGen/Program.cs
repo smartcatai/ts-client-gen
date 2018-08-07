@@ -44,7 +44,7 @@ namespace TSClientGen
 			foreach (var asmPath in arguments.AssembliesPath)
 			{
 				var asm = Assembly.LoadFrom(asmPath);
-				generateClientsFromAsm(asm, arguments.ControllerClientsOutputDirPath, enumMapper);
+				generateClientsFromAsm(asm, arguments.ControllerClientsOutputDirPath, arguments.ForVueApp, enumMapper);
 				generateResources(asm.GetCustomAttributes().OfType<TSExposeResxAttribute>().ToList(), arguments);
 
 				foreach (var attr in asm.GetCustomAttributes().OfType<TSExtendEnumAttribute>())
@@ -152,7 +152,7 @@ namespace TSClientGen
 			}
 		}
 
-		private static void generateClientsFromAsm(Assembly targetAsm, string outDir, EnumMapper enumMapper)
+		private static void generateClientsFromAsm(Assembly targetAsm, string outDir, bool forVueApp, EnumMapper enumMapper)
 		{
 			var sw = new Stopwatch();
 			sw.Start();
@@ -198,9 +198,10 @@ namespace TSClientGen
 				if (moduleName == null)
 					continue;
 
+				bool loadedAsJsonModule = tsModuleAttribute.LoadedAsJsonModule && !forVueApp;
 				var result = new StringBuilder(2048);
 				var controllerRoute = controller.GetCustomAttributes<System.Web.Http.RouteAttribute>().SingleOrDefault();
-				if (tsModuleAttribute.LoadedAsJsonModule)
+				if (loadedAsJsonModule)
 				{
 					result.GenerateJsonModule(controller, mapper, controllerRoute);
 				}
@@ -228,17 +229,17 @@ namespace TSClientGen
 						{
 							if (!string.IsNullOrWhiteSpace(typeDescriptor.TypeDefinition))
 							{
-								result.GenerateTypeDefinition(typeDescriptor, mapper, !tsModuleAttribute.LoadedAsJsonModule);
+								result.GenerateTypeDefinition(typeDescriptor, mapper, !loadedAsJsonModule);
 							}else
 							{
-								result.GenerateInterface(typeDescriptor, mapper, !tsModuleAttribute.LoadedAsJsonModule);
+								result.GenerateInterface(typeDescriptor, mapper, !loadedAsJsonModule);
 							}
 						}
 						generatedTypes.Add(typeDescriptor.Type);
 					}
 				} while (typesToGenerate.Any());
 
-				if (!tsModuleAttribute.LoadedAsJsonModule)
+				if (!loadedAsJsonModule)
 				{
 					TSStaticContentAttribute staticContentModule;
 					if (staticContentByModuleName.TryGetValue(moduleName, out staticContentModule))
@@ -247,7 +248,7 @@ namespace TSClientGen
 					}
 				}
 
-				string extension = tsModuleAttribute.LoadedAsJsonModule ? "d.ts" : "ts";
+				string extension = loadedAsJsonModule ? "d.ts" : "ts";
 				File.WriteAllText(Path.Combine(outDir, $"{moduleName}.{extension}"), result.ToString());
 
 				Console.WriteLine($"TypeScript client `{moduleName}` generated in {sw.ElapsedMilliseconds} ms");
