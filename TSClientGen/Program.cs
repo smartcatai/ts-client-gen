@@ -25,15 +25,11 @@ namespace TSClientGen
 				return 1;
 			}
 
-			if (Directory.Exists(arguments.ControllerClientsOutputDirPath))
-				Directory.Delete(arguments.ControllerClientsOutputDirPath, true);
+			if (!Directory.Exists(arguments.ControllerClientsOutputDirPath))
+				Directory.CreateDirectory(arguments.ControllerClientsOutputDirPath);				
 
-			Directory.CreateDirectory(arguments.ControllerClientsOutputDirPath);
-
-			if (Directory.Exists(arguments.EnumsOutputDirPath))
-				Directory.Delete(arguments.EnumsOutputDirPath, true);
-
-			Directory.CreateDirectory(arguments.EnumsOutputDirPath);
+			if (!Directory.Exists(arguments.EnumsOutputDirPath))
+				Directory.CreateDirectory(arguments.EnumsOutputDirPath);
 
 			if (!Directory.Exists(arguments.ResourcesOutputDirPath))
 				Directory.CreateDirectory(arguments.ResourcesOutputDirPath);
