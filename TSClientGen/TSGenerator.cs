@@ -187,7 +187,12 @@ namespace TSClientGen
 					continue;
 
 				var dataMember = property.GetCustomAttributes<DataMemberAttribute>().FirstOrDefault();
-				var name = dataMember != null ? dataMember.Name : property.Name.toLowerCamelCase();
+				var jsonProperty = property.GetCustomAttributes<JsonPropertyAttribute>().FirstOrDefault();
+				var name = dataMember != null
+					? dataMember.Name
+					: jsonProperty != null
+						? jsonProperty.PropertyName
+						: property.Name.toLowerCamelCase();
 
 				if (name == modelType.DiscriminatorFieldName)
 					throw new InvalidOperationException(
