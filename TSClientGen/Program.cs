@@ -8,7 +8,6 @@ using System.Linq;
 using System.Reflection;
 using System.Resources;
 using System.Text;
-using System.Threading;
 using System.Web.Http.Controllers;
 using System.Web.Mvc;
 using CommandLine;
@@ -37,10 +36,12 @@ namespace TSClientGen
 			var enumMapper = new EnumMapper(arguments);
 			var enumStaticMemberProviders = new List<TSExtendEnumAttribute>();
 
+			var generatedFiles = new HashSet<string>();
+
 			foreach (var asmPath in arguments.AssembliesPath)
 			{
 				var asm = Assembly.LoadFrom(asmPath);
-				generateClientsFromAsm(asm, arguments.ControllerClientsOutputDirPath, arguments.ForVueApp, enumMapper);
+				generateClientsFromAsm(asm, arguments.ControllerClientsOutputDirPath, arguments.ForVueApp, enumMapper, generatedFiles);
 				generateResources(asm.GetCustomAttributes().OfType<TSExposeResxAttribute>().ToList(), arguments);
 
 				foreach (var attr in asm.GetCustomAttributes().OfType<TSExtendEnumAttribute>())
@@ -57,7 +58,11 @@ namespace TSClientGen
 
 			appendEnumImports(enumMapper, arguments.ControllerClientsOutputDirPath);
 
-			generateEnumsDefinition(enumMapper, enumStaticMemberProviders, arguments);
+			var generatedEnumFiles = new HashSet<string>();
+			generateEnumsDefinition(enumMapper, enumStaticMemberProviders, arguments, generatedEnumFiles);
+
+			cleanupOutDir(arguments.ControllerClientsOutputDirPath, generatedFiles);
+			cleanupOutDir(arguments.EnumsOutputDirPath, generatedEnumFiles);
 
 			return 0;
 		}
@@ -97,7 +102,7 @@ namespace TSClientGen
 			}
 		}
 
-		private static void generateEnumsDefinition(EnumMapper enumMapper, IReadOnlyCollection<TSExtendEnumAttribute> staticMemberProviders, Arguments args)
+		private static void generateEnumsDefinition(EnumMapper enumMapper, IReadOnlyCollection<TSExtendEnumAttribute> staticMemberProviders, Arguments args, HashSet<string> generatedFiles)
 		{
 			var sw = new Stopwatch();
 			sw.Start();
@@ -109,17 +114,22 @@ namespace TSClientGen
 			foreach (var enums in enumMapper.GetEnumsByModules())
 			{
 				enumsDefinition.GenerateEnums(enums, staticMemberProvidersLookup, typeMapper, args.ForVueApp);
-				File.WriteAllText(Path.Combine(args.EnumsOutputDirPath, $"{enums.Key}.ts"), enumsDefinition.ToString());
+				string targetFileName = $"{enums.Key}.ts";
+				File.WriteAllText(Path.Combine(args.EnumsOutputDirPath, targetFileName), enumsDefinition.ToString());
+				fixFilenameCase(args.EnumsOutputDirPath, targetFileName);
+				generatedFiles.Add(Path.Combine(args.EnumsOutputDirPath, targetFileName).ToLowerInvariant());
 				enumsDefinition.Clear();
 			}
 
 			foreach (var culture in args.LocalizationLanguages)
 			{
 				CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(culture);
-				using (var enumResxFileWriter = new ResXResourceWriter(Path.Combine(args.ResourcesOutputDirPath, (culture == "ru") ? "enums.resx" : $"enums.{culture}.resx")))
+				string targetFileName = Path.Combine(args.ResourcesOutputDirPath, (culture == "ru") ? "enums.resx" : $"enums.{culture}.resx");
+				using (var enumResxFileWriter = new ResXResourceWriter(targetFileName))
 				{
 					enumResxFileWriter.GenerateEnumLocalizations(
 						staticMemberProviders.OfType<TSEnumLocalizationAttribute>().ToList());
+					generatedFiles.Add(Path.Combine(args.EnumsOutputDirPath, targetFileName).ToLowerInvariant());
 				}
 			}
 
@@ -148,7 +158,7 @@ namespace TSClientGen
 			}
 		}
 
-		private static void generateClientsFromAsm(Assembly targetAsm, string outDir, bool forVueApp, EnumMapper enumMapper)
+		private static void generateClientsFromAsm(Assembly targetAsm, string outDir, bool forVueApp, EnumMapper enumMapper, HashSet<string> generatedFiles)
 		{
 			var sw = new Stopwatch();
 			sw.Start();
@@ -226,7 +236,8 @@ namespace TSClientGen
 							if (!string.IsNullOrWhiteSpace(typeDescriptor.TypeDefinition))
 							{
 								result.GenerateTypeDefinition(typeDescriptor, mapper, !loadedAsJsonModule);
-							}else
+							}
+							else
 							{
 								result.GenerateInterface(typeDescriptor, mapper, !loadedAsJsonModule);
 							}
@@ -245,7 +256,10 @@ namespace TSClientGen
 				}
 
 				string extension = loadedAsJsonModule ? "d.ts" : "ts";
-				File.WriteAllText(Path.Combine(outDir, $"{moduleName}.{extension}"), result.ToString());
+				string targetFileName = $"{moduleName}.{extension}";
+				File.WriteAllText(Path.Combine(outDir, targetFileName), result.ToString());
+				fixFilenameCase(outDir, targetFileName);
+				generatedFiles.Add(Path.Combine(outDir, targetFileName).ToLowerInvariant());
 
 				Console.WriteLine($"TypeScript client `{moduleName}` generated in {sw.ElapsedMilliseconds} ms");
 				sw.Restart();
@@ -260,7 +274,28 @@ namespace TSClientGen
 
 				var result = new StringBuilder();
 				result.GenerateStaticContent(staticContent);
-				File.WriteAllText(Path.Combine(outDir, $"{staticContent.ModuleName}.ts"), result.ToString());
+				string targetFileName = $"{staticContent.ModuleName}.ts";
+				File.WriteAllText(Path.Combine(outDir, targetFileName), result.ToString());
+				fixFilenameCase(outDir, targetFileName);
+				generatedFiles.Add(Path.Combine(outDir, targetFileName).ToLowerInvariant());
+			}
+		}
+
+		private static void fixFilenameCase(string outDir, string targetFileName)
+		{
+			var existingFileName = Directory.EnumerateFiles(outDir, targetFileName).Single();
+			if (targetFileName != Path.GetFileName(existingFileName))
+			{
+				// отличаются регистром, надо переименовать
+				new FileInfo(existingFileName).MoveTo(Path.Combine(outDir, targetFileName));
+			}
+		}
+
+		private static void cleanupOutDir(string outDir, HashSet<string> generatedFiles)
+		{
+			foreach (var existingFile in Directory.EnumerateFiles(outDir).Where(file => !generatedFiles.Contains(file.ToLowerInvariant())))
+			{
+				File.Delete(existingFile);
 			}
 		}
 	}
