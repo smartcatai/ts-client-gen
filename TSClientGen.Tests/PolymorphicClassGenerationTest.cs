@@ -13,7 +13,7 @@ namespace TSClientGen.Tests
             var mapper = new TypeMapper();
             mapper.AddType(typeof(SimpleTestModel));
             var descriptor = mapper.GetDescriptorByType(typeof(SimpleTestModel));
-            Assert.DoesNotThrow(() => TSGenerator.GenerateInterface(new StringBuilder(), descriptor, mapper, false));
+            Assert.DoesNotThrow(() => TSGenerator.GenerateInterface(new StringBuilder(), descriptor, mapper));
         }
         
          [Test]
@@ -22,7 +22,7 @@ namespace TSClientGen.Tests
             var mapper = new TypeMapper();
             mapper.AddType(typeof(TestModelWithOwnDiscriminator));
             var descriptor = mapper.GetDescriptorByType(typeof(TestModelWithOwnDiscriminator));
-            Assert.DoesNotThrow(() => TSGenerator.GenerateInterface(new StringBuilder(), descriptor, mapper, false));
+            Assert.DoesNotThrow(() => TSGenerator.GenerateInterface(new StringBuilder(), descriptor, mapper));
         }
         
         [Test]
@@ -31,7 +31,7 @@ namespace TSClientGen.Tests
             var mapper = new TypeMapper();
             mapper.AddType(typeof(InvalidTestModel));
             var descriptor = mapper.GetDescriptorByType(typeof(InvalidTestModel));
-            Assert.Throws<InvalidOperationException>(() => TSGenerator.GenerateInterface(new StringBuilder(), descriptor, mapper, false));
+            Assert.Throws<InvalidOperationException>(() => TSGenerator.GenerateInterface(new StringBuilder(), descriptor, mapper));
         }        
     }
     

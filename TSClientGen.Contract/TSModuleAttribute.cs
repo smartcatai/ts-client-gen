@@ -11,7 +11,5 @@ namespace TSClientGen
 		}
 
 		public string ModuleName { get; }
-
-		public bool LoadedAsJsonModule { get; set; }
 	}
 }

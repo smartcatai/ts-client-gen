@@ -62,8 +62,7 @@ namespace TSClientGen
 			this StringBuilder sb,
 			IEnumerable<Type> enumTypes,
 			ILookup<Type, TSExtendEnumAttribute> staticMemberProvidersByEnum,
-			TypeMapper mapper,
-			bool forVueApp)
+			TypeMapper mapper)
 		{
 			var requireResourceImport = false;
 
@@ -89,20 +88,13 @@ namespace TSClientGen
 			if (requireResourceImport)
 			{
 				sb.AppendLine();
-				if (forVueApp)
-				{
-					sb.AppendLine("function getResource(key: string) {");
-					sb.AppendLine("	let locale = (<any>window).locale;");
-					sb.AppendLine("	let value = resx.messages[locale][key] || resx.messages['ru'][key];");
-					sb.AppendLine("	if (!value) console.warn('Key ' + key + ' has not been found in enums.resx');");
-					sb.AppendLine("	return value || key;");
-					sb.AppendLine("}");
-					sb.AppendLine("import resx from './enums.resx'");
-				}
-				else
-				{
-					sb.AppendLine("import * as getResource from 'resource!global/enums'");
-				}
+				sb.AppendLine("function getResource(key: string) {");
+				sb.AppendLine("	let locale = (<any>window).locale;");
+				sb.AppendLine("	let value = resx.messages[locale][key] || resx.messages['ru'][key];");
+				sb.AppendLine("	if (!value) console.warn('Key ' + key + ' has not been found in enums.resx');");
+				sb.AppendLine("	return value || key;");
+				sb.AppendLine("}");
+				sb.AppendLine("import resx from 'server/enums.resx'");
 			}
 		}
 
@@ -161,12 +153,9 @@ namespace TSClientGen
 			}
 		}
 
-		public static void GenerateInterface(this StringBuilder sb, CustomTypeDescriptor modelType, TypeMapper mapper, bool export)
+		public static void GenerateInterface(this StringBuilder sb, CustomTypeDescriptor modelType, TypeMapper mapper)
 		{
-			if (export)
-				sb.Append("export ");
-
-			sb.Append($"interface {mapper.GetTSType(modelType.Type)} ");
+			sb.Append($"export interface {mapper.GetTSType(modelType.Type)} ");
 
 			if (modelType.BaseType != null)
 			{
@@ -208,12 +197,9 @@ namespace TSClientGen
 			sb.AppendLine("");
 		}
 
-		public static void GenerateTypeDefinition(this StringBuilder sb, CustomTypeDescriptor modelType, TypeMapper mapper, bool export)
+		public static void GenerateTypeDefinition(this StringBuilder sb, CustomTypeDescriptor modelType, TypeMapper mapper)
 		{
-			if (export)
-				sb.Append("export ");
-
-			sb.AppendLine($"type {mapper.GetTSType(modelType.Type)} = {modelType.TypeDefinition}");
+			sb.AppendLine($"export type {mapper.GetTSType(modelType.Type)} = {modelType.TypeDefinition}");
 			sb.AppendLine("");
 		}
 

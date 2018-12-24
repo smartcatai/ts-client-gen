@@ -7,22 +7,13 @@ namespace TSClientGen
 		[OptionArray('a', "asm")]
 		public string[] AssembliesPath { get; set; }
 
-		[Option('c', "clients-out-dir")]
-		public string ControllerClientsOutputDirPath { get; set; }
-
-		[Option('e', "enums-out-dir")]
-		public string EnumsOutputDirPath { get; set; }
-
-		[Option('r', "res-out-dir")]
-		public string ResourcesOutputDirPath { get; set; }
+		[Option('o', "out-dir")]
+		public string OutputPath { get; set; }
 
 		[OptionArray('n', "asm-name")]
 		public string[] AssemblyNames { get; set; }
 
 		[OptionArray('l', "loc-lang")]
 		public string[] LocalizationLanguages { get; set; }
-		
-		[Option('v', "for-vue-app")]
-		public bool ForVueApp { get; set; }		
 	}
 }
