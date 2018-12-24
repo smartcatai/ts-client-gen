@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Resources;
-using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Web.Http;
@@ -18,8 +17,7 @@ namespace TSClientGen
 			var routePrefix = controller.GetCustomAttributes<RoutePrefixAttribute>().SingleOrDefault()?.Prefix;
 			routePrefix = string.IsNullOrEmpty(routePrefix) ? "/" : "/" + routePrefix + "/";
 
-			string className = controller.Name.Replace("Controller", "") + "Api";
-			result.AppendLine($"class {className} {{");
+			result.AppendLine($"export class {controller.Name.Replace("Controller", "")}Client {{");
 
 			var actions = controller.GetMethods(BindingFlags.Instance | BindingFlags.Public).ToArray();
 			foreach (var action in actions)
@@ -35,7 +33,6 @@ namespace TSClientGen
 			}
 
 			result.AppendLine("}");
-			result.AppendLine($"export let {toLowerCamelCase(className)} = new {className}();");
 			result.AppendLine();
 		}
 
