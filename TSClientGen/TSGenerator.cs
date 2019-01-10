@@ -15,6 +15,9 @@ namespace TSClientGen
 		public static void GenerateControllerClient(this StringBuilder result, Type controller, TypeMapper mapper, RouteAttribute controllerRoute)
 		{
 			var routePrefix = controller.GetCustomAttributes<RoutePrefixAttribute>().SingleOrDefault()?.Prefix;
+			if (controllerRoute != null && routePrefix != null)
+				throw new Exception("Controller has Route and RoutePrefix attributes at the same time");
+
 			routePrefix = string.IsNullOrEmpty(routePrefix) ? "/" : "/" + routePrefix + "/";
 
 			result.AppendLine($"export class {controller.Name.Replace("Controller", "")}Client {{");
@@ -22,32 +25,18 @@ namespace TSClientGen
 			var actions = controller.GetMethods(BindingFlags.Instance | BindingFlags.Public).ToArray();
 			foreach (var action in actions)
 			{
-				var descriptor = ActionDescriptor.TryCreateFrom(action, controllerRoute);
+				var descriptor = ActionDescriptor.TryCreateFrom(action, controllerRoute, routePrefix);
 				if (descriptor == null)
 					continue;
-		
-				if (descriptor.GenerateUrl)
-					generateMethod(result, mapper, action, descriptor, routePrefix, true, false);
 
-				generateMethod(result, mapper, action, descriptor, routePrefix, false, descriptor.GenerateUploadProgressCallback);
+				if (descriptor.GenerateUrl)
+					generateMethod(result, mapper, action, descriptor, true, false);
+
+				generateMethod(result, mapper, action, descriptor, false, descriptor.GenerateUploadProgressCallback);
 			}
 
 			result.AppendLine("}");
 			result.AppendLine();
-		}
-
-		public static void GenerateJsonModule(this StringBuilder result, Type controller, TypeMapper mapper, RouteAttribute controllerRoute)
-		{
-			var actions = controller.GetMethods(BindingFlags.Instance | BindingFlags.Public).Where(a => ActionDescriptor.TryCreateFrom(a, controllerRoute) != null).ToArray();
-			if (actions.Length != 1)
-				throw new Exception("Only one action allowed in controller marked as json module for TypeScript");
-
-			var action = actions.Single();
-			if (action.GetParameters().Any())
-				throw new Exception("Action should not have any parameters when controller marked as json module for TypeScript");
-
-			result.AppendLine($"declare var result: {mapper.GetTSType(action.ReturnType)}");
-			result.AppendLine($"export = result");
 		}
 
 		public static void GenerateStaticContent(this StringBuilder result, TSStaticContentAttribute staticContentModule)
@@ -208,7 +197,6 @@ namespace TSClientGen
 			TypeMapper mapper,
 			MethodInfo action,
 			ActionDescriptor descriptor,
-			string routePrefix,
 			bool generateGetUrl,
 			bool generateProgressCallback)
 		{
@@ -234,20 +222,19 @@ namespace TSClientGen
 				? $"): string {{"
 				: $"): Promise<{mapper.GetTSType(action.ReturnType)}> {{");
 
-			generateMethodBody(result, routePrefix, descriptor, action, generateGetUrl, generateProgressCallback);
+			generateMethodBody(result, descriptor, action, generateGetUrl, generateProgressCallback);
 			result.AppendLine("\t}");
 			result.AppendLine();
 		}
 
 		private static void generateMethodBody(
 			this StringBuilder result, 
-			string routePrefix, 
 			ActionDescriptor actionDescriptor, 
 			MethodInfo action,
 			bool generateGetUrl,
 			bool generateProgressCallback)
 		{
-			result.AppendLine($"\t\tvar url = '{routePrefix}{actionDescriptor.RouteTemplate}';");
+			result.AppendLine($"\t\tvar url = '{actionDescriptor.RouteTemplate}';");
 
 			foreach (var param in actionDescriptor.RouteParamsBySections)
 			{

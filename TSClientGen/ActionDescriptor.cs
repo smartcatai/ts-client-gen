@@ -11,13 +11,13 @@ namespace TSClientGen
 {
 	public class ActionDescriptor
 	{
-		private ActionDescriptor(RouteAttribute route, IActionHttpMethodProvider httpVerb, MethodInfo controllerMethod)
+		private ActionDescriptor(string routePrefix, RouteAttribute route, IActionHttpMethodProvider httpVerb, MethodInfo controllerMethod)
 		{
 			var allParams = controllerMethod.GetParameters().Where(p => p.ParameterType != typeof(CancellationToken)).ToArray();
 			var queryParams = new List<ParameterInfo>();
 
 			HttpVerb = getVerb(httpVerb);
-			RouteTemplate = route.Template.Replace("{action}", controllerMethod.Name);
+			RouteTemplate = (routePrefix + route.Template).Replace("{action}", controllerMethod.Name);
 			GenerateUrl = controllerMethod.GetCustomAttribute<TSGenerateUrlAttribute>() != null;
 			GenerateUploadProgressCallback = controllerMethod.GetCustomAttribute<TSUploadProgressEventHandlerAttribute>() != null;
 
@@ -74,7 +74,7 @@ namespace TSClientGen
 
 		public bool GenerateUploadProgressCallback { get; }
 
-		public static ActionDescriptor TryCreateFrom(MethodInfo controllerMethod, RouteAttribute controllerRoute)
+		public static ActionDescriptor TryCreateFrom(MethodInfo controllerMethod, RouteAttribute controllerRoute, string routePrefix)
 		{
 			var route = controllerMethod.GetCustomAttributes<RouteAttribute>().SingleOrDefault() ?? controllerRoute;
 			if (route == null)
@@ -84,7 +84,7 @@ namespace TSClientGen
 			if (httpVerb == null)
 				return null;
 
-			return new ActionDescriptor(route, httpVerb, controllerMethod);
+			return new ActionDescriptor(routePrefix, route, httpVerb, controllerMethod);
 		}
 
 		private static string getVerb(IActionHttpMethodProvider httpVerb)
