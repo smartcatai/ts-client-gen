@@ -209,7 +209,7 @@ namespace TSClientGen
 				.Select(param => $"{param.Name}{(param.IsOptional ? "?" : "")}: {mapper.GetTSType(param.ParameterType)}")
 				.ToList();
 			if (descriptor.IsModelWithFiles || descriptor.IsUploadedFile)
-				parameters.Add("files: File[]");
+				parameters.Add("files: Array<{ blob: Blob, name: string } | File>");
 
 			if (generateProgressCallback)
 				parameters.Add("progressCallback?: (event: ProgressEvent) => void");
@@ -234,7 +234,7 @@ namespace TSClientGen
 			bool generateGetUrl,
 			bool generateProgressCallback)
 		{
-			result.AppendLine($"\t\tvar url = '{actionDescriptor.RouteTemplate}';");
+			result.AppendLine($"\t\tlet url = '{actionDescriptor.RouteTemplate}';");
 
 			foreach (var param in actionDescriptor.RouteParamsBySections)
 			{
@@ -246,7 +246,7 @@ namespace TSClientGen
 
 			if (actionDescriptor.QueryParams.Any())
 			{
-				result.AppendLine("\t\tvar queryParams: any = {};");
+				result.AppendLine("\t\tconst queryParams: any = {};");
 
 				foreach (var param in actionDescriptor.QueryParams)
 				{
@@ -255,7 +255,7 @@ namespace TSClientGen
 					result.AppendLine($"\t\t}}");
 				}
 
-				result.AppendLine($"\t\tvar queryString = $.param(queryParams);");
+				result.AppendLine($"\t\tconst queryString = $.param(queryParams);");
 				result.AppendLine($"\t\tif (queryString) {{");
 				result.AppendLine("\t\t\turl = url + '?' + queryString;");
 				result.AppendLine("\t\t}");
@@ -269,14 +269,16 @@ namespace TSClientGen
 
 			if (actionDescriptor.IsModelWithFiles || actionDescriptor.IsUploadedFile)
 			{
-				result.AppendLine("\t\tvar formData = new FormData();");
-				result.AppendLine("\t\tfor (let f of files) {");
-				result.AppendLine("\t\t\tformData.append('file', f);");
+				result.AppendLine("\t\tconst formData = new FormData();");
+				result.AppendLine("\t\tfor (const f of files) {");
+				result.AppendLine("\t\t\tconst namedBlob = f as { name: string, blob: Blob };");
+				result.AppendLine("\t\t\tif (namedBlob.blob && namedBlob.name) formData.append('file', namedBlob.blob, namedBlob.name);");
+				result.AppendLine("\t\t\telse formData.append('file', f as File);");
 				result.AppendLine("\t\t}");
 
 				if (actionDescriptor.IsModelWithFiles)
 				{
-					result.AppendLine($"\t\tvar blob = new Blob([JSON.stringify({actionDescriptor.BodyParam.Name})], {{ type: 'application/json' }});");
+					result.AppendLine($"\t\tconst blob = new Blob([JSON.stringify({actionDescriptor.BodyParam.Name})], {{ type: 'application/json' }});");
 					result.AppendLine("\t\tformData.append('Value', blob);");
 				}
 			}
@@ -288,7 +290,7 @@ namespace TSClientGen
 			if (generateProgressCallback)
 			{
 				result.AppendLine("\t\t\txhr: function () {");
-				result.AppendLine("\t\t\t\tvar xhr = new XMLHttpRequest();");
+				result.AppendLine("\t\t\t\tconst xhr = new XMLHttpRequest();");
 				result.AppendLine("\t\t\t\txhr.upload.onprogress = progressCallback;");
 				result.AppendLine("\t\t\t\treturn xhr;");
 				result.AppendLine("\t\t\t},");
