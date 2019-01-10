@@ -84,7 +84,7 @@ namespace TSClientGen
 						imports.Append(mapper.GetTSType(@enum.EnumType));
 					}
 
-					imports.AppendLine($" }} from 'enums/{enums.Key}'");
+					imports.AppendLine($" }} from './enums/{enums.Key}'");
 				}
 
 				string moduleFileName = Path.Combine(outDir, $"{enumsByModule.Key}.ts");

@@ -94,7 +94,7 @@ namespace TSClientGen
 				sb.AppendLine("	if (!value) console.warn('Key ' + key + ' has not been found in enums.resx');");
 				sb.AppendLine("	return value || key;");
 				sb.AppendLine("}");
-				sb.AppendLine("import resx from 'server/enums.resx'");
+				sb.AppendLine("import resx from '../enums.resx'");
 			}
 		}
 
