@@ -1,8 +1,8 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 
-[assembly: AssemblyVersion("3.5.1")]
-[assembly: AssemblyInformationalVersion("3.5.1")]
+[assembly: AssemblyVersion("3.5.2")]
+[assembly: AssemblyInformationalVersion("3.5.2")]
 
 [assembly: AssemblyTitle("SmartCat.TSClientGen")]
 [assembly: AssemblyDescription("")]
