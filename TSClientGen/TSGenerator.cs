@@ -22,13 +22,19 @@ namespace TSClientGen
 
 			result.AppendLine($"export class {controller.Name.Replace("Controller", "")}Client {{");
 
+			var externalHostId = controller.GetCustomAttributes<TSExternalHostAttribute>().SingleOrDefault()?.HostId;
+			var externalHostIds = new HashSet<string>();
+			
 			var actions = controller.GetMethods(BindingFlags.Instance | BindingFlags.Public).ToArray();
 			foreach (var action in actions)
 			{
-				var descriptor = ActionDescriptor.TryCreateFrom(action, controllerRoute, routePrefix);
+				var descriptor = ActionDescriptor.TryCreateFrom(action, controllerRoute, routePrefix, externalHostId);
 				if (descriptor == null)
 					continue;
 
+				if (descriptor.ExternalHostId != null)
+					externalHostIds.Add(descriptor.ExternalHostId);
+				
 				if (descriptor.GenerateUrl)
 					generateMethod(result, mapper, action, descriptor, true, false);
 
@@ -37,6 +43,16 @@ namespace TSClientGen
 
 			result.AppendLine("}");
 			result.AppendLine();
+
+			if (externalHostIds.Any())
+			{
+				var idsUnionType = string.Join(" | ", externalHostIds.Select(id => $"'{id}'"));
+				result.AppendLine("let externalHostsById: { [id: string] : string } = {};");	
+				result.AppendLine($"export function setExternalHost(id: {idsUnionType}, host: string) {{");				
+				result.AppendLine("\texternalHostsById[id] = host;");
+				result.AppendLine("}");
+				result.AppendLine();
+			}
 		}
 
 		public static void GenerateStaticContent(this StringBuilder result, TSStaticContentAttribute staticContentModule)
@@ -234,7 +250,14 @@ namespace TSClientGen
 			bool generateGetUrl,
 			bool generateProgressCallback)
 		{
-			result.AppendLine($"\t\tlet url = '{actionDescriptor.RouteTemplate}';");
+			if (actionDescriptor.ExternalHostId != null)
+			{
+				result.AppendLine($"\t\tlet url = (externalHostsById['{actionDescriptor.ExternalHostId}'] || '') + '{actionDescriptor.RouteTemplate}'");
+			}
+			else
+			{
+				result.AppendLine($"\t\tlet url = '{actionDescriptor.RouteTemplate}';");				
+			}
 
 			foreach (var param in actionDescriptor.RouteParamsBySections)
 			{

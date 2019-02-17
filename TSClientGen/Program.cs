@@ -51,7 +51,6 @@ namespace TSClientGen
 
 			appendEnumImports(enumMapper, arguments.OutputPath);
 
-			var generatedEnumFiles = new HashSet<string>();
 			generateEnumsDefinition(enumMapper, enumStaticMemberProviders, arguments.OutputPath, arguments.LocalizationLanguages, generatedFiles);
 
 			cleanupOutDir(arguments.OutputPath, generatedFiles);
@@ -280,11 +279,20 @@ namespace TSClientGen
 
 		private static void cleanupOutDir(string outDir, HashSet<string> generatedFiles)
 		{
-			var existingFiles = Directory.EnumerateFiles(outDir, "*.*", SearchOption.AllDirectories);
-			foreach (var existingFile in existingFiles.Where(file => !generatedFiles.Contains(file.ToLowerInvariant())))
+			var filesToDelete = Directory
+				.EnumerateFiles(outDir, "*.*", SearchOption.AllDirectories)
+				.Where(file => !generatedFiles.Contains(file.ToLowerInvariant()))
+				.ToList();
+
+			if (!filesToDelete.Any())
+				return;
+
+			Console.WriteLine("Cleaning up...");
+			foreach (var existingFile in filesToDelete)
 			{
 				File.Delete(existingFile);
-			}
+				Console.WriteLine($"\t{existingFile} deleted");
+			}			
 		}
 	}
 }

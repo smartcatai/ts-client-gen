@@ -11,7 +11,12 @@ namespace TSClientGen
 {
 	public class ActionDescriptor
 	{
-		private ActionDescriptor(string routePrefix, RouteAttribute route, IActionHttpMethodProvider httpVerb, MethodInfo controllerMethod)
+		private ActionDescriptor(
+			string routePrefix,
+			RouteAttribute route,
+			IActionHttpMethodProvider httpVerb,
+			MethodInfo controllerMethod,
+			string externalHostId)
 		{
 			var allParams = controllerMethod.GetParameters().Where(p => p.ParameterType != typeof(CancellationToken)).ToArray();
 			var queryParams = new List<ParameterInfo>();
@@ -20,6 +25,7 @@ namespace TSClientGen
 			RouteTemplate = (routePrefix + route.Template).Replace("{action}", controllerMethod.Name);
 			GenerateUrl = controllerMethod.GetCustomAttribute<TSGenerateUrlAttribute>() != null;
 			GenerateUploadProgressCallback = controllerMethod.GetCustomAttribute<TSUploadProgressEventHandlerAttribute>() != null;
+			ExternalHostId = externalHostId;
 
 			RouteParamsBySections = _routeParamPattern
 				.Matches(RouteTemplate)
@@ -74,7 +80,13 @@ namespace TSClientGen
 
 		public bool GenerateUploadProgressCallback { get; }
 
-		public static ActionDescriptor TryCreateFrom(MethodInfo controllerMethod, RouteAttribute controllerRoute, string routePrefix)
+		public string ExternalHostId { get; }
+		
+		public static ActionDescriptor TryCreateFrom(
+			MethodInfo controllerMethod,
+			RouteAttribute controllerRoute,
+			string routePrefix,
+			string controllerExternalHostId)
 		{
 			var route = controllerMethod.GetCustomAttributes<RouteAttribute>().SingleOrDefault() ?? controllerRoute;
 			if (route == null)
@@ -84,7 +96,16 @@ namespace TSClientGen
 			if (httpVerb == null)
 				return null;
 
-			return new ActionDescriptor(routePrefix, route, httpVerb, controllerMethod);
+			var externalHostAttr = controllerMethod.GetCustomAttributes().OfType<TSExternalHostAttribute>().FirstOrDefault();
+			if (externalHostAttr != null && controllerExternalHostId != null)
+				throw new Exception("TSExternalHostAttribute should be applied either to the controller or to some of its actions");
+
+			return new ActionDescriptor(
+				routePrefix,
+				route,
+				httpVerb,
+				controllerMethod,
+				controllerExternalHostId ?? externalHostAttr?.HostId);
 		}
 
 		private static string getVerb(IActionHttpMethodProvider httpVerb)
