@@ -1,18 +1,10 @@
-FRAMEWORK: NET461
+RESTRICTION: == net461
 NUGET
-  remote: \\nuget.sc.local\NuGet.Packages
+  remote: \\nuget.sc.local\NuGet.Packages\packages
     CommandLineParser (1.9.71)
-    Microsoft.AspNet.Mvc (5.2.2)
-      Microsoft.AspNet.Razor (>= 3.2.2 < 3.3)
-      Microsoft.AspNet.WebPages (>= 3.2.2 < 3.3)
-    Microsoft.AspNet.Razor (3.2.2)
     Microsoft.AspNet.WebApi.Client (5.2.3)
       Newtonsoft.Json (>= 6.0.4)
     Microsoft.AspNet.WebApi.Core (5.2.3)
       Microsoft.AspNet.WebApi.Client (>= 5.2.3)
-    Microsoft.AspNet.WebPages (3.2.2)
-      Microsoft.AspNet.Razor (>= 3.2.2 < 3.3)
-      Microsoft.Web.Infrastructure (>= 1.0)
-    Microsoft.Web.Infrastructure (1.0.0)
     Newtonsoft.Json (6.0.8)
-    NUnit (3.8.1)
+    NUnit (3.10.1)

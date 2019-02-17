@@ -3,7 +3,6 @@ version 5.120.0 --force-nuget --nuget-source=\\nuget.sc.local\NuGet.Packages\pac
 source \\nuget.sc.local\NuGet.Packages\packages
 
 nuget CommandLineParser 1.9.71
-nuget Microsoft.AspNet.Mvc 5.2.2
 nuget Microsoft.AspNet.WebApi.Client 5.2.3
 nuget Microsoft.AspNet.WebApi.Core 5.2.3
 nuget Newtonsoft.Json 6.0.8

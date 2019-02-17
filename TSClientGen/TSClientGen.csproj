@@ -80,28 +80,6 @@
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
       <ItemGroup>
-        <Reference Include="System.Web.Mvc">
-          <HintPath>..\packages\Microsoft.AspNet.Mvc\lib\net45\System.Web.Mvc.dll</HintPath>
-          <Private>True</Private>
-          <Paket>True</Paket>
-        </Reference>
-      </ItemGroup>
-    </When>
-  </Choose>
-  <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
-      <ItemGroup>
-        <Reference Include="System.Web.Razor">
-          <HintPath>..\packages\Microsoft.AspNet.Razor\lib\net45\System.Web.Razor.dll</HintPath>
-          <Private>True</Private>
-          <Paket>True</Paket>
-        </Reference>
-      </ItemGroup>
-    </When>
-  </Choose>
-  <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
-      <ItemGroup>
         <Reference Include="System.Net.Http.Formatting">
           <HintPath>..\packages\Microsoft.AspNet.WebApi.Client\lib\net45\System.Net.Http.Formatting.dll</HintPath>
           <Private>True</Private>
@@ -115,43 +93,6 @@
       <ItemGroup>
         <Reference Include="System.Web.Http">
           <HintPath>..\packages\Microsoft.AspNet.WebApi.Core\lib\net45\System.Web.Http.dll</HintPath>
-          <Private>True</Private>
-          <Paket>True</Paket>
-        </Reference>
-      </ItemGroup>
-    </When>
-  </Choose>
-  <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
-      <ItemGroup>
-        <Reference Include="System.Web.Helpers">
-          <HintPath>..\packages\Microsoft.AspNet.WebPages\lib\net45\System.Web.Helpers.dll</HintPath>
-          <Private>True</Private>
-          <Paket>True</Paket>
-        </Reference>
-        <Reference Include="System.Web.WebPages">
-          <HintPath>..\packages\Microsoft.AspNet.WebPages\lib\net45\System.Web.WebPages.dll</HintPath>
-          <Private>True</Private>
-          <Paket>True</Paket>
-        </Reference>
-        <Reference Include="System.Web.WebPages.Deployment">
-          <HintPath>..\packages\Microsoft.AspNet.WebPages\lib\net45\System.Web.WebPages.Deployment.dll</HintPath>
-          <Private>True</Private>
-          <Paket>True</Paket>
-        </Reference>
-        <Reference Include="System.Web.WebPages.Razor">
-          <HintPath>..\packages\Microsoft.AspNet.WebPages\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
-          <Private>True</Private>
-          <Paket>True</Paket>
-        </Reference>
-      </ItemGroup>
-    </When>
-  </Choose>
-  <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
-      <ItemGroup>
-        <Reference Include="Microsoft.Web.Infrastructure">
-          <HintPath>..\packages\Microsoft.Web.Infrastructure\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>

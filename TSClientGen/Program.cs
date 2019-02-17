@@ -9,7 +9,6 @@ using System.Reflection;
 using System.Resources;
 using System.Text;
 using System.Web.Http.Controllers;
-using System.Web.Mvc;
 using CommandLine;
 
 namespace TSClientGen
@@ -166,8 +165,7 @@ namespace TSClientGen
 
 			var moduleNames = new HashSet<string>();
 
-			var controllers = targetAsm.GetTypes()
-				.Where(t => typeof(IHttpController).IsAssignableFrom(t) || typeof(IController).IsAssignableFrom(t));
+			var controllers = targetAsm.GetTypes().Where(t => typeof(IHttpController).IsAssignableFrom(t));
 
 			var staticContentByModuleName = targetAsm.GetCustomAttributes().OfType<TSStaticContentAttribute>()
 				.ToDictionary(attr => attr.ModuleName);
