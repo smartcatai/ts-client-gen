@@ -8,3 +8,4 @@ NUGET
       Microsoft.AspNet.WebApi.Client (>= 5.2.3)
     Newtonsoft.Json (6.0.8)
     NUnit (3.10.1)
+    vswhere (2.4.1)
