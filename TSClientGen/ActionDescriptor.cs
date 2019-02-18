@@ -15,8 +15,7 @@ namespace TSClientGen
 			string routePrefix,
 			RouteAttribute route,
 			IActionHttpMethodProvider httpVerb,
-			MethodInfo controllerMethod,
-			string externalHostId)
+			MethodInfo controllerMethod)
 		{
 			var allParams = controllerMethod.GetParameters().Where(p => p.ParameterType != typeof(CancellationToken)).ToArray();
 			var queryParams = new List<ParameterInfo>();
@@ -25,7 +24,6 @@ namespace TSClientGen
 			RouteTemplate = (routePrefix + route.Template).Replace("{action}", controllerMethod.Name);
 			GenerateUrl = controllerMethod.GetCustomAttribute<TSGenerateUrlAttribute>() != null;
 			GenerateUploadProgressCallback = controllerMethod.GetCustomAttribute<TSUploadProgressEventHandlerAttribute>() != null;
-			ExternalHostId = externalHostId;
 
 			RouteParamsBySections = _routeParamPattern
 				.Matches(RouteTemplate)
@@ -79,14 +77,11 @@ namespace TSClientGen
 		public bool GenerateUrl { get; }
 
 		public bool GenerateUploadProgressCallback { get; }
-
-		public string ExternalHostId { get; }
 		
 		public static ActionDescriptor TryCreateFrom(
 			MethodInfo controllerMethod,
 			RouteAttribute controllerRoute,
-			string routePrefix,
-			string controllerExternalHostId)
+			string routePrefix)
 		{
 			var route = controllerMethod.GetCustomAttributes<RouteAttribute>().SingleOrDefault() ?? controllerRoute;
 			if (route == null)
@@ -96,16 +91,11 @@ namespace TSClientGen
 			if (httpVerb == null)
 				return null;
 
-			var externalHostAttr = controllerMethod.GetCustomAttributes().OfType<TSExternalHostAttribute>().FirstOrDefault();
-			if (externalHostAttr != null && controllerExternalHostId != null)
-				throw new Exception("TSExternalHostAttribute should be applied either to the controller or to some of its actions");
-
 			return new ActionDescriptor(
 				routePrefix,
 				route,
 				httpVerb,
-				controllerMethod,
-				controllerExternalHostId ?? externalHostAttr?.HostId);
+				controllerMethod);
 		}
 
 		private static string getVerb(IActionHttpMethodProvider httpVerb)

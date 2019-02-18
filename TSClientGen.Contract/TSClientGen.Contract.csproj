@@ -37,7 +37,7 @@
     <Compile Include="..\SolutionInfo.cs">
       <Link>Properties\SolutionInfo.cs</Link>
     </Compile>
-    <Compile Include="TSExternalHostAttribute.cs" />
+    <Compile Include="TSSupportsExternalHostAttribute.cs" />
     <Compile Include="RequireTSTypeAttribute.cs" />
     <Compile Include="ResxHelper.cs" />
     <Compile Include="TSEnumLocalizationAttribute.cs" />

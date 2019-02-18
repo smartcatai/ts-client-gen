@@ -21,38 +21,29 @@ namespace TSClientGen
 			routePrefix = string.IsNullOrEmpty(routePrefix) ? "/" : "/" + routePrefix + "/";
 
 			result.AppendLine($"export class {controller.Name.Replace("Controller", "")}Client {{");
-
-			var externalHostId = controller.GetCustomAttributes<TSExternalHostAttribute>().SingleOrDefault()?.HostId;
-			var externalHostIds = new HashSet<string>();
+			
+			var supportsExternalHost = controller.GetCustomAttributes<TSSupportsExternalHostAttribute>().Any();
+			if (supportsExternalHost)
+			{
+				result.AppendLine("\tconstructor(private hostname?: string) {}");
+				result.AppendLine();
+			}
 			
 			var actions = controller.GetMethods(BindingFlags.Instance | BindingFlags.Public).ToArray();
 			foreach (var action in actions)
 			{
-				var descriptor = ActionDescriptor.TryCreateFrom(action, controllerRoute, routePrefix, externalHostId);
+				var descriptor = ActionDescriptor.TryCreateFrom(action, controllerRoute, routePrefix);
 				if (descriptor == null)
 					continue;
-
-				if (descriptor.ExternalHostId != null)
-					externalHostIds.Add(descriptor.ExternalHostId);
 				
 				if (descriptor.GenerateUrl)
-					generateMethod(result, mapper, action, descriptor, true, false);
+					generateMethod(result, mapper, action, descriptor, true, false, supportsExternalHost);
 
-				generateMethod(result, mapper, action, descriptor, false, descriptor.GenerateUploadProgressCallback);
+				generateMethod(result, mapper, action, descriptor, false, descriptor.GenerateUploadProgressCallback, supportsExternalHost);
 			}
 
 			result.AppendLine("}");
 			result.AppendLine();
-
-			if (externalHostIds.Any())
-			{
-				var idsUnionType = string.Join(" | ", externalHostIds.Select(id => $"'{id}'"));
-				result.AppendLine("let externalHostsById: { [id: string] : string } = {};");	
-				result.AppendLine($"export function setExternalHost(id: {idsUnionType}, host: string) {{");				
-				result.AppendLine("\texternalHostsById[id] = host;");
-				result.AppendLine("}");
-				result.AppendLine();
-			}
 		}
 
 		public static void GenerateStaticContent(this StringBuilder result, TSStaticContentAttribute staticContentModule)
@@ -214,7 +205,8 @@ namespace TSClientGen
 			MethodInfo action,
 			ActionDescriptor descriptor,
 			bool generateGetUrl,
-			bool generateProgressCallback)
+			bool generateProgressCallback,
+			bool supportsExternalHost)
 		{
 			result.Append(generateGetUrl 
 				? $"\t{action.Name.toLowerCamelCase()}Url("
@@ -238,7 +230,7 @@ namespace TSClientGen
 				? $"): string {{"
 				: $"): Promise<{mapper.GetTSType(action.ReturnType)}> {{");
 
-			generateMethodBody(result, descriptor, action, generateGetUrl, generateProgressCallback);
+			generateMethodBody(result, descriptor, action, generateGetUrl, generateProgressCallback, supportsExternalHost);
 			result.AppendLine("\t}");
 			result.AppendLine();
 		}
@@ -248,11 +240,12 @@ namespace TSClientGen
 			ActionDescriptor actionDescriptor, 
 			MethodInfo action,
 			bool generateGetUrl,
-			bool generateProgressCallback)
+			bool generateProgressCallback,
+			bool supportsExternalHost)
 		{
-			if (actionDescriptor.ExternalHostId != null)
+			if (supportsExternalHost)
 			{
-				result.AppendLine($"\t\tlet url = (externalHostsById['{actionDescriptor.ExternalHostId}'] || '') + '{actionDescriptor.RouteTemplate}'");
+				result.AppendLine($"\t\tlet url = (this.hostname || '') + '{actionDescriptor.RouteTemplate}';");
 			}
 			else
 			{
