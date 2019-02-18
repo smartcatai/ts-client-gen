@@ -6,7 +6,7 @@ namespace TSClientGen
 	/// <summary>
 	/// Дескриптор для генерации ts-типов
 	/// </summary>
-	internal sealed class CustomTypeDescriptor
+	public sealed class CustomTypeDescriptor
 	{
 		/// <summary>
 		/// Конструктор для генерации ts-интерфейса из произвольного .Net типа

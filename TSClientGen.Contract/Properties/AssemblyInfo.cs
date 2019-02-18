@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 
-[assembly: AssemblyVersion("3.5.4")]
-[assembly: AssemblyInformationalVersion("3.5.4")]
+[assembly: AssemblyVersion("4.0.0")]
+[assembly: AssemblyInformationalVersion("4.0.0")]
 
-[assembly: AssemblyTitle("SmartCat.TSClientGen.Contract")]
+[assembly: AssemblyTitle("TSClientGen.Contract")]
 [assembly: AssemblyDescription("")]

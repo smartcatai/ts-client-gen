@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace TSClientGen
 {
-	class TypeMapper
+	public class TypeMapper
 	{
 		public TypeMapper()
 		{

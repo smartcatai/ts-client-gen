@@ -7,8 +7,8 @@
     <ProjectGuid>{09FADA64-936F-4639-9F46-E828FCB2889E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SmartCat.TSClientGen</RootNamespace>
-    <AssemblyName>SmartCat.TSClientGen.Contract</AssemblyName>
+    <RootNamespace>TSClientGen</RootNamespace>
+    <AssemblyName>TSClientGen.Contract</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -50,7 +50,6 @@
     <Compile Include="TSPolymorphicTypeAttribute.cs" />
     <Compile Include="TSSubstituteTypeAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TSUploadProgressEventHandlerAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="paket.template" />

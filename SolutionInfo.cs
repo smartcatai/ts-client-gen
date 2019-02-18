@@ -6,4 +6,4 @@
 
 [assembly: AssemblyCompany("Smartcat")]
 [assembly: AssemblyCopyright("Copyright 2019. License: GPLv3")]
-[assembly: AssemblyProduct("SmartCat.TSClientGen")]
+[assembly: AssemblyProduct("TSClientGen")]

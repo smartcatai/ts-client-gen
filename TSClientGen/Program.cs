@@ -15,6 +15,8 @@ namespace TSClientGen
 {
 	class Program
 	{
+		private const string CommonModuleName = "common.ts";
+
 		static int Main(string[] args)
 		{
 			var arguments = new Arguments();
@@ -30,6 +32,8 @@ namespace TSClientGen
 			var enumStaticMemberProviders = new List<TSExtendEnumAttribute>();
 
 			var generatedFiles = new HashSet<string>();
+			
+			generateCommonModule(arguments.OutputPath, generatedFiles);
 
 			foreach (var asmPath in arguments.AssembliesPath)
 			{
@@ -67,6 +71,16 @@ namespace TSClientGen
 			cleanupOutDir(arguments.OutputPath, generatedFiles);
 
 			return 0;
+		}
+
+		private static void generateCommonModule(string outDir, HashSet<string> generatedFiles)
+		{
+			using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream($"TSClientGen." + CommonModuleName))
+			using (var streamReader = new StreamReader(stream))
+			{
+				File.WriteAllText(Path.Combine(outDir, CommonModuleName), streamReader.ReadToEnd());
+			}
+			generatedFiles.Add(Path.Combine(outDir, CommonModuleName).ToLowerInvariant());			
 		}
 
 		private static void appendEnumImports(EnumMapper enumMapper, string outDir)

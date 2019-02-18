@@ -15,16 +15,20 @@ namespace TSClientGen
 			string routePrefix,
 			RouteAttribute route,
 			IActionHttpMethodProvider httpVerb,
-			MethodInfo controllerMethod)
+			MethodInfo controllerMethod,
+			TypeMapper mapper)
 		{
-			var allParams = controllerMethod.GetParameters().Where(p => p.ParameterType != typeof(CancellationToken)).ToArray();
-			var queryParams = new List<ParameterInfo>();
-
+			Name = controllerMethod.Name;
 			HttpVerb = getVerb(httpVerb);
 			RouteTemplate = (routePrefix + route.Template).Replace("{action}", controllerMethod.Name);
+			ReturnType = mapper.GetTSType(controllerMethod.ReturnType);
 			GenerateUrl = controllerMethod.GetCustomAttribute<TSGenerateUrlAttribute>() != null;
-			GenerateUploadProgressCallback = controllerMethod.GetCustomAttribute<TSUploadProgressEventHandlerAttribute>() != null;
 
+			var allParams = controllerMethod.GetParameters()
+				.Where(p => p.ParameterType != typeof(CancellationToken))
+				.Select(p => new ActionParamDescriptor(p, mapper))
+				.ToList();
+			
 			RouteParamsBySections = _routeParamPattern
 				.Matches(RouteTemplate)
 				.Cast<Match>()
@@ -32,56 +36,47 @@ namespace TSClientGen
 				{
 					var param = allParams.SingleOrDefault(p => p.Name == m.Groups[1].Value);
 					if (param == null)
+					{
 						throw new Exception(
 							$"Unexpected route template: {RouteTemplate}. Param {m.Value} doesn't match any of method params.");
+					}
 
 					return param;
 				});
 
-			foreach (var actionParam in allParams)
-			{
-				if (actionParam.GetCustomAttributes<FromBodyAttribute>().Any())
-				{
-					if (BodyParam != null)
-						throw new Exception();
-
-					BodyParam = actionParam;
-				}
-				else if (RouteParamsBySections.Values.All(p => p.Name != actionParam.Name))
-				{
-					queryParams.Add(actionParam);
-				}
-			}
-
-			QueryParams = queryParams;
-
+			BodyParam = allParams.SingleOrDefault(p => p.IsBodyContent);
+			QueryParams = allParams.Where(p => !p.IsBodyContent && RouteParamsBySections.Values.All(p2 => p2.Name != p.Name)).ToList();
 			AllParams = allParams;
 		}
 
-		public IReadOnlyCollection<ParameterInfo> QueryParams { get; }
+		public string Name { get; }
+		
+		public IReadOnlyCollection<ActionParamDescriptor> QueryParams { get; }
 
-		public IReadOnlyDictionary<string, ParameterInfo> RouteParamsBySections { get; }
+		public IReadOnlyDictionary<string, ActionParamDescriptor> RouteParamsBySections { get; }
 
-		public ParameterInfo BodyParam { get; }
+		public ActionParamDescriptor BodyParam { get; }
 
-		public bool IsModelWithFiles => BodyParam?.ParameterType.Name.StartsWith("ModelWithFiles") ?? false;
+		public bool IsModelWithFiles => BodyParam?.DotNetType.Name.StartsWith("ModelWithFiles") ?? false;
 
-		public bool IsUploadedFile => BodyParam?.ParameterType.Name.StartsWith("UploadedFile") ?? false;
+		public bool IsUploadedFile => BodyParam?.DotNetType.Name.StartsWith("UploadedFile") ?? false;
 
-		public IEnumerable<ParameterInfo> AllParams { get; }
+		public IReadOnlyCollection<ActionParamDescriptor> AllParams { get; }
 
+		public string ReturnType { get; }
+		
 		public string RouteTemplate { get; }
 
 		public string HttpVerb { get; }
 
 		public bool GenerateUrl { get; }
 
-		public bool GenerateUploadProgressCallback { get; }
-		
+
 		public static ActionDescriptor TryCreateFrom(
 			MethodInfo controllerMethod,
 			RouteAttribute controllerRoute,
-			string routePrefix)
+			string routePrefix,
+			TypeMapper mapper)
 		{
 			var route = controllerMethod.GetCustomAttributes<RouteAttribute>().SingleOrDefault() ?? controllerRoute;
 			if (route == null)
@@ -95,7 +90,8 @@ namespace TSClientGen
 				routePrefix,
 				route,
 				httpVerb,
-				controllerMethod);
+				controllerMethod,
+				mapper);
 		}
 
 		private static string getVerb(IActionHttpMethodProvider httpVerb)
