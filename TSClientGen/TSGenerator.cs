@@ -20,7 +20,8 @@ namespace TSClientGen
 
 			routePrefix = string.IsNullOrEmpty(routePrefix) ? "/" : "/" + routePrefix + "/";
 
-			result.AppendLine($"export class {controller.Name.Replace("Controller", "")}Client {{");
+			string apiClientClassName = controller.Name.Replace("Controller", "Client"); 
+			result.AppendLine($"export class {apiClientClassName} {{");
 			
 			var supportsExternalHost = controller.GetCustomAttributes<TSSupportsExternalHostAttribute>().Any();
 			if (supportsExternalHost)
@@ -44,6 +45,8 @@ namespace TSClientGen
 
 			result.AppendLine("}");
 			result.AppendLine();
+
+			result.AppendLine($"export default new {apiClientClassName}()");
 		}
 
 		public static void GenerateStaticContent(this StringBuilder result, TSStaticContentAttribute staticContentModule)
