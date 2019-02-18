@@ -61,7 +61,8 @@ namespace TSClientGen
 			this StringBuilder sb,
 			IEnumerable<Type> enumTypes,
 			ILookup<Type, TSExtendEnumAttribute> staticMemberProvidersByEnum,
-			TypeMapper mapper)
+			TypeMapper mapper,
+			string defaultLocale)
 		{
 			var requireResourceImport = false;
 
@@ -89,7 +90,7 @@ namespace TSClientGen
 				sb.AppendLine();
 				sb.AppendLine("function getResource(key: string) {");
 				sb.AppendLine("	let locale = (<any>window).locale;");
-				sb.AppendLine("	let value = resx.messages[locale][key] || resx.messages['ru'][key];");
+				sb.AppendLine($"	let value = resx.messages[locale][key] || resx.messages['{defaultLocale}'][key];");
 				sb.AppendLine("	if (!value) console.warn('Key ' + key + ' has not been found in enums.resx');");
 				sb.AppendLine("	return value || key;");
 				sb.AppendLine("}");

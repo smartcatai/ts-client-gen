@@ -35,7 +35,12 @@ namespace TSClientGen
 			{
 				var asm = Assembly.LoadFrom(asmPath);
 				generateClientsFromAsm(asm, arguments.OutputPath, enumMapper, generatedFiles);
-				generateResources(asm, arguments.OutputPath, arguments.LocalizationLanguages, generatedFiles);
+				generateResources(
+					asm,
+					arguments.OutputPath,
+					arguments.LocalizationLanguages,
+					arguments.DefaultLocale,
+					generatedFiles);
 
 				foreach (var attr in asm.GetCustomAttributes().OfType<TSExtendEnumAttribute>())
 				{
@@ -51,7 +56,13 @@ namespace TSClientGen
 
 			appendEnumImports(enumMapper, arguments.OutputPath);
 
-			generateEnumsDefinition(enumMapper, enumStaticMemberProviders, arguments.OutputPath, arguments.LocalizationLanguages, generatedFiles);
+			generateEnumsDefinition(
+				enumMapper,
+				enumStaticMemberProviders,
+				arguments.OutputPath,
+				arguments.LocalizationLanguages,
+				arguments.DefaultLocale,
+				generatedFiles);
 
 			cleanupOutDir(arguments.OutputPath, generatedFiles);
 
@@ -93,7 +104,13 @@ namespace TSClientGen
 			}
 		}
 
-		private static void generateEnumsDefinition(EnumMapper enumMapper, IReadOnlyCollection<TSExtendEnumAttribute> staticMemberProviders, string outDir, string[] localizationLanguages, HashSet<string> generatedFiles)
+		private static void generateEnumsDefinition(
+			EnumMapper enumMapper,
+			IReadOnlyCollection<TSExtendEnumAttribute> staticMemberProviders,
+			string outDir,
+			string[] localizationLanguages,
+			string defaultLocale,
+			HashSet<string> generatedFiles)
 		{
 			var sw = new Stopwatch();
 			sw.Start();
@@ -108,7 +125,7 @@ namespace TSClientGen
 
 			foreach (var enums in enumMapper.GetEnumsByModules())
 			{
-				enumsDefinition.GenerateEnums(enums, staticMemberProvidersLookup, typeMapper);
+				enumsDefinition.GenerateEnums(enums, staticMemberProvidersLookup, typeMapper, defaultLocale);
 				string targetFileName = $"{enums.Key}.ts";
 				File.WriteAllText(Path.Combine(enumsOutDir, targetFileName), enumsDefinition.ToString());
 				enumsDefinition.Clear();
@@ -119,7 +136,7 @@ namespace TSClientGen
 			foreach (var culture in localizationLanguages)
 			{
 				CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(culture);
-				string targetFileName = (culture == "ru") ? "enums.resx" : $"enums.{culture}.resx";
+				string targetFileName = (culture == defaultLocale) ? "enums.resx" : $"enums.{culture}.resx";
 				using (var enumResxFileWriter = new ResXResourceWriter(Path.Combine(outDir, targetFileName)))
 				{
 					enumResxFileWriter.GenerateEnumLocalizations(
@@ -132,7 +149,12 @@ namespace TSClientGen
 			Console.WriteLine($"Enums generated in {sw.ElapsedMilliseconds} ms");
 		}
 
-		private static void generateResources(Assembly targetAsm, string outDir, string[] localizationLanguages, HashSet<string> generatedFiles)
+		private static void generateResources(
+			Assembly targetAsm,
+			string outDir,
+			string[] localizationLanguages,
+			string defaultLocale,
+			HashSet<string> generatedFiles)
 		{
 			var resources = targetAsm.GetCustomAttributes().OfType<TSExposeResxAttribute>().ToList();
 			foreach (var culture in localizationLanguages)
@@ -141,7 +163,9 @@ namespace TSClientGen
 
 				foreach (var resource in resources)
 				{
-					var targetFileName = culture == "ru" ? $"{resource.ResxName}.resx" : $"{resource.ResxName}.{culture}.resx";
+					var targetFileName = (culture == defaultLocale)
+						? $"{resource.ResxName}.resx"
+						: $"{resource.ResxName}.{culture}.resx";
 					using (var resxFileWriter = new ResXResourceWriter(Path.Combine(outDir, targetFileName)))
 					{
 						var resourceSet = resource.ResourceManager.GetResourceSet(CultureInfo.CurrentUICulture, true, true);

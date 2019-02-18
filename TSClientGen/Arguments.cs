@@ -15,5 +15,8 @@ namespace TSClientGen
 
 		[OptionArray('l', "loc-lang")]
 		public string[] LocalizationLanguages { get; set; }
+		
+		[Option("default-locale")]
+		public string DefaultLocale { get; set; }
 	}
 }
