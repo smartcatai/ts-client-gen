@@ -97,11 +97,14 @@ namespace TSClientGen
 				foreach (var provider in staticMemberProvidersByEnum[@enum])
 				{
 					provider.GenerateStaticMembers(sb);
+
+					if (provider is TSEnumLocalizationAttribute)
+					{
+						requireResourceImport = true;
+					}
 				}
 
 				sb.AppendLine("}");
-
-				requireResourceImport = true;
 			}
 
 			if (requireResourceImport)
