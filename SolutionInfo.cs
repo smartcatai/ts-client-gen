@@ -4,6 +4,6 @@
 [assembly: AssemblyMetadata("CommitHash", "unknown")]
 [assembly: AssemblyCulture("")]
 
-[assembly: AssemblyCompany("SmartCat")]
-[assembly: AssemblyCopyright("© SmartCat 2017")]
+[assembly: AssemblyCompany("Smartcat")]
+[assembly: AssemblyCopyright("Copyright 2019. License: GPLv3")]
 [assembly: AssemblyProduct("SmartCat.TSClientGen")]
