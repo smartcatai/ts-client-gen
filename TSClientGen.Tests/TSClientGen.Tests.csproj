@@ -56,6 +56,32 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+      <PropertyGroup>
+        <__paket__NUnit3TestAdapter_props>net35\NUnit3TestAdapter</__paket__NUnit3TestAdapter_props>
+      </PropertyGroup>
+    </When>
+  </Choose>
+  <Import Project="..\packages\NUnit3TestAdapter\build\$(__paket__NUnit3TestAdapter_props).props" Condition="Exists('..\packages\NUnit3TestAdapter\build\$(__paket__NUnit3TestAdapter_props).props')" Label="Paket" />
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+      <PropertyGroup>
+        <__paket__Microsoft_Net_Test_Sdk_props>net45\Microsoft.Net.Test.Sdk</__paket__Microsoft_Net_Test_Sdk_props>
+        <__paket__Microsoft_Net_Test_Sdk_targets>net45\Microsoft.Net.Test.Sdk</__paket__Microsoft_Net_Test_Sdk_targets>
+      </PropertyGroup>
+    </When>
+  </Choose>
+  <Import Project="..\packages\Microsoft.NET.Test.Sdk\build\$(__paket__Microsoft_Net_Test_Sdk_props).props" Condition="Exists('..\packages\Microsoft.NET.Test.Sdk\build\$(__paket__Microsoft_Net_Test_Sdk_props).props')" Label="Paket" />
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+      <PropertyGroup>
+        <__paket__Microsoft_CodeCoverage_props>netstandard1.0\Microsoft.CodeCoverage</__paket__Microsoft_CodeCoverage_props>
+        <__paket__Microsoft_CodeCoverage_targets>netstandard1.0\Microsoft.CodeCoverage</__paket__Microsoft_CodeCoverage_targets>
+      </PropertyGroup>
+    </When>
+  </Choose>
+  <Import Project="..\packages\Microsoft.CodeCoverage\build\$(__paket__Microsoft_CodeCoverage_props).props" Condition="Exists('..\packages\Microsoft.CodeCoverage\build\$(__paket__Microsoft_CodeCoverage_props).props')" Label="Paket" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
@@ -63,6 +89,17 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+      <ItemGroup>
+        <Reference Include="Microsoft.VisualStudio.CodeCoverage.Shim">
+          <HintPath>..\packages\Microsoft.CodeCoverage\lib\net45\Microsoft.VisualStudio.CodeCoverage.Shim.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
       <ItemGroup>
@@ -74,4 +111,6 @@
       </ItemGroup>
     </When>
   </Choose>
+  <Import Project="..\packages\Microsoft.CodeCoverage\build\$(__paket__Microsoft_CodeCoverage_targets).targets" Condition="Exists('..\packages\Microsoft.CodeCoverage\build\$(__paket__Microsoft_CodeCoverage_targets).targets')" Label="Paket" />
+  <Import Project="..\packages\Microsoft.NET.Test.Sdk\build\$(__paket__Microsoft_Net_Test_Sdk_targets).targets" Condition="Exists('..\packages\Microsoft.NET.Test.Sdk\build\$(__paket__Microsoft_Net_Test_Sdk_targets).targets')" Label="Paket" />
 </Project>

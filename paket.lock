@@ -1,11 +1,15 @@
 RESTRICTION: == net461
 NUGET
-  remote: \\nuget.sc.local\NuGet.Packages\packages
+  remote: https://www.nuget.org/api/v2
     CommandLineParser (1.9.71)
     Microsoft.AspNet.WebApi.Client (5.2.3)
       Newtonsoft.Json (>= 6.0.4)
     Microsoft.AspNet.WebApi.Core (5.2.3)
       Microsoft.AspNet.WebApi.Client (>= 5.2.3)
+    Microsoft.CodeCoverage (15.9)
+    Microsoft.NET.Test.Sdk (15.9)
+      Microsoft.CodeCoverage (>= 15.9)
     Newtonsoft.Json (6.0.8)
-    NUnit (3.10.1)
+    NUnit (3.11)
+    NUnit3TestAdapter (3.13)
     vswhere (2.4.1)
