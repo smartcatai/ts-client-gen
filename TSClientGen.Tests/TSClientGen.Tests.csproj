@@ -1,116 +1,19 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\NUnit\build\NUnit.props" Condition="Exists('..\packages\NUnit\build\NUnit.props')" Label="Paket" />
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{F9C6B82B-AD78-4FCF-B0DD-AFA9560C2127}</ProjectGuid>
-    <ProjectTypeGuids>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>TSClientGen.Tests</RootNamespace>
-    <AssemblyName>TSClientGen.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <LangVersion>6</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="PolymorphicClassGenerationTest.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="paket.references" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\TSClientGen.Contract\TSClientGen.Contract.csproj">
-      <Project>{09FADA64-936F-4639-9F46-E828FCB2889E}</Project>
-      <Name>TSClientGen.Contract</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TSClientGen\TSClientGen.csproj">
-      <Project>{967465f8-a6c8-4adc-b40d-d21a88d8c20a}</Project>
-      <Name>TSClientGen</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
-      <PropertyGroup>
-        <__paket__NUnit3TestAdapter_props>net35\NUnit3TestAdapter</__paket__NUnit3TestAdapter_props>
-      </PropertyGroup>
-    </When>
-  </Choose>
-  <Import Project="..\packages\NUnit3TestAdapter\build\$(__paket__NUnit3TestAdapter_props).props" Condition="Exists('..\packages\NUnit3TestAdapter\build\$(__paket__NUnit3TestAdapter_props).props')" Label="Paket" />
-  <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
-      <PropertyGroup>
-        <__paket__Microsoft_Net_Test_Sdk_props>net45\Microsoft.Net.Test.Sdk</__paket__Microsoft_Net_Test_Sdk_props>
-        <__paket__Microsoft_Net_Test_Sdk_targets>net45\Microsoft.Net.Test.Sdk</__paket__Microsoft_Net_Test_Sdk_targets>
-      </PropertyGroup>
-    </When>
-  </Choose>
-  <Import Project="..\packages\Microsoft.NET.Test.Sdk\build\$(__paket__Microsoft_Net_Test_Sdk_props).props" Condition="Exists('..\packages\Microsoft.NET.Test.Sdk\build\$(__paket__Microsoft_Net_Test_Sdk_props).props')" Label="Paket" />
-  <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
-      <PropertyGroup>
-        <__paket__Microsoft_CodeCoverage_props>netstandard1.0\Microsoft.CodeCoverage</__paket__Microsoft_CodeCoverage_props>
-        <__paket__Microsoft_CodeCoverage_targets>netstandard1.0\Microsoft.CodeCoverage</__paket__Microsoft_CodeCoverage_targets>
-      </PropertyGroup>
-    </When>
-  </Choose>
-  <Import Project="..\packages\Microsoft.CodeCoverage\build\$(__paket__Microsoft_CodeCoverage_props).props" Condition="Exists('..\packages\Microsoft.CodeCoverage\build\$(__paket__Microsoft_CodeCoverage_props).props')" Label="Paket" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
-  <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
-      <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.CodeCoverage.Shim">
-          <HintPath>..\packages\Microsoft.CodeCoverage\lib\net45\Microsoft.VisualStudio.CodeCoverage.Shim.dll</HintPath>
-          <Private>True</Private>
-          <Paket>True</Paket>
-        </Reference>
-      </ItemGroup>
-    </When>
-  </Choose>
-  <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
-      <ItemGroup>
-        <Reference Include="nunit.framework">
-          <HintPath>..\packages\NUnit\lib\net45\nunit.framework.dll</HintPath>
-          <Private>True</Private>
-          <Paket>True</Paket>
-        </Reference>
-      </ItemGroup>
-    </When>
-  </Choose>
-  <Import Project="..\packages\Microsoft.CodeCoverage\build\$(__paket__Microsoft_CodeCoverage_targets).targets" Condition="Exists('..\packages\Microsoft.CodeCoverage\build\$(__paket__Microsoft_CodeCoverage_targets).targets')" Label="Paket" />
-  <Import Project="..\packages\Microsoft.NET.Test.Sdk\build\$(__paket__Microsoft_Net_Test_Sdk_targets).targets" Condition="Exists('..\packages\Microsoft.NET.Test.Sdk\build\$(__paket__Microsoft_Net_Test_Sdk_targets).targets')" Label="Paket" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.1</TargetFramework>
+        <RootNamespace>TSClientGen.Tests2</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.1" />
+      <PackageReference Include="NUnit" Version="3.11.0" />
+      <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\TSClientGen.Contract\TSClientGen.Contract.csproj" />
+      <ProjectReference Include="..\TSClientGen.Core\TSClientGen.Core.csproj" />
+    </ItemGroup>
+
 </Project>

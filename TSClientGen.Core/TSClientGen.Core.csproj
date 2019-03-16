@@ -2,12 +2,11 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <AssemblyName>TSClientGen.Contract</AssemblyName>
         <RootNamespace>TSClientGen</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="System.Resources.ResourceManager" Version="4.3.0" />
+      <ProjectReference Include="..\TSClientGen.Contract\TSClientGen.Contract.csproj" />
     </ItemGroup>
 
 </Project>
