@@ -15,8 +15,6 @@ namespace TSClientGen
 {
 	class Program
 	{
-		private const string CommonModuleName = "common.ts";
-
 		static int Main(string[] args)
 		{
 			var arguments = new Arguments();
@@ -32,13 +30,16 @@ namespace TSClientGen
 			var enumStaticMemberProviders = new List<TSExtendEnumAttribute>();
 
 			var generatedFiles = new HashSet<string>();
-			
-			generateCommonModule(arguments.OutputPath, generatedFiles);
+
+			if (string.IsNullOrEmpty(arguments.CommonModuleName))
+			{
+				generateDefaultCommonModule(arguments.OutputPath, generatedFiles);
+			}
 
 			foreach (var asmPath in arguments.AssembliesPath)
 			{
 				var asm = Assembly.LoadFrom(asmPath);
-				generateClientsFromAsm(asm, arguments.OutputPath, enumMapper, generatedFiles);
+				generateClientsFromAsm(asm, arguments.OutputPath, arguments.CommonModuleName, enumMapper, generatedFiles);
 				generateResources(
 					asm,
 					arguments.OutputPath,
@@ -73,14 +74,16 @@ namespace TSClientGen
 			return 0;
 		}
 
-		private static void generateCommonModule(string outDir, HashSet<string> generatedFiles)
+		private static void generateDefaultCommonModule(string outDir, HashSet<string> generatedFiles)
 		{
-			using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream($"TSClientGen." + CommonModuleName))
+			string filename = TSGenerator.DefaultCommonModuleName + ".ts";
+			
+			using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream($"TSClientGen.{filename}"))
 			using (var streamReader = new StreamReader(stream))
 			{
-				File.WriteAllText(Path.Combine(outDir, CommonModuleName), streamReader.ReadToEnd());
+				File.WriteAllText(Path.Combine(outDir, filename), streamReader.ReadToEnd());
 			}
-			generatedFiles.Add(Path.Combine(outDir, CommonModuleName).ToLowerInvariant());			
+			generatedFiles.Add(Path.Combine(outDir, filename).ToLowerInvariant());			
 		}
 
 		private static void appendEnumImports(EnumMapper enumMapper, string outDir)
@@ -195,7 +198,7 @@ namespace TSClientGen
 			}
 		}
 
-		private static void generateClientsFromAsm(Assembly targetAsm, string outDir, EnumMapper enumMapper, HashSet<string> generatedFiles)
+		private static void generateClientsFromAsm(Assembly targetAsm, string outDir, string commonModule, EnumMapper enumMapper, HashSet<string> generatedFiles)
 		{
 			var sw = new Stopwatch();
 			sw.Start();
@@ -242,7 +245,7 @@ namespace TSClientGen
 
 				var result = new StringBuilder(2048);
 				var controllerRoute = controller.GetCustomAttributes<System.Web.Http.RouteAttribute>().SingleOrDefault();
-				result.GenerateControllerClient(controller, mapper, controllerRoute);
+				result.GenerateControllerClient(controller, mapper, controllerRoute, commonModule);
 
 				var typesToGenerate = new HashSet<Type>();
 				var generatedTypes = new HashSet<Type>();

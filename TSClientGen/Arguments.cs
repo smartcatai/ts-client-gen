@@ -13,6 +13,9 @@ namespace TSClientGen
 		[OptionArray('n', "asm-name")]
 		public string[] AssemblyNames { get; set; }
 
+		[Option('c', "common-module", Required = false)]
+		public string CommonModuleName { get; set; }
+
 		[OptionArray('l', "loc-lang")]
 		public string[] LocalizationLanguages { get; set; }
 		

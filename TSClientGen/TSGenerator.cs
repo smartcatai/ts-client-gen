@@ -12,7 +12,9 @@ namespace TSClientGen
 {
 	static class TSGenerator
 	{
-		public static void GenerateControllerClient(this StringBuilder result, Type controller, TypeMapper mapper, RouteAttribute controllerRoute)
+		public const string DefaultCommonModuleName = "common";
+
+		public static void GenerateControllerClient(this StringBuilder result, Type controller, TypeMapper mapper, RouteAttribute controllerRoute, string commonModule)
 		{
 			var routePrefix = controller.GetCustomAttributes<RoutePrefixAttribute>().SingleOrDefault()?.Prefix;
 			if (controllerRoute != null && routePrefix != null)
@@ -37,8 +39,11 @@ namespace TSClientGen
 			{
 				imports.Add("getUri");
 			}
+
+			if (string.IsNullOrEmpty(commonModule))
+				commonModule = "./" + DefaultCommonModuleName;
 			
-			result.AppendLine($"import {{ {string.Join(", ", imports)} }} from './common';");
+			result.AppendLine($"import {{ {string.Join(", ", imports)} }} from '{commonModule}';");
 			result.AppendLine();
 			
 			string apiClientClassName = controller.Name.Replace("Controller", "Client"); 
