@@ -246,17 +246,22 @@ namespace TSClientGen
 			var identifiersInUse = new HashSet<string>(
 				moduleImports.Concat(
 					new[] { "files", "cancelToken", "onUploadProgress", "url", "method", "params", "data", "blob" }));
-			
-			var parameters = descriptor.AllParams
+
+			var nonFileParams = descriptor.AllParams
 				.Where(param => !descriptor.IsUploadedFile || !param.IsBodyContent)
-				.Select(param =>
+				.ToList();
+			foreach (var param in nonFileParams)
+			{
+				while (identifiersInUse.Contains(param.TypescriptAlias))
 				{
-					while (identifiersInUse.Contains(param.TypescriptAlias))
-					{
-						param.TypescriptAlias += "Param";
-					}
-					return $"{param.TypescriptAlias}{(param.IsOptional ? "?" : "")}: {param.TypescriptType}";
-				})
+					param.TypescriptAlias += "Param";
+				}
+				identifiersInUse.Add(param.TypescriptAlias);
+			}
+			
+			var parameters = nonFileParams
+				.Where(param => !param.IsOptional)
+				.Select(param => $"{param.TypescriptAlias}: {param.TypescriptType}")
 				.ToList();
 			if (!generateGetUrl)
 			{
@@ -267,9 +272,12 @@ namespace TSClientGen
 				}
 				else
 				{
-					parameters.Add("{ cancelToken }: HttpRequestOptions = {}");					
+					parameters.Add("{ cancelToken }: HttpRequestOptions = {}");
 				}
 			}
+			parameters.AddRange(nonFileParams
+				.Where(param => param.IsOptional)
+				.Select(param => $"{param.TypescriptAlias}?: {param.TypescriptType}"));
 
 			result.Append(string.Join(", ", parameters));
 			result.AppendLine(") {");
