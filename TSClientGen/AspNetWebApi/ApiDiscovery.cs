@@ -5,7 +5,8 @@ using System.Reflection;
 using System.Threading;
 using System.Web.Http;
 using System.Web.Http.Controllers;
-using TSClientGen.ApiDescriptors;
+using TSClientGen.Extensibility;
+using TSClientGen.Extensibility.ApiDescriptors;
 
 namespace TSClientGen.AspNetWebApi
 {
@@ -14,16 +15,18 @@ namespace TSClientGen.AspNetWebApi
 	/// </summary>
 	public class ApiDiscovery : IApiDiscovery
 	{
-		public IEnumerable<ModuleDescriptor> GetModules(
-			Assembly assembly,
-			EnumMapper enumMapper,
-			ICustomTypeConverter customTypeConverter)
+		public ApiDiscovery(ICustomMethodDescriptorProvider customMethodDescriptorProvider)
+		{
+			_customMethodDescriptorProvider = customMethodDescriptorProvider;
+		}
+		
+		
+		public IEnumerable<ModuleDescriptor> GetModules(Assembly assembly, Func<Type, bool> processModule)
 		{
 			var controllerTypes = assembly.GetTypes().Where(t => typeof(IHttpController).IsAssignableFrom(t));
 			foreach (var controllerType in controllerTypes)
 			{
-				var tsModuleAttribute = controllerType.GetCustomAttributes<TSModuleAttribute>().SingleOrDefault();
-				if (tsModuleAttribute == null)
+				if (!processModule(controllerType))
 					continue;
 			
 				var controllerRoute = controllerType.GetCustomAttributes<RouteAttribute>().SingleOrDefault();
@@ -35,71 +38,46 @@ namespace TSClientGen.AspNetWebApi
 				}
 
 				routePrefix = string.IsNullOrEmpty(routePrefix) ? "/" : "/" + routePrefix + "/";
-
-				var additionalTypes = controllerType.GetCustomAttributes<RequireTSTypeAttribute>().ToList();
-				foreach (var typeAttribute in additionalTypes.Where(a => a.GeneratedType.IsEnum))
-				{
-					enumMapper.SaveEnum(controllerType.Assembly, typeAttribute.GeneratedType);
-				}
 				
-				var typeMapping = new TypeMapping(customTypeConverter);
-				foreach (var typeAttribute in additionalTypes.Where(a => !a.GeneratedType.IsEnum))
-				{
-					typeMapping.AddType(typeAttribute.GeneratedType);
-				}
-			
-				var moduleName = tsModuleAttribute.ModuleName;
 				var apiClientClassName = controllerType.Name.Replace("Controller", "Client");
 				var actions = controllerType.GetMethods(BindingFlags.Instance | BindingFlags.Public).ToArray();
 				var methods = actions
-					.Select(a => tryDescribeApiMethod(a, controllerRoute, routePrefix, typeMapping))
+					.Select(a => tryDescribeApiMethod(a, controllerRoute, routePrefix))
 					.Where(a => a != null)
 					.ToList();
 			
-				var supportsExternalHost = controllerType.GetCustomAttributes<TSSupportsExternalHostAttribute>().Any();
-			
-				yield return new ModuleDescriptor(moduleName, apiClientClassName, methods, typeMapping, supportsExternalHost);				
+				yield return new ModuleDescriptor(apiClientClassName, methods, controllerType);				
 			}
 		}
 		
-		private MethodDescriptor tryDescribeApiMethod(
-			MethodInfo method,
-			RouteAttribute controllerRoute,
-			string routePrefix,
-			TypeMapping typeMapping)
+		
+		private MethodDescriptor tryDescribeApiMethod(MethodInfo method, RouteAttribute controllerRoute, string routePrefix)
 		{
 			var route = method.GetCustomAttributes<RouteAttribute>().SingleOrDefault() ?? controllerRoute;
 			if (route == null)
 				return null;
 
 			var httpVerb = getVerb(method.GetCustomAttributes().OfType<IActionHttpMethodProvider>().FirstOrDefault());
-
+			
 			var parameters = method.GetParameters()
 				.Where(p => p.ParameterType != typeof(CancellationToken))
-				.Select(p => describeApiMethodParameter(p, typeMapping))
+				.Select(p => new MethodParamDescriptor(
+					p.Name,
+					p.ParameterType,
+					p.IsOptional,
+					p.GetCustomAttributes<FromBodyAttribute>().Any()))
 				.ToList();
 
-			return new MethodDescriptor(
-				method.Name,
-				(routePrefix + route.Template).Replace("{action}", method.Name),
-				httpVerb,
-				parameters,
-				typeMapping.GetTSType(method.ReturnType),
-				method.GetCustomAttribute<TSGenerateUrlAttribute>() != null);
+			string urlTemplate = (routePrefix + route.Template).Replace("{action}", method.Name); 
+			var descriptor = new MethodDescriptor(method, urlTemplate, httpVerb, parameters);
+			if (_customMethodDescriptorProvider != null)
+			{
+				descriptor = _customMethodDescriptorProvider.DescribeMethod(method.DeclaringType, method, descriptor);
+			}
+
+			return descriptor;
 		}
 
-		private MethodParamDescriptor describeApiMethodParameter(ParameterInfo parameter, TypeMapping typeMapping)
-		{
-			bool isBodyContent = parameter.GetCustomAttributes<FromBodyAttribute>().Any(); 
-			return new MethodParamDescriptor(
-				parameter.Name,
-				typeMapping.GetTSType(parameter.ParameterType),
-				parameter.IsOptional,
-				isBodyContent,
-				isBodyContent && parameter.Name.StartsWith("UploadedFile"),
-				isBodyContent && parameter.Name.StartsWith("ModelWithFiles"));
-		}
-		
 		private static string getVerb(IActionHttpMethodProvider httpVerb)
 		{
 			if (httpVerb is HttpGetAttribute)
@@ -116,5 +94,7 @@ namespace TSClientGen.AspNetWebApi
 
 			throw new Exception($"Unknown http verb: {httpVerb}");
 		}
+		
+		private readonly ICustomMethodDescriptorProvider _customMethodDescriptorProvider;		
 	}
 }

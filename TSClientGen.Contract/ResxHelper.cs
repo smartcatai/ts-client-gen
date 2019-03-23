@@ -5,7 +5,7 @@ using System.Resources;
 namespace TSClientGen
 {
 	/// <summary>
-	/// Вспомогательный класс для упрощения работы с ресурсами
+	/// Helper class for handling resx files
 	/// </summary>
 	internal static class ResxHelper
 	{

@@ -1,5 +1,5 @@
 using System.Globalization;
-using System.IO;
+using TSClientGen.Extensibility;
 
 namespace TSClientGen.AspNetWebApi
 {
@@ -9,7 +9,7 @@ namespace TSClientGen.AspNetWebApi
 		{
 			CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(culture);
 			string targetFileName = (culture == defaultCulture) ? $"{baseFilename}.resx" : $"{baseFilename}.{culture}.resx";
-			return new ResourceModuleWriter(Path.Combine(outDir, targetFileName));
+			return new ResourceModuleWriter(outDir, targetFileName);
 		}
 	}
 }

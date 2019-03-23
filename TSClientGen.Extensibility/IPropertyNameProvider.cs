@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace TSClientGen
+namespace TSClientGen.Extensibility
 {
 	/// <summary>
 	/// Extensibility point for providing names for properties in generated TypeScript interfaces

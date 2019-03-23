@@ -2,10 +2,13 @@ using System;
 
 namespace TSClientGen.ApiDescriptors
 {
+	/// <summary>
+	/// Descriptor for writing TypeScript interface generated from a .net type 
+	/// </summary>
 	public class InterfaceDescriptor : BaseTypeDescriptor
 	{
 		/// <summary>
-		/// Конструктор для генерации ts-интерфейса из произвольного .Net типа
+		/// ctor
 		/// </summary>
 		public InterfaceDescriptor(Type type, Type baseType): base(type)
 		{

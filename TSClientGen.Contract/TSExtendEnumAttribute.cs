@@ -5,7 +5,8 @@ using System.Text;
 namespace TSClientGen
 {
 	/// <summary>
-	/// Добавляет в генерируемое TypeScript-описание енума статические члены
+	/// For applying to assembly.
+	/// When inherited, allows for appending static members to the generated Typescript enum definition
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
 	public abstract class TSExtendEnumAttribute : Attribute
@@ -19,12 +20,13 @@ namespace TSClientGen
 			EnumType = enumType;
 		}
 
+		/// <summary>
+		/// Enum type
+		/// </summary>
 		public Type EnumType { get; }
-		
-		public IReadOnlyCollection<string> Imports { get; }
 
 		/// <summary>
-		/// Генерация TypeScript-кода (статических членов енума)
+		/// Generates TypeScript code (static members for the enum)
 		/// </summary>
 		public abstract void GenerateStaticMembers(StringBuilder sb);
 	}

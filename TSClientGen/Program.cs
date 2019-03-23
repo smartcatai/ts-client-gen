@@ -14,7 +14,7 @@ namespace TSClientGen
 			
 			var runner = new Runner(
 				arguments,
-				new ApiDiscovery(),
+				new ApiDiscovery(null),
 				new TypeConverter(),
 				new PropertyNameProvider(),
 				new ResourceModuleWriterFactory(),

@@ -1,6 +1,9 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
-namespace TSClientGen.ApiDescriptors
+namespace TSClientGen.Extensibility.ApiDescriptors
 {
 	/// <summary>
 	/// Describes a generated typescript module with an exported api client class.
@@ -9,17 +12,20 @@ namespace TSClientGen.ApiDescriptors
 	public class ModuleDescriptor
 	{
 		public ModuleDescriptor(
-			string name,
 			string apiClientClassName,
 			IReadOnlyCollection<MethodDescriptor> methods,
-			TypeMapping typeMapping,
-			bool supportsExternalHost)
+			Type controllerType)
 		{
-			Name = name;
 			ApiClientClassName = apiClientClassName;
 			Methods = methods;
-			TypeMapping = typeMapping;
-			SupportsExternalHost = supportsExternalHost;
+
+			var tsModuleAttribute = controllerType.GetCustomAttribute<TSModuleAttribute>();
+			if (tsModuleAttribute == null)
+				throw new ArgumentException("TSModuleAttribute must be applied to the controller type");
+
+			Name = tsModuleAttribute.ModuleName;
+			AdditionalTypes = controllerType.GetCustomAttributes<TSRequireTypeAttribute>().Select(a => a.GeneratedType).ToList();
+			SupportsExternalHost = controllerType.GetCustomAttribute<TSSupportsExternalHostAttribute>() != null;
 		}
 		
 		
@@ -39,9 +45,9 @@ namespace TSClientGen.ApiDescriptors
 		public IReadOnlyCollection<MethodDescriptor> Methods { get; }
 		
 		/// <summary>
-		/// Stores a mapping from .net types used in the api module to corresponding TypeScript types
+		/// List of types that were explicitly added for this module
 		/// </summary>
-		public TypeMapping TypeMapping { get; }
+		public IReadOnlyCollection<Type> AdditionalTypes { get; }
 		
 		/// <summary>
 		/// Whether a constructor of this api client class will take a parameter

@@ -1,7 +1,7 @@
-namespace TSClientGen
+namespace TSClientGen.Extensibility
 {
 	/// <summary>
-	/// Extensibility point for generating localization resource files
+	/// Factory for creating instances of classes responsible for generating resource files
 	/// </summary>
 	public interface IResourceModuleWriterFactory
 	{

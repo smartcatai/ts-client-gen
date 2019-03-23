@@ -48,7 +48,7 @@ namespace TSClientGen
 			var keyTsType = Convert(keyType.IsEnum ? typeof(int) : keyType, typeMapping);			
 			if (keyTsType != "number" && keyTsType != "string")
 			{
-				throw new Exception($"In TS only string and number can be used as index param. Can't map dictionary key: {keyType}");
+				throw new InvalidOperationException($"In TS only string and number can be used as index param. Can't map dictionary key: {keyType}");
 			}
 
 			return $"{{ [id: {keyTsType}]: {Convert(valueType, typeMapping)}; }}";
@@ -85,11 +85,11 @@ namespace TSClientGen
 
 			return null;
 		}
-				
+
 		private string mapCustomType(Type type, TypeMapping typeMapping)
 		{
-			if (type.IsGenericTypeDefinition)
-				throw new Exception($"Can't map generic type definition: {type}");
+			if (type.IsGenericType)
+				throw new InvalidOperationException($"Can't map generic type definition: {type}");
 
 			typeMapping.AddType(type);
 

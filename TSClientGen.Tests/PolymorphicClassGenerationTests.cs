@@ -2,6 +2,7 @@
 using System.Text;
 using NUnit.Framework;
 using TSClientGen.ApiDescriptors;
+using TSClientGen.Extensibility.ApiDescriptors;
 
 namespace TSClientGen.Tests
 {
@@ -42,17 +43,18 @@ namespace TSClientGen.Tests
 		}        
 		
 
-		private ApiClientModuleGenerator createGenerator(TypeMapping typeMapping)
+		private ApiModuleGenerator createGenerator(TypeMapping typeMapping)
 		{
-			var module = new ModuleDescriptor("module", "module", new MethodDescriptor[0], typeMapping, false);
-			return new ApiClientModuleGenerator(module, new DefaultPropertyNameProvider(), v => v.ToString(), null); 
+			var module = new ModuleDescriptor("module", new MethodDescriptor[0], typeof(Controller));
+			return new ApiModuleGenerator(module, typeMapping, new DefaultPropertyNameProvider(), v => v.ToString(), null); 
 		}		
 	}
 	
+	[TSModule("api")]
+	class Controller {}
+	
 	[TSPolymorphicType(typeof(TestEnum))]
-	class SimpleTestModel
-	{
-	}
+	class SimpleTestModel {}
 	
 	[TSPolymorphicType(suppressDiscriminatorGeneration: true)]
 	class TestModelWithOwnDiscriminator

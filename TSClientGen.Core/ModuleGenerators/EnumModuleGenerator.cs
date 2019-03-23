@@ -9,24 +9,25 @@ namespace TSClientGen
 	{		
 		public void Write(
 			IEnumerable<Type> enumTypes,
-			ILookup<Type, TSExtendEnumAttribute> staticMemberProvidersByEnum,
-			TypeMapping mapping,
-			string defaultLocale)
+			string getResourceModuleName,
+			ILookup<Type, TSExtendEnumAttribute> staticMemberProvidersByEnum)
 		{
 			var requireResourceImport = false;
 
 			foreach (var @enum in enumTypes)
 			{
-				writeEnum(@enum, mapping);
+				writeEnum(@enum);
 
 				if (!staticMemberProvidersByEnum[@enum].Any())
 					continue;
 
-				_result.AppendLine($"export namespace {@enum.Name} {{");
+				_result.AppendLine($"export namespace {@enum.Name} {{").Indent();
 
 				foreach (var provider in staticMemberProvidersByEnum[@enum])
 				{
-					provider.GenerateStaticMembers(_result);
+					var staticMembersContent = new StringBuilder();
+					provider.GenerateStaticMembers(staticMembersContent);
+					_result.AppendText(staticMembersContent.ToString());
 
 					if (provider is TSEnumLocalizationAttribute)
 					{
@@ -34,36 +35,29 @@ namespace TSClientGen
 					}
 				}
 
-				_result.AppendLine("}");
+				_result.Unindent().AppendLine("}");
 			}
 
 			if (requireResourceImport)
 			{
-				_result.AppendLine();
-				_result.AppendLine("function getResource(key: string) {");
-				_result.AppendLine("\tlet locale = (<any>window).locale;");
-				_result.AppendLine($"\tlet value = resx.messages[locale][key] || resx.messages['{defaultLocale}'][key];");
-				_result.AppendLine("\tif (!value) console.warn('Key ' + key + ' has not been found in enums.resx');");
-				_result.AppendLine("\treturn value || key;");
-				_result.AppendLine("}");
-				_result.AppendLine("import resx from '../enums.resx'");
+				_result.AppendLine($"import {{ getResource }} from '{getResourceModuleName}';");
 			}
 		}
 
-		private void writeEnum(Type enumType, TypeMapping mapping)
+		private void writeEnum(Type enumType)
 		{
 			var names = Enum.GetNames(enumType);
 			var underlyingType = Enum.GetUnderlyingType(enumType);
 
-			_result.AppendLine($"export enum {mapping.GetTSType(enumType)} {{");
+			_result.AppendLine($"export enum {enumType.Name} {{").Indent();
 
 			foreach (string name in names)
 			{
 				var value = Convert.ChangeType(Enum.Parse(enumType, name), underlyingType);
-				_result.AppendLine($"\t{name} = {value},");
+				_result.AppendLine($"{name} = {value},");
 			}
 
-			_result.AppendLine("}").AppendLine();
+			_result.Unindent().AppendLine("}").AppendLine();
 		}
 
 		public string GetResult()
@@ -72,6 +66,6 @@ namespace TSClientGen
 		}
 
 		
-		private readonly StringBuilder _result = new StringBuilder();
+		private readonly IndentedStringBuilder _result = new IndentedStringBuilder();
 	}
 }

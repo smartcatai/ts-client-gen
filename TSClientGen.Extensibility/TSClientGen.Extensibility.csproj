@@ -2,12 +2,10 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <RootNamespace>TSClientGen</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\TSClientGen.Contract\TSClientGen.Contract.csproj" />
-      <ProjectReference Include="..\TSClientGen.Extensibility\TSClientGen.Extensibility.csproj" />
     </ItemGroup>
 
 </Project>

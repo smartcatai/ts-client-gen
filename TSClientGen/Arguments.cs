@@ -4,19 +4,25 @@ namespace TSClientGen
 {
 	class Arguments : IArguments
 	{
-		[Option('o', "out-dir")]
-		public string OutputPath { get; set; }
-
-		[OptionArray('a', "asm")]
+		[OptionArray('a', "asm", Required = true)]
 		public string[] AssemblyPaths { get; set; }
 
-		[OptionArray('n', "asm-name")]
-		public string[] AssemblyNames { get; set; }
+		[Option('o', "out-dir", Required = true)]
+		public string OutDir { get; set; }
+		
+		[Option("cleanup-out-dir")]
+		public bool CleanupOutDir { get; set; }
 
-		[Option('c', "common-module")]
+		[OptionArray("enum-module")]
+		public string EnumsModuleName { get; set; }
+
+		[Option("common-module")]
 		public string CommonModuleName { get; set; }
+		
+		[Option("get-resource-module")]
+		public string GetResourceModuleName { get; set; }		
 
-		[OptionArray('l', "loc-lang")]
+		[OptionArray("loc-lang")]
 		public string[] LocalizationLanguages { get; set; }
 		
 		[Option("default-locale")]

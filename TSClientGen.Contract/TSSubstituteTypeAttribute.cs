@@ -3,16 +3,16 @@
 namespace TSClientGen
 {
 	/// <summary>
-	/// Атрибут, которым помечаются классы, для которых нужно поменять логику 
-	/// их маппинга на тип в TypeScript.
+	/// For applying to model type or property.
+	/// Specifies that this model type or property should be handled as a different type when generating a TypeScript definition for a model.
+	/// You can specify either another .net Type or a string with a handwritten TypeScript type definition.
 	/// </summary>
-	/// <remarks>
-	/// - можно явно указать строку с TS типом
-	/// - можно указать любой тип .Net, который будет использоваться при сериализации
-	/// </remarks>
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Property, AllowMultiple = true, Inherited = false)]
 	public class TSSubstituteTypeAttribute : Attribute
 	{
+		/// <summary>
+		/// Specifies another .net type to substitute original type with
+		/// </summary>
 		public TSSubstituteTypeAttribute(Type substituteType)
 		{
 			if (substituteType == null) throw new ArgumentNullException(nameof(substituteType));
@@ -20,15 +20,24 @@ namespace TSClientGen
 			SubstituteType = substituteType;
 		}
 
+		/// <summary>
+		/// Specifies handwritten TypeScript type declaration to substitute original type with
+		/// </summary>
 		public TSSubstituteTypeAttribute(string typeDefinition)
 		{
 			if (string.IsNullOrWhiteSpace(typeDefinition)) throw new ArgumentNullException(nameof(typeDefinition));
 			
 			TypeDefinition = typeDefinition;
 		}	
-		
+	
+		/// <summary>
+		/// Another .net type to substitute original type with
+		/// </summary>
 		public Type SubstituteType { get; private set; }
 		
+		/// <summary>
+		/// Handwritten TypeScript type declaration to substitute original type with
+		/// </summary>
 		public string TypeDefinition { get; private set; }
 	}
 }

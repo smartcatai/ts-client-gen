@@ -1,6 +1,7 @@
 using System;
 using System.Net.Http;
 using Newtonsoft.Json.Linq;
+using TSClientGen.Extensibility;
 
 namespace TSClientGen.AspNetWebApi
 {

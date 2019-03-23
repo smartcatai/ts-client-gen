@@ -2,7 +2,6 @@
 
     <PropertyGroup>
         <TargetFramework>netcoreapp2.1</TargetFramework>
-        <RootNamespace>TSClientGen.Tests2</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

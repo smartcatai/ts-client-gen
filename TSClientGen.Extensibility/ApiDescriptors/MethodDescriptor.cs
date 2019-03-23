@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
-namespace TSClientGen.ApiDescriptors
+namespace TSClientGen.Extensibility.ApiDescriptors
 {
 	/// <summary>
 	/// Describes an api method in a module
@@ -15,18 +16,19 @@ namespace TSClientGen.ApiDescriptors
 			string urlTemplate,
 			string httpVerb,
 			IReadOnlyCollection<MethodParamDescriptor> parameters,
-			string returnType,
+			Type returnType,
+			bool uploadsFiles,
 			bool generateUrl)
 		{
 			Name = name;
-			HttpVerb = httpVerb;
 			UrlTemplate = urlTemplate;
+			HttpVerb = httpVerb;
 			ReturnType = returnType;
+			UploadsFiles = uploadsFiles;
 			GenerateUrl = generateUrl;
 			
 			AllParams = parameters;
 			BodyParam = AllParams.SingleOrDefault(p => p.IsBodyContent);
-			QueryParams = AllParams.Where(p => !p.IsBodyContent && UrlParamsByPlaceholder.Values.All(p2 => p2.OriginalName != p.OriginalName)).ToList();
 			UrlParamsByPlaceholder = _routeParamPattern
 				.Matches(UrlTemplate)
 				.Cast<Match>()
@@ -41,8 +43,26 @@ namespace TSClientGen.ApiDescriptors
 
 					return param;
 				});
+			QueryParams = AllParams.Where(p => !p.IsBodyContent && UrlParamsByPlaceholder.Values.All(p2 => p2.OriginalName != p.OriginalName)).ToList();			
+		}
+		
+		public MethodDescriptor(
+			MethodInfo method,
+			string urlTemplate,
+			string httpVerb,
+			IReadOnlyCollection<MethodParamDescriptor> parameters)
+			: this(
+				method.Name,
+				urlTemplate,
+				httpVerb,
+				parameters,
+				method.ReturnType,
+				method.GetCustomAttribute<TSUploadFilesAttribute>() != null,
+				method.GetCustomAttribute<TSGenerateUrlAttribute>() != null)
+		{
 		}
 
+		
 		/// <summary>
 		/// Method name
 		/// </summary>
@@ -54,9 +74,9 @@ namespace TSClientGen.ApiDescriptors
 		public string UrlTemplate { get; }
 		
 		/// <summary>
-		/// Typescript return type of the method
+		/// Return type of the method
 		/// </summary>
-		public string ReturnType { get; }
+		public Type ReturnType { get; }
 		
 		/// <summary>
 		/// HTTP request verb
@@ -91,7 +111,7 @@ namespace TSClientGen.ApiDescriptors
 		/// <summary>
 		/// Whether this method uploads any files in a multipart data request to the server
 		/// </summary>
-		public bool UploadsFiles => (BodyParam != null) && (BodyParam.IsUploadedFile || BodyParam.IsModelWithFiles);
+		public bool UploadsFiles { get;  }
 
 		
 		private static readonly Regex _routeParamPattern = new Regex(@"\{(.*?)(:.*?)*\}", RegexOptions.Compiled);

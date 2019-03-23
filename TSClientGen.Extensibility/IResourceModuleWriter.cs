@@ -1,6 +1,6 @@
 using System;
 
-namespace TSClientGen
+namespace TSClientGen.Extensibility
 {
 	/// <summary>
 	/// Responsible for generating localization resource files

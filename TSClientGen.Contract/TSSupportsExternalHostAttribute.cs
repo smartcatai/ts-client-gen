@@ -3,8 +3,8 @@ using System;
 namespace TSClientGen
 {
 	/// <summary>
-	/// Атрибут применяется к контроллерам и позволяет параметром конструктора api-клиента
-	/// указать host, на который будут производиться вызовы api 
+	/// For applying to api controller.
+	/// Allows for issuing api calls to another domain by providing it as an api client constructor parameter
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Class)]
 	public class TSSupportsExternalHostAttribute : Attribute

@@ -1,13 +1,15 @@
+using System.IO;
 using System.Resources;
+using TSClientGen.Extensibility;
 
 namespace TSClientGen.AspNetWebApi
 {
 	public sealed class ResourceModuleWriter : IResourceModuleWriter
 	{
-		public ResourceModuleWriter(string filename)
+		public ResourceModuleWriter(string outDir, string filename)
 		{
-			_resxWriter = new ResXResourceWriter(filename);
 			Filename = filename;
+			_resxWriter = new ResXResourceWriter(Path.Combine(outDir, filename));
 		}
 		
 		public string Filename { get; }

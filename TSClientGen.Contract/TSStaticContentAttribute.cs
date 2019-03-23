@@ -4,7 +4,8 @@ using System.Collections.Generic;
 namespace TSClientGen
 {
 	/// <summary>
-	/// Атрибут для генерации JSON-модуля со статическим контентом
+	/// For applying to assembly.
+	/// Generates a separate JSON module with named exports of an arbitrary content 
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Assembly)]
 	public abstract class TSStaticContentAttribute : Attribute
@@ -15,8 +16,14 @@ namespace TSClientGen
 			Content = content;
 		}
 
-		public string ModuleName { get; private set; }
+		/// <summary>
+		/// Name of the module to generate
+		/// </summary>
+		public string ModuleName { get; }
 
-		public Dictionary<string, object> Content { get; private set; }
+		/// <summary>
+		/// Content to write to the module. Key - named export key, value - JSON-serializable content
+		/// </summary>
+		public Dictionary<string, object> Content { get; }
 	}
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using TSClientGen.ApiDescriptors;
+using TSClientGen.Extensibility;
 
 namespace TSClientGen
 {
@@ -16,7 +17,7 @@ namespace TSClientGen
 			var defaultTypeConverter = new DefaultTypeConverter();
 			_defaultTypeConverter = type => defaultTypeConverter.Convert(type, this);
 			_customTypeConverter = customTypeConverter;
-			_customTypes = new Dictionary<Type, BaseTypeDescriptor>();
+			_typesToGenerate = new Dictionary<Type, BaseTypeDescriptor>();
 		}
 
 		
@@ -45,7 +46,7 @@ namespace TSClientGen
 		
 		public void AddType(Type type)
 		{
-			if (type == null || _customTypes.ContainsKey(type))
+			if (type == null || _typesToGenerate.ContainsKey(type))
 				return;
 					
 			var substituteTypeMapping = type.GetCustomAttributes<TSSubstituteTypeAttribute>().FirstOrDefault();
@@ -58,7 +59,7 @@ namespace TSClientGen
 			
 			if (substituteTypeMapping == null && polymorphicTypeMapping == null)
 			{
-				_customTypes.Add(type, new InterfaceDescriptor(type, baseType));
+				_typesToGenerate.Add(type, new InterfaceDescriptor(type, baseType));
 				AddType(baseType);
 				return;
 			}
@@ -71,7 +72,7 @@ namespace TSClientGen
 				}
 				else if (!string.IsNullOrWhiteSpace(substituteTypeMapping.TypeDefinition))
 				{
-					_customTypes.Add(type, new CustomTypeDescriptor(type, substituteTypeMapping.TypeDefinition));
+					_typesToGenerate.Add(type, new HandwrittenTypeDescriptor(type, substituteTypeMapping.TypeDefinition));
 				}
 			}
 
@@ -79,11 +80,11 @@ namespace TSClientGen
 			{
 				if (polymorphicTypeMapping.SuppressDiscriminatorGeneration)
 				{
-					_customTypes.Add(type, new InterfaceDescriptor(type, baseType));
+					_typesToGenerate.Add(type, new InterfaceDescriptor(type, baseType));
 				}
 				else
 				{
-					_customTypes.Add(type, new InterfaceDescriptor(type, polymorphicTypeMapping.DiscriminatorFieldType, polymorphicTypeMapping.DiscriminatorFieldName, baseType));					
+					_typesToGenerate.Add(type, new InterfaceDescriptor(type, polymorphicTypeMapping.DiscriminatorFieldType, polymorphicTypeMapping.DiscriminatorFieldName, baseType));					
 				}
 				
 				AddType(baseType);
@@ -100,10 +101,10 @@ namespace TSClientGen
 
 		public BaseTypeDescriptor GetDescriptorByType(Type type)
 		{
-			return _customTypes[type];
+			return _typesToGenerate[type];
 		}
 
-		public HashSet<Type> GetCustomTypes() => new HashSet<Type>(_customTypes.Keys);
+		public HashSet<Type> GetTypesToGenerate() => new HashSet<Type>(_typesToGenerate.Keys);
 
 		
 		private Type tryGetBaseType(Type type)
@@ -114,6 +115,6 @@ namespace TSClientGen
 		
 		private readonly ICustomTypeConverter _customTypeConverter;
 		private readonly Func<Type, string> _defaultTypeConverter;
-		private readonly Dictionary<Type, BaseTypeDescriptor> _customTypes;		
+		private readonly Dictionary<Type, BaseTypeDescriptor> _typesToGenerate;		
 	}
 }

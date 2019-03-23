@@ -3,8 +3,11 @@ using System.Reflection;
 
 namespace TSClientGen
 {
+	// TODO comments
+	
 	/// <summary>
-	/// Атрибут, которым помечаются класс, иерархия наследников которого должна быть сохранена в TS 
+	/// For applying to model type.
+	/// Marks base class in an inheritance hierarchy that has to be reflected in TypeScript model definitions
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Class, Inherited = false)]
 	public class TSPolymorphicTypeAttribute : Attribute
@@ -42,6 +45,9 @@ namespace TSClientGen
 			SuppressDiscriminatorGeneration = suppressDiscriminatorGeneration;
 		}
 		
+		/// <summary>
+		/// Assembly to scan descendant types for
+		/// </summary>
 		public Assembly DescendantsAssembly { get; }
 
 		public Type DiscriminatorFieldType { get; }

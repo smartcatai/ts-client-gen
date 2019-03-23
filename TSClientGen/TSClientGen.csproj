@@ -70,6 +70,10 @@
       <Project>{d1bd4c62-3a9c-4037-bcf9-6f4a90992058}</Project>
       <Name>TSClientGen.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\TSClientGen.Extensibility\TSClientGen.Extensibility.csproj">
+      <Project>{c3cd49cd-2202-4cf1-81da-0686607d0777}</Project>
+      <Name>TSClientGen.Extensibility</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\Clean.targets" Condition="Exists('$(SolutionDir)\Clean.targets')" />

@@ -1,7 +1,6 @@
 using System;
-using System.Reflection;
 
-namespace TSClientGen
+namespace TSClientGen.Extensibility
 {
 	/// <summary>
 	/// Extensibility point for providing custom mappings of .net types to TypeScript types

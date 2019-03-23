@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
+using TSClientGen.Extensibility;
 
 namespace TSClientGen
 {
-	public class ResourceModuleGenerator
+	public class EnumResourceModuleGenerator
 	{
-		public ResourceModuleGenerator(IResourceModuleWriter writer)
+		public EnumResourceModuleGenerator(IResourceModuleWriter writer)
 		{
 			_writer = writer;
 		}
@@ -14,18 +15,18 @@ namespace TSClientGen
 		{
 			foreach (var enumLocalization in enumLocalizations)
 			{
-				generateEnumResxEntries(enumLocalization);
+				generateEnumValueEntries(enumLocalization);
 				if (enumLocalization.AdditionalContexts != null)
 				{
 					foreach (var context in enumLocalization.AdditionalContexts)
 					{
-						generateEnumResxEntries(enumLocalization, context);
+						generateEnumValueEntries(enumLocalization, context);
 					}
 				}
 			}
 		}
 		
-		private void generateEnumResxEntries(TSEnumLocalizationAttribute enumLocalization, string context = null)
+		private void generateEnumValueEntries(TSEnumLocalizationAttribute enumLocalization, string context = null)
 		{
 			var enumName = enumLocalization.EnumType.Name;
 			foreach (var valueName in Enum.GetNames(enumLocalization.EnumType))
