@@ -12,7 +12,7 @@ namespace TSClientGen
 
 		[OptionArray('n', "asm-name")]
 		public string[] AssemblyNames { get; set; }
-		
+
 		[Option('c', "common-module")]
 		public string CommonModuleName { get; set; }
 

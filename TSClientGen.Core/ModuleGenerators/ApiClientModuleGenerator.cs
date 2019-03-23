@@ -144,17 +144,22 @@ namespace TSClientGen
 			var identifiersInUse = new HashSet<string>(
 				moduleImports.Concat(
 					new[] { "files", "cancelToken", "onUploadProgress", "url", "method", "params", "data", "blob" }));
-			
-			var parameters = method.AllParams
+
+			var nonFileParams = method.AllParams
 				.Where(param => !method.UploadsFiles || !param.IsBodyContent)
-				.Select(param =>
+				.ToList();
+			foreach (var param in nonFileParams)
+			{
+				while (identifiersInUse.Contains(param.GeneratedName))
 				{
-					while (identifiersInUse.Contains(param.GeneratedName))
-					{
-						param.GeneratedName += "Param";
-					}
-					return $"{param.GeneratedName}{(param.IsOptional ? "?" : "")}: {param.Type}";
-				})
+					param.GeneratedName += "Param";
+				}
+				identifiersInUse.Add(param.GeneratedName);
+			}
+			
+			var parameters = nonFileParams
+				.Where(param => !param.IsOptional)
+				.Select(param => $"{param.GeneratedName}: {param.Type}")
 				.ToList();
 			if (!generateGetUrl)
 			{
@@ -168,6 +173,9 @@ namespace TSClientGen
 					parameters.Add("{ cancelToken }: HttpRequestOptions = {}");					
 				}
 			}
+			parameters.AddRange(nonFileParams
+				.Where(param => param.IsOptional)
+				.Select(param => $"{param.GeneratedName}?: {param.Type}"));
 
 			_result.Append(string.Join(", ", parameters)).AppendLine(") {");
 
