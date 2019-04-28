@@ -1,0 +1,5 @@
+type project
+include-referenced-projects true
+include-pdbs true
+projectUrl https://github.com/smartcatai/ts-client-gen
+description Tool to automatically generate fully functional TypeScript client to ASP.NET WebAPI app

@@ -3,6 +3,7 @@
     <PropertyGroup>
         <TargetFramework>netcoreapp2.1</TargetFramework>
         <PackageVersion>5.0.0</PackageVersion>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     </PropertyGroup>
 
     <ItemGroup>
@@ -14,6 +15,12 @@
     <ItemGroup>
       <ProjectReference Include="..\TSClientGen.Contract\TSClientGen.Contract.csproj" />
       <ProjectReference Include="..\TSClientGen.Core\TSClientGen.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Include="..\SolutionInfo.cs">
+        <Link>Properties\SolutionInfo.cs</Link>
+      </Compile>
     </ItemGroup>
 
 </Project>

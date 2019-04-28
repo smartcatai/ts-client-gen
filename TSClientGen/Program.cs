@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.Composition;
+﻿using System;
+using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using System.Reflection;
 using CommandLine;
@@ -11,9 +12,17 @@ namespace TSClientGen
 	{
 		static int Main(string[] args)
 		{
-			var arguments = new Arguments();
-			if (!Parser.Default.ParseArguments(args, arguments))
-				return 1;
+			var argsParseResult = Parser.Default.ParseArguments<Arguments>(args);
+			if (argsParseResult is NotParsed<Arguments> notParsed)
+			{
+				foreach (var error in notParsed.Errors)
+				{
+					Console.WriteLine(error.ToString());					
+				}
+				return 1;				
+			}
+
+			var arguments = ((Parsed<Arguments>)argsParseResult).Value;
 
 			var plugins = new InjectedPlugins();
 			if (arguments.PluginsAssembly != null)

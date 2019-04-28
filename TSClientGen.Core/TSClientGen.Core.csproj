@@ -4,6 +4,7 @@
         <TargetFramework>netstandard2.0</TargetFramework>
         <RootNamespace>TSClientGen</RootNamespace>
         <PackageVersion>5.0.0</PackageVersion>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     </PropertyGroup>
 
     <ItemGroup>
@@ -17,6 +18,12 @@
 
     <ItemGroup>
       <Folder Include="ApiDescriptors" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Include="..\SolutionInfo.cs">
+        <Link>Properties\SolutionInfo.cs</Link>
+      </Compile>
     </ItemGroup>
 
 </Project>

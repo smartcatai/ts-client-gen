@@ -4,7 +4,7 @@ namespace TSClientGen
 {
 	class Arguments : IArguments
 	{
-		[OptionArray('a', "asm", Required = true)]
+		[Option('a', "asm", Separator = ',', Required = true)]
 		public string[] AssemblyPaths { get; set; }
 
 		[Option('o', "out-dir", Required = true)]
@@ -16,7 +16,7 @@ namespace TSClientGen
 		[Option("append-i-prefix")]
 		public bool AppendIPrefix { get; set; }
 
-		[OptionArray("enum-module")]
+		[Option("enum-module")]
 		public string EnumsModuleName { get; set; }
 
 		[Option("common-module")]
@@ -25,7 +25,7 @@ namespace TSClientGen
 		[Option("get-resource-module")]
 		public string GetResourceModuleName { get; set; }		
 
-		[OptionArray("loc-lang")]
+		[Option("loc-lang", Separator = ',')]
 		public string[] LocalizationLanguages { get; set; }
 		
 		[Option("default-locale")]
