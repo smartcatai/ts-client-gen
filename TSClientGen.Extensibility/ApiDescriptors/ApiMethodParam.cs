@@ -5,9 +5,9 @@ namespace TSClientGen.Extensibility.ApiDescriptors
 	/// <summary>
 	/// Describes a parameter for an api method
 	/// </summary>
-	public class MethodParamDescriptor
+	public class ApiMethodParam
 	{
-		public MethodParamDescriptor(string name, Type type, bool isOptional, bool isBodyContent)
+		public ApiMethodParam(string name, Type type, bool isOptional, bool isBodyContent)
 		{			
 			OriginalName = name;
 			GeneratedName = name;

@@ -1,16 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TSClientGen.ApiDescriptors;
 using TSClientGen.Extensibility.ApiDescriptors;
 
 namespace TSClientGen
 {
 	public class ApiMethodGenerator
 	{
-		public ApiMethodGenerator(MethodDescriptor method, IndentedStringBuilder result, TypeMapping typeMapping)
+		public ApiMethodGenerator(ApiMethod apiMethod, IndentedStringBuilder result, TypeMapping typeMapping)
 		{
-			_method = method;
+			_apiMethod = apiMethod;
 			_result = result;
 			_typeMapping = typeMapping;
 		}
@@ -19,7 +18,7 @@ namespace TSClientGen
 		{
 			var parameters = GetTypescriptParams();
 			_result
-				.Append($"public {toLowerCamelCase(_method.Name)}(")
+				.Append($"public {toLowerCamelCase(_apiMethod.Name)}(")
 				.Append(string.Join(", ", parameters))
 				.Append(")");
 		}
@@ -28,17 +27,17 @@ namespace TSClientGen
 		{
 			var parameters = GetTypescriptParamsForUrl();
 			_result
-				.Append($"public {toLowerCamelCase(_method.Name)}Url(")
+				.Append($"public {toLowerCamelCase(_apiMethod.Name)}Url(")
 				.Append(string.Join(", ", parameters))
 				.Append(")");
 		}
 
 		public void WriteBody(bool generateGetUrl, bool supportsExternalHost)
 		{
-			_result.AppendLine($"const method = '{_method.HttpVerb.ToLower()}';");
+			_result.AppendLine($"const method = '{_apiMethod.HttpVerb.ToLower()}';");
 		
-			string url = _method.UrlTemplate;
-			foreach (var param in _method.UrlParamsByPlaceholder)
+			string url = _apiMethod.UrlTemplate;
+			foreach (var param in _apiMethod.UrlParamsByPlaceholder)
 			{
 				string paramValue = param.Value.GeneratedName;
 				if (param.Value.Type == typeof(DateTime))
@@ -54,10 +53,10 @@ namespace TSClientGen
 
 			var requestParams = new List<string> { "url", "method" };
 			
-			if (_method.QueryParams.Any())
+			if (_apiMethod.QueryParams.Any())
 			{
 				requestParams.Add("params");
-				var queryParams = _method.QueryParams.Select(p =>
+				var queryParams = _apiMethod.QueryParams.Select(p =>
 				{
 					if (p.OriginalName == p.GeneratedName && p.Type != typeof(DateTime))
 						return p.OriginalName;
@@ -76,7 +75,7 @@ namespace TSClientGen
 				return;
 			}
 			
-			if (_method.UploadsFiles)
+			if (_apiMethod.UploadsFiles)
 			{
 				requestParams.Add("data");
 				_result
@@ -90,51 +89,51 @@ namespace TSClientGen
 					.AppendLine("}").Unindent()
 					.AppendLine("}");
 
-				if (_method.BodyParam != null)
+				if (_apiMethod.BodyParam != null)
 				{
-					_result.AppendLine($"const blob = new Blob([JSON.stringify({_method.BodyParam.GeneratedName})], {{ type: 'application/json' }});");
+					_result.AppendLine($"const blob = new Blob([JSON.stringify({_apiMethod.BodyParam.GeneratedName})], {{ type: 'application/json' }});");
 					_result.AppendLine("data.append('Value', blob);");
 				}
 			}
-			else if (_method.BodyParam != null)
+			else if (_apiMethod.BodyParam != null)
 			{
 				requestParams.Add("data");
-				_result.AppendLine($"const data = {_method.BodyParam.GeneratedName};");
+				_result.AppendLine($"const data = {_apiMethod.BodyParam.GeneratedName};");
 			}
 
 			requestParams.AddRange(new[] { "cancelToken" });
-			if (_method.UploadsFiles)
+			if (_apiMethod.UploadsFiles)
 			{
 				requestParams.Add("onUploadProgress");
 			}
 
-			string tsReturnType = _typeMapping.GetTSType(_method.ReturnType);
+			string tsReturnType = _typeMapping.GetTSType(_apiMethod.ReturnType);
 			_result.AppendLine($"return request<{tsReturnType}>({{ {string.Join(", ", requestParams)} }});");
 		}
 
 		public IEnumerable<string> GetTypescriptParams()
 		{
-			foreach (var param in _method.AllParams.OrderBy(p => p.IsOptional))
+			foreach (var param in _apiMethod.AllParams.OrderBy(p => p.IsOptional))
 			{
 				// files parameter is required and therefore has to go before all optional parameters
-				if (param.IsOptional && _method.UploadsFiles)
+				if (param.IsOptional && _apiMethod.UploadsFiles)
 					yield return "files: Array<NamedBlob | File>";
 
 				yield return getTypescriptParam(param);
 			}
 			
-			if (!_method.AllParams.Any(p => p.IsOptional) && _method.UploadsFiles)
+			if (!_apiMethod.AllParams.Any(p => p.IsOptional) && _apiMethod.UploadsFiles)
 				yield return "files: Array<NamedBlob | File>";
 
-			yield return _method.UploadsFiles
+			yield return _apiMethod.UploadsFiles
 				? "{ cancelToken, onUploadProgress }: UploadFileHttpRequestOptions = {}"
 				: "{ cancelToken }: HttpRequestOptions = {}";
 		}
 
 		public IEnumerable<string> GetTypescriptParamsForUrl()
 		{
-			return from param in _method.AllParams
-				where !_method.UploadsFiles || !param.IsBodyContent
+			return from param in _apiMethod.AllParams
+				where !_apiMethod.UploadsFiles || !param.IsBodyContent
 				orderby param.IsOptional
 				select getTypescriptParam(param);
 		}
@@ -145,7 +144,7 @@ namespace TSClientGen
 				moduleImports.Concat(
 					new[] {"files", "cancelToken", "onUploadProgress", "url", "method", "params", "data", "blob"}));
 
-			foreach (var param in _method.AllParams.Where(param => !_method.UploadsFiles || !param.IsBodyContent))
+			foreach (var param in _apiMethod.AllParams.Where(param => !_apiMethod.UploadsFiles || !param.IsBodyContent))
 			{
 				while (identifiersInUse.Contains(param.GeneratedName))
 					param.GeneratedName += "Param";
@@ -155,7 +154,7 @@ namespace TSClientGen
 		}
 
 		
-		private string getTypescriptParam(MethodParamDescriptor param)
+		private string getTypescriptParam(ApiMethodParam param)
 		{
 			var tsType = _typeMapping.GetTSType(param.Type);
 			return $"{param.GeneratedName}{(param.IsOptional ? "?" : "")}: {tsType}";
@@ -167,7 +166,7 @@ namespace TSClientGen
 		}
 		
 		
-		private readonly MethodDescriptor _method;		
+		private readonly ApiMethod _apiMethod;		
 		private readonly IndentedStringBuilder _result;
 		private readonly TypeMapping _typeMapping;
 	}

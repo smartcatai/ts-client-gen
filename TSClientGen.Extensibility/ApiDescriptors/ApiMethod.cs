@@ -9,13 +9,13 @@ namespace TSClientGen.Extensibility.ApiDescriptors
 	/// <summary>
 	/// Describes an api method in a module
 	/// </summary>
-	public class MethodDescriptor
+	public class ApiMethod
 	{
-		public MethodDescriptor(
+		public ApiMethod(
 			string name,
 			string urlTemplate,
 			string httpVerb,
-			IReadOnlyCollection<MethodParamDescriptor> parameters,
+			IReadOnlyCollection<ApiMethodParam> parameters,
 			Type returnType,
 			bool uploadsFiles,
 			bool generateUrl)
@@ -46,11 +46,11 @@ namespace TSClientGen.Extensibility.ApiDescriptors
 			QueryParams = AllParams.Where(p => !p.IsBodyContent && UrlParamsByPlaceholder.Values.All(p2 => p2.OriginalName != p.OriginalName)).ToList();			
 		}
 		
-		public MethodDescriptor(
+		public ApiMethod(
 			MethodInfo method,
 			string urlTemplate,
 			string httpVerb,
-			IReadOnlyCollection<MethodParamDescriptor> parameters)
+			IReadOnlyCollection<ApiMethodParam> parameters)
 			: this(
 				method.Name,
 				urlTemplate,
@@ -91,22 +91,22 @@ namespace TSClientGen.Extensibility.ApiDescriptors
 		/// <summary>
 		/// All api method parameters
 		/// </summary>
-		public IReadOnlyCollection<MethodParamDescriptor> AllParams { get; }
+		public IReadOnlyCollection<ApiMethodParam> AllParams { get; }
 		
 		/// <summary>
 		/// Method parameters that are to be passed by a query string
 		/// </summary>
-		public IReadOnlyCollection<MethodParamDescriptor> QueryParams { get; }
+		public IReadOnlyCollection<ApiMethodParam> QueryParams { get; }
 
 		/// <summary>
 		/// Method parameters that are to be inserted into a url template's placeholders
 		/// </summary>
-		public IReadOnlyDictionary<string, MethodParamDescriptor> UrlParamsByPlaceholder { get; }
+		public IReadOnlyDictionary<string, ApiMethodParam> UrlParamsByPlaceholder { get; }
 
 		/// <summary>
 		/// Method parameter that is to be passed in a request body
 		/// </summary>
-		public MethodParamDescriptor BodyParam { get; }
+		public ApiMethodParam BodyParam { get; }
 
 		/// <summary>
 		/// Whether this method uploads any files in a multipart data request to the server

@@ -9,11 +9,11 @@ namespace TSClientGen.Extensibility.ApiDescriptors
 	/// Describes a generated typescript module with an exported api client class.
 	/// Typically corresponds to a single api controller on the backend.
 	/// </summary>
-	public class ModuleDescriptor
+	public class ApiClientModule
 	{
-		public ModuleDescriptor(
+		public ApiClientModule(
 			string apiClientClassName,
-			IReadOnlyCollection<MethodDescriptor> methods,
+			IReadOnlyCollection<ApiMethod> methods,
 			Type controllerType)
 		{
 			ApiClientClassName = apiClientClassName;
@@ -24,8 +24,22 @@ namespace TSClientGen.Extensibility.ApiDescriptors
 				throw new ArgumentException("TSModuleAttribute must be applied to the controller type");
 
 			Name = tsModuleAttribute.ModuleName;
-			AdditionalTypes = controllerType.GetCustomAttributes<TSRequireTypeAttribute>().Select(a => a.GeneratedType).ToList();
-			SupportsExternalHost = controllerType.GetCustomAttribute<TSSupportsExternalHostAttribute>() != null;
+
+			var additionalTypes = new List<Type>();
+			foreach (var requireTypeAttr in controllerType.GetCustomAttributes<TSRequireTypeAttribute>())
+			{
+				additionalTypes.Add(requireTypeAttr.GeneratedType);
+				if (requireTypeAttr.IncludeDescendantsFromAssembly != null)
+				{
+					var targetAsm = requireTypeAttr.IncludeDescendantsFromAssembly.Assembly;
+					var descendants = targetAsm.GetTypes().Where(requireTypeAttr.GeneratedType.IsAssignableFrom);
+					additionalTypes.AddRange(descendants);
+				}
+			}
+			AdditionalTypes = additionalTypes;
+			
+			SupportsExternalHost = controllerType.GetCustomAttribute<TSSupportsExternalHostAttribute>() != null;			
+			
 		}
 		
 		
@@ -42,7 +56,7 @@ namespace TSClientGen.Extensibility.ApiDescriptors
 		/// <summary>
 		/// Describe methods of an api client. Each method corresponds to a single api method on the backend.
 		/// </summary>
-		public IReadOnlyCollection<MethodDescriptor> Methods { get; }
+		public IReadOnlyCollection<ApiMethod> Methods { get; }
 		
 		/// <summary>
 		/// List of types that were explicitly added for this module

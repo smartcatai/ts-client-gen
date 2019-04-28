@@ -15,15 +15,15 @@ namespace TSClientGen
 		public Runner(
 			IArguments arguments,
 			IApiDiscovery apiDiscovery,
-			ICustomTypeConverter customTypeConverter,
-			IPropertyNameProvider propertyNameProvider,
+			ITypeConverter customTypeConverter,
+			ITypeDescriptorProvider typeDescriptorProvider,
 			IResourceModuleWriterFactory resourceModuleWriterFactory,
 			Func<object, string> serializeToJson)
 		{
 			_arguments = arguments;
 			_apiDiscovery = apiDiscovery;
 			_customTypeConverter = customTypeConverter;
-			_propertyNameProvider = propertyNameProvider;
+			_typeDescriptorProvider = typeDescriptorProvider;
 			_resourceModuleWriterFactory = resourceModuleWriterFactory;
 			_serializeToJson = serializeToJson;
 		}
@@ -103,18 +103,21 @@ namespace TSClientGen
 					throw new Exception("Duplicate module name - " + module.Name);
 				moduleNames.Add(module.Name);
 
-				var typeMapping = new TypeMapping(_customTypeConverter);
+				var typeMapping = new TypeMapping(
+					_customTypeConverter,
+					_typeDescriptorProvider,
+					_arguments.AppendIPrefix);
 				foreach (var type in module.AdditionalTypes)
 				{
 					typeMapping.AddType(type);
 				}
 				
-				var generator = new ApiModuleGenerator(module, typeMapping, _propertyNameProvider, _serializeToJson, commonModuleName);
+				var generator = new ApiModuleGenerator(module, typeMapping, _serializeToJson, commonModuleName);
 				generator.WriteApiClientClass();
 				generator.WriteTypeDefinitions();
 				generator.WriteEnumImports(enumsModuleName);
 
-				foreach (var enumType in typeMapping.GetTypesToGenerate().Where(t => t.IsEnum).ToList())
+				foreach (var enumType in typeMapping.GetEnums())
 				{
 					allEnums.Add(enumType);
 				}
@@ -250,8 +253,8 @@ namespace TSClientGen
 		
 		private readonly IArguments _arguments;
 		private readonly IApiDiscovery _apiDiscovery;
-		private readonly ICustomTypeConverter _customTypeConverter;
-		private readonly IPropertyNameProvider _propertyNameProvider;
+		private readonly ITypeConverter _customTypeConverter;
+		private readonly ITypeDescriptorProvider _typeDescriptorProvider;
 		private readonly IResourceModuleWriterFactory _resourceModuleWriterFactory;
 		private readonly Func<object, string> _serializeToJson;
 		

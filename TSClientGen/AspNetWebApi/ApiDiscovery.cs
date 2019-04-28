@@ -15,13 +15,13 @@ namespace TSClientGen.AspNetWebApi
 	/// </summary>
 	public class ApiDiscovery : IApiDiscovery
 	{
-		public ApiDiscovery(ICustomMethodDescriptorProvider customMethodDescriptorProvider)
+		public ApiDiscovery(IMethodDescriptorProvider customMethodDescriptorProvider)
 		{
 			_customMethodDescriptorProvider = customMethodDescriptorProvider;
 		}
 		
 		
-		public IEnumerable<ModuleDescriptor> GetModules(Assembly assembly, Func<Type, bool> processModule)
+		public IEnumerable<ApiClientModule> GetModules(Assembly assembly, Func<Type, bool> processModule)
 		{
 			var controllerTypes = assembly.GetTypes().Where(t => typeof(IHttpController).IsAssignableFrom(t));
 			foreach (var controllerType in controllerTypes)
@@ -46,12 +46,12 @@ namespace TSClientGen.AspNetWebApi
 					.Where(a => a != null)
 					.ToList();
 			
-				yield return new ModuleDescriptor(apiClientClassName, methods, controllerType);				
+				yield return new ApiClientModule(apiClientClassName, methods, controllerType);				
 			}
 		}
 		
 		
-		private MethodDescriptor tryDescribeApiMethod(MethodInfo method, RouteAttribute controllerRoute, string routePrefix)
+		private ApiMethod tryDescribeApiMethod(MethodInfo method, RouteAttribute controllerRoute, string routePrefix)
 		{
 			var route = method.GetCustomAttributes<RouteAttribute>().SingleOrDefault() ?? controllerRoute;
 			if (route == null)
@@ -61,7 +61,7 @@ namespace TSClientGen.AspNetWebApi
 			
 			var parameters = method.GetParameters()
 				.Where(p => p.ParameterType != typeof(CancellationToken))
-				.Select(p => new MethodParamDescriptor(
+				.Select(p => new ApiMethodParam(
 					p.Name,
 					p.ParameterType,
 					p.IsOptional,
@@ -69,7 +69,7 @@ namespace TSClientGen.AspNetWebApi
 				.ToList();
 
 			string urlTemplate = (routePrefix + route.Template).Replace("{action}", method.Name); 
-			var descriptor = new MethodDescriptor(method, urlTemplate, httpVerb, parameters);
+			var descriptor = new ApiMethod(method, urlTemplate, httpVerb, parameters);
 			if (_customMethodDescriptorProvider != null)
 			{
 				descriptor = _customMethodDescriptorProvider.DescribeMethod(method.DeclaringType, method, descriptor);
@@ -95,6 +95,6 @@ namespace TSClientGen.AspNetWebApi
 			throw new Exception($"Unknown http verb: {httpVerb}");
 		}
 		
-		private readonly ICustomMethodDescriptorProvider _customMethodDescriptorProvider;		
+		private readonly IMethodDescriptorProvider _customMethodDescriptorProvider;		
 	}
 }

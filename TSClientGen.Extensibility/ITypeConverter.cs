@@ -3,9 +3,10 @@ using System;
 namespace TSClientGen.Extensibility
 {
 	/// <summary>
-	/// Extensibility point for providing custom mappings of .net types to TypeScript types
+	/// Extensibility point for providing custom mappings of .net types to TypeScript types.
+	/// This is for simple case that writes the resulting TypeScript type inline and does not create any type or interface definitions.
 	/// </summary>
-	public interface ICustomTypeConverter
+	public interface ITypeConverter
 	{
 		/// <summary>
 		/// Returns a TypeScript type for a given .net type

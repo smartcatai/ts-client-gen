@@ -31,30 +31,30 @@ namespace TSClientGen.Tests
 		{
 			Assert.AreEqual(
 				output, 
-				new TypeMapping(null).GetTSType(type));
+				new TypeMapping().GetTSType(type));
 		}
 		
 		[Test]
-		public void Unknown_types_are_saved_to_type_mapping()
+		public void Custom_complex_types_are_generated_as_interfaces()
 		{
-			var mapping = new TypeMapping(null);
-			mapping.GetTSType(typeof(SimpleModel));
-			
-			Assert.Contains(typeof(SimpleModel), mapping.GetTypesToGenerate().ToList());
+			var mapping = new TypeMapping();
+
+			Assert.AreEqual("SimpleModel", mapping.GetTSType(typeof(SimpleModel)));
+			TextAssert.ContainsLine("export interface SimpleModel {", mapping.GetGeneratedTypes()[typeof(SimpleModel)]);
 		}
 
 		[Test]
 		public void Unknown_generic_types_are_prohibited()
 		{
 			Assert.Throws<InvalidOperationException>(() =>
-				new TypeMapping(null).GetTSType(typeof(GenericModel<SimpleModel>)));
+				new TypeMapping().GetTSType(typeof(GenericModel<SimpleModel>)));
 		}
 
 		[Test]
 		public void Dictionary_with_non_numeric_or_string_key_is_prohibited()
 		{
 			Assert.Throws<InvalidOperationException>(() =>
-				new TypeMapping(null).GetTSType(typeof(Dictionary<SimpleModel, string>)));
+				new TypeMapping().GetTSType(typeof(Dictionary<SimpleModel, string>)));
 		} 
 		
 		[Test]
@@ -62,15 +62,15 @@ namespace TSClientGen.Tests
 		{
 			Assert.AreEqual(
 				"{ [id: number]: string; }",
-				new TypeMapping(null).GetTSType(typeof(Dictionary<Enum, string>)));
+				new TypeMapping().GetTSType(typeof(Dictionary<Enum, string>)));
 		}
 
 		[Test]
 		public void Enumerable_type_is_matched_to_array()
 		{
 			Assert.AreEqual(
-				"ISimpleModel[]",
-				new TypeMapping(null).GetTSType(typeof(Collection<SimpleModel>)));
+				"SimpleModel[]",
+				new TypeMapping().GetTSType(typeof(Collection<SimpleModel>)));
 		}
 
 		[Test]
@@ -78,15 +78,15 @@ namespace TSClientGen.Tests
 		{
 			Assert.AreEqual(
 				"number", 
-				new TypeMapping(null).GetTSType(typeof(int?)));
+				new TypeMapping().GetTSType(typeof(int?)));
 		}
 		
 		[Test]
 		public void Generic_task_is_handled_as_task_result_type()
 		{
 			Assert.AreEqual(
-				"ISimpleModel", 
-				new TypeMapping(null).GetTSType(typeof(Task<SimpleModel>)));
+				"SimpleModel", 
+				new TypeMapping().GetTSType(typeof(Task<SimpleModel>)));
 		}
 
 

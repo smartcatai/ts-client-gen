@@ -7,6 +7,7 @@ namespace TSClientGen
 		string[] AssemblyPaths { get; set; }
 		string EnumsModuleName { get; set; }
 		string CommonModuleName { get; set; }
+		bool AppendIPrefix { get; set; }
 		string GetResourceModuleName { get; set; }
 		string[] LocalizationLanguages { get; set; }
 		string DefaultLocale { get; set; }

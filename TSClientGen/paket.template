@@ -2,7 +2,7 @@ type project
 projectUrl https://github.com/smartcatai/ts-client-gen
 description Tool to automatically generate fully functional TypeScript client to ASP.NET WebAPI app
 dependencies
-  TSClientGen.Contract ~> 4.0.0
+  TSClientGen.Contract ~> 5.0.0
 files
   bin\*.* ==> tools
   !bin\*.vshost.*

@@ -43,10 +43,11 @@
   <ItemGroup>
     <Compile Include="Arguments.cs" />
     <Compile Include="AspNetWebApi\ApiDiscovery.cs" />
-    <Compile Include="AspNetWebApi\PropertyNameProvider.cs" />
+    <Compile Include="AspNetWebApi\TypeDescriptorProvider.cs" />
     <Compile Include="AspNetWebApi\ResourceModuleWriter.cs" />
     <Compile Include="AspNetWebApi\ResourceModuleWriterFactory.cs" />
     <Compile Include="AspNetWebApi\TypeConverter.cs" />
+    <Compile Include="InjectedPlugins.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="..\SolutionInfo.cs">
@@ -57,9 +58,6 @@
     <None Include="App.config" />
     <None Include="paket.references" />
     <None Include="paket.template" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="common.ts" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\TSClientGen.Contract\TSClientGen.Contract.csproj">
@@ -116,6 +114,15 @@
         <Reference Include="Newtonsoft.Json">
           <HintPath>..\packages\Newtonsoft.Json\lib\net45\Newtonsoft.Json.dll</HintPath>
           <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+      <ItemGroup>
+        <Reference Include="System.ComponentModel.Composition">
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>

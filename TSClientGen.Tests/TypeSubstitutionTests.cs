@@ -2,19 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using TSClientGen.ApiDescriptors;
 using TSClientGen.Extensibility;
+using TSClientGen.Extensibility.ApiDescriptors;
 
 namespace TSClientGen.Tests
 {
 	[TestFixture]
-	public class TypeMappingTests
+	public class TypeSubstitutionTests
 	{
 		[Test]
 		public void Types_from_custom_type_converter_take_highest_priority()
 		{
 			var customConverter = new CustomTypeConverter((typeof(Guid), "MyCustomGuid"));
-			var mapping = new TypeMapping(customConverter);
+			var mapping = new TypeMapping(customConverter, null);
 			
 			Assert.AreEqual("MyCustomGuid", mapping.GetTSType(typeof(Guid)));
 		}
@@ -23,43 +23,49 @@ namespace TSClientGen.Tests
 		public void Generic_types_from_custom_type_converter_are_supported()
 		{
 			var customConverter = new CustomTypeConverter((typeof(GenericModel<string>), "GenericModel"));
-			var mapping = new TypeMapping(customConverter);
+			var mapping = new TypeMapping(customConverter, null);
 
 			Assert.AreEqual("GenericModel", mapping.GetTSType(typeof(GenericModel<string>)));
-		}
-
-		[Test]
-		public void Custom_complex_types_are_stored_in_type_mapping_as_interfaces()
-		{
-			var mapping = new TypeMapping(null);
-
-			Assert.AreEqual("ISimpleModel", mapping.GetTSType(typeof(SimpleModel)));
-			Assert.IsInstanceOf(typeof(InterfaceDescriptor), mapping.GetDescriptorByType(typeof(SimpleModel)));
 		}
 
 		[Test]
 		public void Type_can_be_substituted_by_another_type()
 		{
 			Assert.AreEqual(
-				"ISimpleModel", 
-				new TypeMapping(null).GetTSType(typeof(SubstitutedModel)));
+				"SimpleModel", 
+				new TypeMapping().GetTSType(typeof(SubstitutedModel)));
 		}
 		
 		[Test]
 		public void Type_can_be_substituted_by_handwritted_TypeScript_type_definition()
 		{
-			var mapping = new TypeMapping(null);
+			var mapping = new TypeMapping();
 			
 			Assert.AreEqual(
-				"ISubstitutedTypedefModel", 
+				"SubstitutedTypedefModel", 
 				mapping.GetTSType(typeof(SubstitutedTypedefModel)));
 			Assert.AreEqual(
-				SubstitutedTypedefModel.TypeDefinition,
-				((HandwrittenTypeDescriptor)mapping.GetDescriptorByType(typeof(SubstitutedTypedefModel))).TypeDefinition);
+				$"export type SubstitutedTypedefModel = {SubstitutedTypedefModel.TypeDefinition};",
+				mapping.GetGeneratedTypes()[typeof(SubstitutedTypedefModel)]);
+		}
+
+		[Test]
+		public void Type_can_be_substituted_by_primitive_type()
+		{
+			Assert.AreEqual(
+				"string[]", 
+				new TypeMapping().GetTSType(typeof(List<PrimitiveSubstitutedTypeModel>)));
+		}
+
+		[Test]
+		public void Infinite_loop_of_substituted_types_is_caught()
+		{
+			Assert.Throws<InvalidOperationException>(
+			() => new TypeMapping().GetTSType(typeof(LoopedModel)));
 		}
 
 
-		class CustomTypeConverter : ICustomTypeConverter
+		class CustomTypeConverter : ITypeConverter
 		{
 			private readonly Dictionary<Type, string> _mappings;
 
@@ -82,6 +88,11 @@ namespace TSClientGen.Tests
 		{
 		}
 
+		[TSSubstituteType(typeof(LoopedModel))]
+		class LoopedModel
+		{
+		}
+		
 		[TSSubstituteType(typeof(SimpleModel))]
 		class SubstitutedModel
 		{
@@ -91,6 +102,11 @@ namespace TSClientGen.Tests
 		class SubstitutedTypedefModel
 		{
 			public const string TypeDefinition = "{ mySecretContents: string }";
+		}
+
+		[TSSubstituteType(typeof(string))]
+		class PrimitiveSubstitutedTypeModel
+		{
 		}
 	}
 }

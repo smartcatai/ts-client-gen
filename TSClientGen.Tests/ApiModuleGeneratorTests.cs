@@ -1,6 +1,5 @@
 using System;
 using NUnit.Framework;
-using TSClientGen.ApiDescriptors;
 using TSClientGen.Extensibility.ApiDescriptors;
 
 namespace TSClientGen.Tests
@@ -9,41 +8,38 @@ namespace TSClientGen.Tests
 	public class ApiModuleGeneratorTests
 	{
 		[Test]
-		public void Writing_interface_adds_nested_types_to_mapping()
+		public void Adding_type_to_mapping_recursively_adds_all_referenced_types()
 		{
-			var mapping = new TypeMapping(null);
+			var mapping = new TypeMapping();
 			mapping.AddType(typeof(Model));
-
-			var generator = createGenerator(mapping);
-			generator.WriteInterface((InterfaceDescriptor)mapping.GetDescriptorByType(typeof(Model)));
 			
 			CollectionAssert.AreEquivalent(
-				new[] { typeof(Model), typeof(Enum1), typeof(NestedModel) },
-				mapping.GetTypesToGenerate());
+				new[] { typeof(Model), typeof(Enum1), typeof(Enum2), typeof(NestedModel) },
+				mapping.GetGeneratedTypes().Keys);
 		}
 
 		[Test]
 		public void All_nested_types_are_written_to_module()
 		{
-			var mapping = new TypeMapping(null);
+			var mapping = new TypeMapping();
 			mapping.AddType(typeof(Model));
 
 			var generator = createGenerator(mapping);
 			generator.WriteTypeDefinitions();
 
 			var result = generator.GetResult();
-			TextAssert.ContainsLine("export interface IModel {", result);
-			TextAssert.ContainsLine("export interface INestedModel {", result);
+			TextAssert.ContainsLine("export interface Model {", result);
+			TextAssert.ContainsLine("export interface NestedModel {", result);
 			
 			CollectionAssert.AreEquivalent(
 				new[] { typeof(Model), typeof(Enum1), typeof(NestedModel), typeof(Enum2) },
-				mapping.GetTypesToGenerate());			
+				mapping.GetGeneratedTypes().Keys);			
 		}
 
 		[Test]
 		public void Enum_imports_are_generated()
 		{
-			var mapping = new TypeMapping(null);
+			var mapping = new TypeMapping();
 			mapping.AddType(typeof(Enum1));
 			mapping.AddType(typeof(Enum2));
 
@@ -56,11 +52,10 @@ namespace TSClientGen.Tests
 		
 		private ApiModuleGenerator createGenerator(TypeMapping typeMapping)
 		{
-			var module = new ModuleDescriptor("client", new MethodDescriptor[0], typeof(Controller));
+			var module = new ApiClientModule("client", new ApiMethod[0], typeof(Controller));
 			return new ApiModuleGenerator(
 				module,
 				typeMapping,
-				new DefaultPropertyNameProvider(),
 				(val) => throw new NotImplementedException(),
 				"common");
 		}

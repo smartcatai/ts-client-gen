@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using NUnit.Framework;
-using TSClientGen.ApiDescriptors;
 using TSClientGen.Extensibility.ApiDescriptors;
 
 namespace TSClientGen.Tests
@@ -35,8 +34,8 @@ namespace TSClientGen.Tests
 		[TestCase("post")]
 		public void Http_verb_is_respected(string httpVerb)
 		{
-			var method = new MethodDescriptor(
-				"func", "/func", httpVerb, new MethodParamDescriptor[0], 
+			var method = new ApiMethod(
+				"func", "/func", httpVerb, new ApiMethodParam[0], 
 				typeof(void), false, false);
 			var sb = new IndentedStringBuilder();
 			var generator = createGenerator(method, sb);
@@ -81,9 +80,9 @@ namespace TSClientGen.Tests
 		[Test]
 		public void Upload_progress_callback_is_supported_when_uploading_files()
 		{
-			var method = new MethodDescriptor(
+			var method = new ApiMethod(
 				"func", "/upload", "POST", 
-				new MethodParamDescriptor[0], 
+				new ApiMethodParam[0], 
 				typeof(void), true, false);
 			var sb = new IndentedStringBuilder();
 			var generator = createGenerator(method, sb);
@@ -104,16 +103,16 @@ namespace TSClientGen.Tests
 		}
 
 
-		private static ApiMethodGenerator createGenerator(MethodDescriptor method, IndentedStringBuilder sb)
+		private static ApiMethodGenerator createGenerator(ApiMethod apiMethod, IndentedStringBuilder sb)
 		{
-			return new ApiMethodGenerator(method, sb, new TypeMapping(null));
+			return new ApiMethodGenerator(apiMethod, sb, new TypeMapping());
 		}
 		
-		private static MethodDescriptor createMethodDescriptor(string url, params (string name, Type type)[] parameters)
+		private static ApiMethod createMethodDescriptor(string url, params (string name, Type type)[] parameters)
 		{
-			return new MethodDescriptor(
+			return new ApiMethod(
 				"func",url, "GET",
-				parameters.Select(p => new MethodParamDescriptor(p.name, p.type, false, false)).ToArray(),
+				parameters.Select(p => new ApiMethodParam(p.name, p.type, false, false)).ToArray(),
 				typeof(void), false, false);
 		}		
 	}

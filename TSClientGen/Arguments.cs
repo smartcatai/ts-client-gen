@@ -12,6 +12,9 @@ namespace TSClientGen
 		
 		[Option("cleanup-out-dir")]
 		public bool CleanupOutDir { get; set; }
+		
+		[Option("append-i-prefix")]
+		public bool AppendIPrefix { get; set; }
 
 		[OptionArray("enum-module")]
 		public string EnumsModuleName { get; set; }
@@ -27,5 +30,8 @@ namespace TSClientGen
 		
 		[Option("default-locale")]
 		public string DefaultLocale { get; set; }
+		
+		[Option('p', "plugins-assembly")]
+		public string PluginsAssembly { get; set; }
 	}
 }

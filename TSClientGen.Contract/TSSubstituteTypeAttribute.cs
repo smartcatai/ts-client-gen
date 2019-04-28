@@ -23,11 +23,12 @@ namespace TSClientGen
 		/// <summary>
 		/// Specifies handwritten TypeScript type declaration to substitute original type with
 		/// </summary>
-		public TSSubstituteTypeAttribute(string typeDefinition)
+		public TSSubstituteTypeAttribute(string typeDefinition, bool inline = false)
 		{
 			if (string.IsNullOrWhiteSpace(typeDefinition)) throw new ArgumentNullException(nameof(typeDefinition));
 			
 			TypeDefinition = typeDefinition;
+			Inline = inline;
 		}	
 	
 		/// <summary>
@@ -39,5 +40,11 @@ namespace TSClientGen
 		/// Handwritten TypeScript type declaration to substitute original type with
 		/// </summary>
 		public string TypeDefinition { get; private set; }
+
+		/// <summary>
+		/// Whether the type definition should be inlined at each usage of the type
+		/// or be contained in a separate type declaration 
+		/// </summary>
+		public bool Inline { get; }
 	}
 }

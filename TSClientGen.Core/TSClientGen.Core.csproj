@@ -3,11 +3,20 @@
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <RootNamespace>TSClientGen</RootNamespace>
+        <PackageVersion>5.0.0</PackageVersion>
     </PropertyGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\TSClientGen.Contract\TSClientGen.Contract.csproj" />
       <ProjectReference Include="..\TSClientGen.Extensibility\TSClientGen.Extensibility.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Include="common.ts" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="ApiDescriptors" />
     </ItemGroup>
 
 </Project>
