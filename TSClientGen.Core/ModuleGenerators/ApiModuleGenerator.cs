@@ -83,10 +83,26 @@ namespace TSClientGen
 			var enumTypes = _typeMapping.GetEnums();
 			if (enumTypes.Any())
 			{
-				_result.Append("import { ")
-					.Append(string.Join(", ", enumTypes.Select(t => t.Name)))
-					.AppendLine($" }} from './{enumsModuleName}'")
-					.AppendLine();
+				string separator = ", ";
+				if (enumTypes.Count > 3)
+					separator += Environment.NewLine + "\t";
+
+				if (enumTypes.Count < 4)
+				{
+					_result.Append("import { ")
+						.Append(string.Join(separator, enumTypes.Select(t => t.Name)))
+						.AppendLine($" }} from './{enumsModuleName}'")
+						.AppendLine();					
+				}
+				else
+				{
+					_result.AppendLine("import {");
+					foreach (var enumType in enumTypes)
+					{
+						_result.Append("\t").Append(enumType.Name).AppendLine(",");
+					}
+					_result.AppendLine($"}} from './{enumsModuleName}'");
+				}
 			}
 		}
 		

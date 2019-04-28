@@ -42,7 +42,6 @@ namespace TSClientGen
 
 			_generatedFiles = new HashSet<string>();
 
-			var commonModuleName = _arguments.CommonModuleName ?? "./" + DefaultCommonModuleName;
 			if (_arguments.CommonModuleName == null)
 			{
 				writeDefaultCommonModule();
@@ -52,6 +51,10 @@ namespace TSClientGen
 			foreach (var asmPath in _arguments.AssemblyPaths)
 			{
 				var asm = Assembly.LoadFrom(asmPath);
+				var commonModuleName = _arguments.CommonModuleName ?? "./" + DefaultCommonModuleName;
+				if (commonModuleName.EndsWith(".ts", StringComparison.InvariantCultureIgnoreCase))
+					commonModuleName = commonModuleName.Remove(commonModuleName.Length - 3);
+
 				generateClientsFromAsm(asm, commonModuleName, enumsModuleName, allEnums);				
 				generateResources(asm);
 
@@ -107,7 +110,7 @@ namespace TSClientGen
 					_customTypeConverter,
 					_typeDescriptorProvider,
 					_arguments.AppendIPrefix);
-				foreach (var type in module.AdditionalTypes)
+				foreach (var type in module.ExplicitlyRequiredTypes.Where(t => !t.IsEnum))
 				{
 					typeMapping.AddType(type);
 				}
@@ -117,7 +120,8 @@ namespace TSClientGen
 				generator.WriteTypeDefinitions();
 				generator.WriteEnumImports(enumsModuleName);
 
-				foreach (var enumType in typeMapping.GetEnums())
+				var explictlyRequiredEnums = module.ExplicitlyRequiredTypes.Where(t => t.IsEnum);
+				foreach (var enumType in typeMapping.GetEnums().Union(explictlyRequiredEnums))
 				{
 					allEnums.Add(enumType);
 				}
@@ -157,12 +161,12 @@ namespace TSClientGen
 
 			var staticMemberProvidersLookup = staticMemberProviders.ToLookup(e => e.EnumType);
 
-			if (!enumsModuleName.EndsWith(".ts"))
-				enumsModuleName += ".ts";
+			if (enumsModuleName.EndsWith(".ts"))
+				enumsModuleName = enumsModuleName.Remove(enumsModuleName.Length - 3);
 			
 			var enumModuleGenerator = new EnumModuleGenerator();
 			enumModuleGenerator.Write(enums, _arguments.GetResourceModuleName, staticMemberProvidersLookup);
-			writeFile(enumsModuleName, enumModuleGenerator.GetResult());
+			writeFile(enumsModuleName + ".ts", enumModuleGenerator.GetResult());
 
 			var enumLocalizationAttributes = staticMemberProviders.OfType<TSEnumLocalizationAttribute>().ToList();
 			if (_resourceModuleWriterFactory != null && enumLocalizationAttributes.Any())
@@ -217,7 +221,7 @@ namespace TSClientGen
 			return new ResourceFileWriter(moduleWriter, () =>
 			{
 				var fullFilename = Path.Combine(_arguments.OutDir, moduleWriter.Filename);
-				fixFilenameCase(fullFilename);
+				fixFilenameCase(moduleWriter.Filename);
 				_generatedFiles.Add(fullFilename.ToLowerInvariant());				
 			});
 		}

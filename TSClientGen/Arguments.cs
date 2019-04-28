@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using CommandLine;
 
 namespace TSClientGen
@@ -5,7 +6,7 @@ namespace TSClientGen
 	class Arguments : IArguments
 	{
 		[Option('a', "asm", Separator = ',', Required = true)]
-		public string[] AssemblyPaths { get; set; }
+		public IEnumerable<string> AssemblyPaths { get; set; }
 
 		[Option('o', "out-dir", Required = true)]
 		public string OutDir { get; set; }
@@ -26,7 +27,7 @@ namespace TSClientGen
 		public string GetResourceModuleName { get; set; }		
 
 		[Option("loc-lang", Separator = ',')]
-		public string[] LocalizationLanguages { get; set; }
+		public IEnumerable<string> LocalizationLanguages { get; set; }
 		
 		[Option("default-locale")]
 		public string DefaultLocale { get; set; }

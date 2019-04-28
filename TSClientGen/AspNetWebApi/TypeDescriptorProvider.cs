@@ -14,31 +14,23 @@ namespace TSClientGen.AspNetWebApi
 			_next = next;
 		}
 
-		public TypeDescriptor DescribeType(Type modelType, TypeDescriptor descriptor)
+		public TypeDescriptor DescribeType(
+			Type modelType,
+			TypeDescriptor descriptor,
+			Func<TypePropertyDescriptor, PropertyInfo> getPropertyInfo)
 		{
-			var namesToModify = modelType.GetProperties(BindingFlags.Instance | BindingFlags.Public)
-				.Select(p =>
+			var properties = descriptor.Properties
+				.Select(desc =>
 				{
-					var jsonProperty = p.GetCustomAttributes<JsonPropertyAttribute>().FirstOrDefault();
+					var property = getPropertyInfo(desc);
+					var jsonProperty = property.GetCustomAttributes<JsonPropertyAttribute>().FirstOrDefault();
 					return jsonProperty != null
-						? new {Property = p, Name = jsonProperty.PropertyName}
-						: null;
+						? new TypePropertyDescriptor(jsonProperty.PropertyName, desc.Type, desc.InlineTypeDefinition)
+						: desc;
 				})
-				.Where(p => p != null)
-				.ToDictionary(p => p.Property.Name, p => p.Name);
-
-			if (namesToModify.Any())
-			{
-				var properties = descriptor.Properties
-					.Select(property => namesToModify.TryGetValue(property.Name, out var newName)
-						? new TypePropertyDescriptor(newName, property.Type, property.InlineTypeDefinition)
-						: property)
-					.ToList();
-
-				descriptor = new TypeDescriptor(modelType, properties);
-			}
-			
-			return _next?.DescribeType(modelType, descriptor) ?? descriptor;			
+				.ToList();
+			descriptor = new TypeDescriptor(modelType, properties);
+			return _next?.DescribeType(modelType, descriptor, getPropertyInfo) ?? descriptor;			
 		}
 
 		private readonly ITypeDescriptorProvider _next;		

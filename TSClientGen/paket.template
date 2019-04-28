@@ -6,6 +6,7 @@ description Tool to automatically generate fully functional TypeScript client to
 authors https://github.com/smartcatai/ts-client-gen	
 dependencies
   TSClientGen.Contract ~> 5.0.0
+  TSClientGen.Extensibility ~> 5.0.0
 files
   bin\*.* ==> tools
   !bin\*.vshost.*

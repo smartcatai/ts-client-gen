@@ -38,10 +38,16 @@ namespace TSClientGen
 			if (type == null || _typeNames.ContainsKey(type))
 				return;
 
+			// This is to protect against custom ITypeConverter implementation calling builtInConvert
+			// on original type instead of returning null when it does not have mapping for a requested type.
+			// Adding an entry with null before calling into custom ITypeConverter implementation
+			// prevents the infinite loop between alternating GetTSType and AddType calls.
+			_typeNames.Add(type, null);
+			
 			var typeDefinition = _customTypeConverter?.Convert(type, GetTSType);
 			if (typeDefinition != null)
 			{
-				_typeNames.Add(type, typeDefinition);
+				_typeNames[type] = typeDefinition;
 				return;
 			}
 
@@ -58,12 +64,12 @@ namespace TSClientGen
 			             tryMapKnownGenerics(type);
 			if (tsTypeName != null)
 			{
-				_typeNames.Add(type, tsTypeName);
+				_typeNames[type] = tsTypeName;
 				return;
 			}
 
 			tsTypeName = composeTypeName(type);
-			_typeNames.Add(type, tsTypeName);
+			_typeNames[type] = tsTypeName;
 
 			var descriptor = createInterfaceDescriptor(type);
 			_typeDefinitions.Add(type, writeInterface(tsTypeName, descriptor));
@@ -90,28 +96,30 @@ namespace TSClientGen
 		{
 			if (substituteAttr.SubstituteType != null)
 			{
-				if (_substitutedTypes.ContainsKey(type))
+				var substituteType = substituteAttr.SubstituteType;
+				AddType(substituteType);
+				if (_typeNames[substituteType] == null)
 				{
+					// The type that we are going to use for substitution
+					// is being processed somewhere up in the same call chain.
+					// This means we have a loop in type substitution directives.
 					throw new InvalidOperationException(
 						$"Substitute type loop detected on type {type.FullName}. " +
-						"Please check TSSubstituteTypeAttribute instances in your codebase and the implementation of ICustomTypeConverted in your plugin (if any)");
+						"Please check TSSubstituteTypeAttribute instances in your codebase and the implementation of ICustomTypeConverted in your plugin (if any)");					
 				}
-
-				var substituteType = substituteAttr.SubstituteType;
-				_substitutedTypes.Add(type, substituteType);
-				AddType(substituteType);
-				_typeNames.Add(type, _typeNames[substituteType]);
+				
+				_typeNames[type] = _typeNames[substituteType];
 			}
-			else if (substituteAttr?.TypeDefinition != null)
+			else if (substituteAttr.TypeDefinition != null)
 			{
 				if (substituteAttr.Inline)
 				{
-					_typeNames.Add(type, substituteAttr.TypeDefinition);
+					_typeNames[type] = substituteAttr.TypeDefinition;
 				}
 				else
 				{
 					string tsTypeName = composeTypeName(type);
-					_typeNames.Add(type, tsTypeName);
+					_typeNames[type] = tsTypeName;
 					_typeDefinitions.Add(type, writeTypeDefinition(tsTypeName, substituteAttr.TypeDefinition));
 				}
 			}
@@ -119,14 +127,17 @@ namespace TSClientGen
 		
 		private string tryMapPrimitiveType(Type type)
 		{
-			return _primitiveTypes.TryGetValue(type, out var value) ? value : null;
+			return _primitiveTypes.TryGetValue(type, out var value)
+				? value
+				: type.IsEnum
+					? type.Name : null;
 		}
 		
 		private string tryMapDictionary(Type type)
 		{
-			var dictionaryInterfaces = type
-				.GetInterfaces()
-				.Where(t => t.IsGenericType 
+			var dictionaryInterfaces = Enumerable.Repeat(type, 1)
+				.Concat(type.GetInterfaces())
+				.Where(t => t.IsGenericType
 				            && (t.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>)
 				                || t.GetGenericTypeDefinition() == typeof(IDictionary<,>)))
 				.Select(t => t.GetGenericArguments())
@@ -156,7 +167,8 @@ namespace TSClientGen
 		{
 			var elementType =
 				type.GetElementType() ??
-				type.GetInterfaces()
+				Enumerable.Repeat(type, 1)
+					.Concat(type.GetInterfaces())
 					.Where(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IEnumerable<>))
 					.Select(t => t.GetGenericArguments()[0])
 					.SingleOrDefault();
@@ -181,7 +193,7 @@ namespace TSClientGen
 				return GetTSType(type.GetGenericArguments()[0]);
 			}
 
-			throw new InvalidOperationException($"Can't map generic type definition: {type}");
+			return null;
 		}
 
 		private string composeTypeName(Type type)
@@ -199,11 +211,9 @@ namespace TSClientGen
 			if (_appendIPrefix)
 				sb.Append('I');
 			sb.Append(type.Name.Substring(0, specSymbolIndex));
-			for (var i = 0; i < genericArgs.Count; i++)
+			foreach (var typeArg in genericArgs)
 			{
-				if (i > 0)
-					sb.Append('_');
-				sb.Append(genericArgs[i]);
+				sb.Append('_').Append(typeArg);
 			}
 			return sb.ToString();
 		}
@@ -211,11 +221,19 @@ namespace TSClientGen
 		private TypeDescriptor createInterfaceDescriptor(Type type)
 		{
 			var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
-				.Select(createPropertyDescriptor)
-				.Where(p => p != null)
+				.Select(p => new { Descriptor = createPropertyDescriptor(p), Property = p })
+				.Where(p => p.Descriptor != null)
 				.ToList();
-			var descriptor = new TypeDescriptor(type, properties);
-			descriptor = _typeDescriptorProvider?.DescribeType(type, descriptor) ?? descriptor;
+			var descriptor = new TypeDescriptor(type, properties.Select(p => p.Descriptor).ToList());
+
+			var propertiesByDescriptor = new Lazy<IReadOnlyDictionary<TypePropertyDescriptor, PropertyInfo>>(
+				() => properties.ToDictionary(d => d.Descriptor, d => d.Property));
+			PropertyInfo GetPropertyInfo(TypePropertyDescriptor prop)
+			{
+				return propertiesByDescriptor.Value[prop];
+			}
+			
+			descriptor = _typeDescriptorProvider?.DescribeType(type, descriptor, GetPropertyInfo) ?? descriptor;
 			return descriptor;
 		}
 
@@ -232,6 +250,9 @@ namespace TSClientGen
 			var mapping = p.GetCustomAttributes<TSSubstituteTypeAttribute>().FirstOrDefault();
 			if (mapping?.SubstituteType != null)
 			{
+				// attribute's Inline property is ignored and always treated as true here
+				// cause a single property on some type should not affect property type's definition
+				// outside of this parent type
 				propertyType = mapping.SubstituteType;
 			}
 			else if (mapping?.TypeDefinition != null)
@@ -291,7 +312,6 @@ namespace TSClientGen
 
 		private readonly Dictionary<Type, string> _typeDefinitions = new Dictionary<Type, string>();
 		private readonly Dictionary<Type, string> _typeNames = new Dictionary<Type, string>();
-		private readonly Dictionary<Type, Type> _substitutedTypes = new Dictionary<Type, Type>();
 		
 		private static readonly IReadOnlyDictionary<Type, string> _primitiveTypes = new Dictionary<Type, string>
 		{

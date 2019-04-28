@@ -23,6 +23,6 @@ namespace TSClientGen
 		/// Scan the specified type's assembly for the descendants of required type
 		/// and append them to the api client module as well 
 		/// </summary>
-		public Type IncludeDescendantsFromAssembly { get; }
+		public Type IncludeDescendantsFromAssembly { get; set; }
 	}
 }

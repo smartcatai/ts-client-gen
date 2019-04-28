@@ -11,24 +11,6 @@ namespace TSClientGen.Tests
 	public class TypeSubstitutionTests
 	{
 		[Test]
-		public void Types_from_custom_type_converter_take_highest_priority()
-		{
-			var customConverter = new CustomTypeConverter((typeof(Guid), "MyCustomGuid"));
-			var mapping = new TypeMapping(customConverter, null);
-			
-			Assert.AreEqual("MyCustomGuid", mapping.GetTSType(typeof(Guid)));
-		}
-		
-		[Test]
-		public void Generic_types_from_custom_type_converter_are_supported()
-		{
-			var customConverter = new CustomTypeConverter((typeof(GenericModel<string>), "GenericModel"));
-			var mapping = new TypeMapping(customConverter, null);
-
-			Assert.AreEqual("GenericModel", mapping.GetTSType(typeof(GenericModel<string>)));
-		}
-
-		[Test]
 		public void Type_can_be_substituted_by_another_type()
 		{
 			Assert.AreEqual(
@@ -64,28 +46,41 @@ namespace TSClientGen.Tests
 			() => new TypeMapping().GetTSType(typeof(LoopedModel)));
 		}
 
-
-		class CustomTypeConverter : ITypeConverter
+		[Test]
+		public void Type_substitutions_on_properties_are_processed_correctly()
 		{
-			private readonly Dictionary<Type, string> _mappings;
+			var mapping = new TypeMapping();
 
-			public CustomTypeConverter(params (Type type, string typescriptType)[] mappings)
-			{
-				_mappings = mappings.ToDictionary(p => p.type, p => p.typescriptType);
-			}
+			mapping.GetTSType(typeof(ModelWithSubstitutedProps));
+			var generatedType = mapping.GetGeneratedTypes()[typeof(ModelWithSubstitutedProps)];
 			
-			public string Convert(Type type, Func<Type, string> defaultConvert)
-			{
-				return _mappings.TryGetValue(type, out var result) ? result : defaultConvert(type);
-			}
+			// this is not a mistake - when TSSubstituteType is applied on a property,
+			// inline is ignored and always treated as true cause a single property on some type
+			// should not affect property type's definition outside of this parent type
+			TextAssert.ContainsLine("typedefSeparate: string | number;", generatedType);
+			
+			TextAssert.ContainsLine("typedefInline: string | number;", generatedType);
+			TextAssert.ContainsLine("noAttribute: SimpleModel;", generatedType);
+			TextAssert.ContainsLine("stringSubst: string;", generatedType);
 		}
 		
-		class GenericModel<T>
-		{
-		}
 
 		class SimpleModel
 		{
+		}
+
+		class ModelWithSubstitutedProps
+		{
+			[TSSubstituteType("string | number")]
+			public SimpleModel TypedefSeparate { get; }
+			
+			[TSSubstituteType("string | number", true)]
+			public SimpleModel TypedefInline { get; }
+			
+			public SimpleModel NoAttribute { get; }
+			
+			[TSSubstituteType(typeof(string))]
+			public SimpleModel StringSubst { get; }			
 		}
 
 		[TSSubstituteType(typeof(LoopedModel))]

@@ -40,6 +40,9 @@ namespace TSClientGen
 
 			if (requireResourceImport)
 			{
+				if (string.IsNullOrEmpty(getResourceModuleName))
+					throw new InvalidOperationException("You should provide get-resource-module command line parameter if you have TSEnumLocalizationAttribute in your codebase");
+				
 				_result.AppendLine($"import {{ getResource }} from '{getResourceModuleName}';");
 			}
 		}

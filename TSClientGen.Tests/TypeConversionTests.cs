@@ -44,10 +44,15 @@ namespace TSClientGen.Tests
 		}
 
 		[Test]
-		public void Unknown_generic_types_are_prohibited()
+		public void Generic_types_are_mapped_correctly()
 		{
-			Assert.Throws<InvalidOperationException>(() =>
-				new TypeMapping().GetTSType(typeof(GenericModel<SimpleModel>)));
+			var mapping = new TypeMapping();
+			
+			Assert.AreEqual("GenericModel_SimpleModel", mapping.GetTSType(typeof(GenericModel<SimpleModel>)));
+
+			var generatedType = mapping.GetGeneratedTypes()[typeof(GenericModel<SimpleModel>)]; 
+			TextAssert.ContainsLine("export interface GenericModel_SimpleModel {", generatedType);			
+			TextAssert.ContainsLine("prop: SimpleModel;", generatedType);			
 		}
 
 		[Test]
@@ -64,15 +69,31 @@ namespace TSClientGen.Tests
 				"{ [id: number]: string; }",
 				new TypeMapping().GetTSType(typeof(Dictionary<Enum, string>)));
 		}
+		
+		[Test]
+		public void IDictionary_is_mapped_correctly()
+		{
+			Assert.AreEqual(
+				"{ [id: number]: string; }",
+				new TypeMapping().GetTSType(typeof(IDictionary<int, string>)));			
+		}		
 
 		[Test]
-		public void Enumerable_type_is_matched_to_array()
+		public void Enumerable_type_is_mapped_to_array()
 		{
 			Assert.AreEqual(
 				"SimpleModel[]",
 				new TypeMapping().GetTSType(typeof(Collection<SimpleModel>)));
 		}
 
+		[Test]
+		public void IEnumerable_is_mapped_to_array()
+		{
+			Assert.AreEqual(
+				"SimpleModel[]",
+				new TypeMapping().GetTSType(typeof(IEnumerable<SimpleModel>)));			
+		}
+		
 		[Test]
 		public void Nullable_type_is_handled_like_base_type()
 		{
@@ -89,6 +110,16 @@ namespace TSClientGen.Tests
 				new TypeMapping().GetTSType(typeof(Task<SimpleModel>)));
 		}
 
+		[Test]
+		public void Enums_is_stored_in_mapping_but_does_not_appear_generated_types()
+		{
+			var mapping = new TypeMapping();
+			
+			Assert.AreEqual("Enum", mapping.GetTSType(typeof(Enum)));
+			CollectionAssert.Contains(mapping.GetEnums().ToList(), typeof(Enum));
+			CollectionAssert.DoesNotContain(mapping.GetGeneratedTypes().Keys, typeof(Enum));
+		}
+		
 
 		// ReSharper disable once ClassNeverInstantiated.Local
 		class SimpleModel
@@ -97,6 +128,7 @@ namespace TSClientGen.Tests
 
 		class GenericModel<T>
 		{
+			public T Prop { get; }
 		}
 
 		class Collection<T> : IEnumerable<T>

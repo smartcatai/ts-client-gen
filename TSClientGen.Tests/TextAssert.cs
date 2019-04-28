@@ -10,7 +10,7 @@ namespace TSClientGen.Tests
 		{
 			Assert.Contains(
 				expectedLine,
-				output.Split(Environment.NewLine),
+				output.Split(Environment.NewLine).Select(s => s.Trim('\t')).ToList(),
 				$"Expected line '{expectedLine}' not found\nActual output: \n{output}");
 		}
 	}

@@ -40,7 +40,7 @@ namespace TSClientGen.AspNetWebApi
 				routePrefix = string.IsNullOrEmpty(routePrefix) ? "/" : "/" + routePrefix + "/";
 				
 				var apiClientClassName = controllerType.Name.Replace("Controller", "Client");
-				var actions = controllerType.GetMethods(BindingFlags.Instance | BindingFlags.Public).ToArray();
+				var actions = controllerType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly).ToArray();
 				var methods = actions
 					.Select(a => tryDescribeApiMethod(a, controllerRoute, routePrefix))
 					.Where(a => a != null)
@@ -57,7 +57,10 @@ namespace TSClientGen.AspNetWebApi
 			if (route == null)
 				return null;
 
-			var httpVerb = getVerb(method.GetCustomAttributes().OfType<IActionHttpMethodProvider>().FirstOrDefault());
+			var actionHttpMethodAttr = method.GetCustomAttributes().OfType<IActionHttpMethodProvider>().FirstOrDefault();
+			var httpVerb = getVerb(actionHttpMethodAttr);
+			if (httpVerb == null)
+				throw new Exception($"Unknown http verb '{actionHttpMethodAttr}' for method {method.Name} in type {method.DeclaringType.FullName}");				
 			
 			var parameters = method.GetParameters()
 				.Where(p => p.ParameterType != typeof(CancellationToken))
@@ -92,7 +95,7 @@ namespace TSClientGen.AspNetWebApi
 			if (httpVerb is HttpDeleteAttribute)
 				return "DELETE";
 
-			throw new Exception($"Unknown http verb: {httpVerb}");
+			return null;
 		}
 		
 		private readonly IMethodDescriptorProvider _customMethodDescriptorProvider;		

@@ -12,7 +12,7 @@ namespace TSClientGen.Extensibility
 		/// Returns a TypeScript type for a given .net type
 		/// </summary>
 		/// <param name="type">.net type to get TypeScript type for</param>
-		/// <param name="defaultConvert">default builtin type conversion implementation</param>
-		string Convert(Type type, Func<Type, string> defaultConvert);
+		/// <param name="builtInConvert">default builtin type conversion implementation</param>
+		string Convert(Type type, Func<Type, string> builtInConvert);
 	}
 }

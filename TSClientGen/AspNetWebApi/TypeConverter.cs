@@ -12,9 +12,9 @@ namespace TSClientGen.AspNetWebApi
 			_next = next;
 		}
 		
-		public string Convert(Type type, Func<Type, string> defaultConvert)
+		public string Convert(Type type, Func<Type, string> builtInConvert)
 		{
-			var result = _next?.Convert(type, defaultConvert);
+			var result = _next?.Convert(type, builtInConvert);
 			if (result != null)
 				return result;
 

@@ -14,8 +14,11 @@ namespace TSClientGen.Tests
 			mapping.AddType(typeof(Model));
 			
 			CollectionAssert.AreEquivalent(
-				new[] { typeof(Model), typeof(Enum1), typeof(Enum2), typeof(NestedModel) },
+				new[] { typeof(Model), typeof(NestedModel) },
 				mapping.GetGeneratedTypes().Keys);
+			CollectionAssert.AreEquivalent(
+				new[] { typeof(Enum1), typeof(Enum2) },
+				mapping.GetEnums());
 		}
 
 		[Test]
@@ -32,8 +35,11 @@ namespace TSClientGen.Tests
 			TextAssert.ContainsLine("export interface NestedModel {", result);
 			
 			CollectionAssert.AreEquivalent(
-				new[] { typeof(Model), typeof(Enum1), typeof(NestedModel), typeof(Enum2) },
-				mapping.GetGeneratedTypes().Keys);			
+				new[] { typeof(Model), typeof(NestedModel) },
+				mapping.GetGeneratedTypes().Keys);
+			CollectionAssert.AreEquivalent(
+				new[] { typeof(Enum1), typeof(Enum2) },
+				mapping.GetEnums());
 		}
 
 		[Test]
