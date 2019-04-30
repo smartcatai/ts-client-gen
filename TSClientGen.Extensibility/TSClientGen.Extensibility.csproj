@@ -2,8 +2,9 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
+        <AssemblyName>TSClientGen.Extensibility</AssemblyName>
+        <RootNamespace>TSClientGen</RootNamespace>
         <PackageVersion>5.0.0</PackageVersion>
-        <Title>TSClientGen.Extensibility</Title>
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     </PropertyGroup>
 
