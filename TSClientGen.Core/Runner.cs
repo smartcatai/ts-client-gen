@@ -159,6 +159,16 @@ namespace TSClientGen
 			var sw = new Stopwatch();
 			sw.Start();
 
+			var duplicateEnumNames = enums 
+				.GroupBy(e => e.Name)
+				.Where(g => g.Count() > 1)
+				.Select(g => g.Key)
+				.ToList();
+			if (duplicateEnumNames.Any())
+			{
+				throw new InvalidOperationException($"Duplicate enum names found - {string.Join(", ", duplicateEnumNames)}");
+			}
+
 			var staticMemberProvidersLookup = staticMemberProviders.ToLookup(e => e.EnumType);
 
 			if (enumsModuleName.EndsWith(".ts"))

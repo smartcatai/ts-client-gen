@@ -1,6 +1,6 @@
 type file
 id TSClientGen
-version 5.0.0
+version 5.0.1
 authors Smartcat
 projectUrl https://github.com/smartcatai/ts-client-gen
 licenseUrl https://github.com/smartcatai/ts-client-gen/blob/develop/LICENSE.txt
