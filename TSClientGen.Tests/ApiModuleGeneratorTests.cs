@@ -132,7 +132,7 @@ namespace TSClientGen.Tests
 
 		private ApiModuleGenerator createGenerator(TypeMapping typeMapping, IApiClientWriter customWriter = null)
 		{
-			var module = new ApiClientModule("client", new ApiMethod[0], typeof(Controller));
+			var module = new ApiClientModule("client", "client", new ApiMethod[0], typeof(Controller));
 			return new ApiModuleGenerator(
 				module,
 				typeMapping,
@@ -142,7 +142,6 @@ namespace TSClientGen.Tests
 		}
 		
 		
-		[TSModule("api")]
 		class Controller {}
 		
 		class Model
