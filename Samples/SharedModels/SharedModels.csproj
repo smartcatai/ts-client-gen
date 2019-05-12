@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <AssemblyName>TSClientGen.Samples.SharedModels</AssemblyName>
+        <RootNamespace>TSClientGen.Samples.SharedModels</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\TSClientGen.Contract\TSClientGen.Contract.csproj" />
+    </ItemGroup>
+
+</Project>
