@@ -8,6 +8,34 @@ namespace TSClientGen.Tests
     [TestFixture]
     public class EnumModuleGeneratorTest
     {
+        [Test]
+        public void String_enums_are_written_if_option_is_specified()
+        {
+            var generator = new EnumModuleGenerator();
+            var extensions = Enumerable.Empty<TSExtendEnumAttribute>().ToLookup(x => default(Type));
+            generator.Write(new[] { typeof(Foo) }, true, null, extensions);
+            
+            var result = generator.GetResult();
+            TextAssert.ContainsLinesInCorrectOrder(result,
+                "export enum Foo {",
+                "A = 'A',",
+                "B = 'B',");
+        }
+
+        [Test]
+        public void Numeric_enum_values_are_written_to_TypeScript_enum_definition()
+        {
+            var generator = new EnumModuleGenerator();
+            var extensions = Enumerable.Empty<TSExtendEnumAttribute>().ToLookup(x => default(Type));
+            generator.Write(new[] { typeof(Foo) }, false, null, extensions);
+            
+            var result = generator.GetResult();
+            TextAssert.ContainsLinesInCorrectOrder(result,
+                "export enum Foo {",
+                "A = 1,",
+                "B = 3,");
+        }
+        
         /// If we don't do that we can end up having this issue:
         ///
         /// <code>
@@ -39,26 +67,23 @@ namespace TSClientGen.Tests
 
             generator.Write(
                 new [] { typeof(Foo), typeof(Bar)},
+                false,
                 "locale",
                 extensions);
 
             var result = generator.GetResult();
-            var expected =
-@"export enum Foo {
-}
-
-export enum Bar {
-}
-
-export namespace Foo {
-	// !!!
-}
-";
-
-            Assert.AreEqual(expected, result);
+            TextAssert.ContainsLinesInCorrectOrder(result,
+                "export enum Foo {",
+                "export enum Bar {",
+                "export namespace Foo {",
+                ExtendFooAttribute.StaticMemberContents);
         }
 
-        enum Foo {}
+        enum Foo
+        {
+            A = 1,
+            B = 3
+        }
 
         enum Bar {}
 
@@ -70,8 +95,10 @@ export namespace Foo {
 
             public override void GenerateStaticMembers(StringBuilder sb)
             {
-                sb.AppendLine("// !!!");
+                sb.AppendLine(StaticMemberContents);
             }
+
+            public const string StaticMemberContents = "// Extending Enum with static members";
         }
     }
 }
