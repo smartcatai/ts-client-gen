@@ -12,18 +12,14 @@ namespace TSClientGen.Extensibility.ApiDescriptors
 	public class ApiClientModule
 	{
 		public ApiClientModule(
+			string moduleName,
 			string apiClientClassName,
 			IReadOnlyCollection<ApiMethod> methods,
 			Type controllerType)
 		{
+			Name = moduleName;
 			ApiClientClassName = apiClientClassName;
 			Methods = methods;
-
-			var tsModuleAttribute = controllerType.GetCustomAttribute<TSModuleAttribute>();
-			if (tsModuleAttribute == null)
-				throw new ArgumentException("TSModuleAttribute must be applied to the controller type");
-
-			Name = tsModuleAttribute.ModuleName;
 
 			var additionalTypes = new List<Type>();
 			foreach (var requireTypeAttr in controllerType.GetCustomAttributes<TSRequireTypeAttribute>())
