@@ -21,12 +21,17 @@ namespace TSClientGen.AspNetWebApi
 		}
 		
 		
-		public IEnumerable<ApiClientModule> GetModules(Assembly assembly, Func<Type, bool> processModule)
+		public IEnumerable<ApiClientModule> GetModules(Assembly assembly)
 		{
-			var controllerTypes = assembly.GetTypes().Where(t => typeof(IHttpController).IsAssignableFrom(t));
+			var controllerTypes = assembly.GetTypes()
+				.Where(t => typeof(IHttpController).IsAssignableFrom(t))
+				.ToList();
+			var anyModuleAttributes = controllerTypes.Any(t => t.GetCustomAttributes<TSModuleAttribute>().Any());
+			
 			foreach (var controllerType in controllerTypes)
 			{
-				if (!processModule(controllerType))
+				var tsModuleAttribute = controllerType.GetCustomAttribute<TSModuleAttribute>();
+				if (anyModuleAttributes && tsModuleAttribute == null)
 					continue;
 			
 				var controllerRoute = controllerType.GetCustomAttributes<RouteAttribute>().SingleOrDefault();
@@ -38,7 +43,8 @@ namespace TSClientGen.AspNetWebApi
 				}
 
 				routePrefix = string.IsNullOrEmpty(routePrefix) ? "/" : "/" + routePrefix + "/";
-				
+			
+				var moduleName = tsModuleAttribute?.ModuleName ?? controllerType.Name.Replace("Controller", string.Empty);				
 				var apiClientClassName = controllerType.Name.Replace("Controller", "Client");
 				var actions = controllerType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly).ToArray();
 				var methods = actions
@@ -46,7 +52,7 @@ namespace TSClientGen.AspNetWebApi
 					.Where(a => a != null)
 					.ToList();
 			
-				yield return new ApiClientModule(apiClientClassName, methods, controllerType);				
+				yield return new ApiClientModule(moduleName, apiClientClassName, methods, controllerType);				
 			}
 		}
 		

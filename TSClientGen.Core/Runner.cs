@@ -67,7 +67,10 @@ namespace TSClientGen
 				}
 			}
 
-			generateEnumsModule(allEnums, enumStaticMemberProviders, enumsModuleName);
+			if (allEnums.Any())
+			{
+				generateEnumsModule(allEnums, enumStaticMemberProviders, enumsModuleName);
+			}
 
 			if (_arguments.CleanupOutDir)
 			{
@@ -99,9 +102,7 @@ namespace TSClientGen
 				.ToDictionary(attr => attr.ModuleName);
 			
 			// generating client modules for api controllers
-			var modules = _apiDiscovery.GetModules(
-				assembly, 
-				t => t.GetCustomAttribute<TSModuleAttribute>() != null);
+			var modules = _apiDiscovery.GetModules(assembly);
 			foreach (var module in modules)
 			{
 				if (moduleNames.Contains(module.Name))
