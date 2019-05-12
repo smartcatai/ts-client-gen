@@ -8,6 +8,7 @@ namespace TSClientGen
 		bool CleanupOutDir { get; set; }
 		IEnumerable<string> AssemblyPaths { get; set; }
 		string EnumsModuleName { get; set; }
+		bool UseStringEnums { get; set; }
 		string CommonModuleName { get; set; }
 		bool AppendIPrefix { get; set; }
 		string GetResourceModuleName { get; set; }

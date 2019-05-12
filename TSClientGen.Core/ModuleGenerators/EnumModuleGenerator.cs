@@ -9,6 +9,7 @@ namespace TSClientGen
 	{		
 		public void Write(
 			IEnumerable<Type> enumTypes,
+			bool useStringEnums,
 			string getResourceModuleName,
 			ILookup<Type, TSExtendEnumAttribute> staticMemberProvidersByEnum)
 		{
@@ -17,7 +18,7 @@ namespace TSClientGen
 
 			foreach (var @enum in enumTypes)
 			{
-				writeEnum(@enum);
+				writeEnum(@enum, useStringEnums);
 
 				if (staticMemberProvidersByEnum[@enum].Any())
 				{
@@ -53,7 +54,7 @@ namespace TSClientGen
 			}
 		}
 
-		private void writeEnum(Type enumType)
+		private void writeEnum(Type enumType, bool useStringEnums)
 		{
 			var names = Enum.GetNames(enumType);
 			var underlyingType = Enum.GetUnderlyingType(enumType);
@@ -62,7 +63,9 @@ namespace TSClientGen
 
 			foreach (string name in names)
 			{
-				var value = Convert.ChangeType(Enum.Parse(enumType, name), underlyingType);
+				var value = useStringEnums
+					? $"'{name}'"
+					: Convert.ChangeType(Enum.Parse(enumType, name), underlyingType);
 				_result.AppendLine($"{name} = {value},");
 			}
 
