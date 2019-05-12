@@ -75,8 +75,7 @@ namespace TSClientGen
 			_typeDefinitions.Add(type, writeInterface(tsTypeName, descriptor));
 			AddType(descriptor.BaseType);
 
-			var requireDescendantsAttr = type.GetCustomAttributes<TSRequireDescendantTypes>().FirstOrDefault();
-			if (requireDescendantsAttr != null)
+			foreach (var requireDescendantsAttr in type.GetCustomAttributes<TSRequireDescendantTypes>())
 			{
 				var targetAsm = requireDescendantsAttr.IncludeDescendantsFromAssembly?.Assembly ?? type.Assembly;
 				var inheritedTypes = targetAsm.GetTypes().Where(type.IsAssignableFrom).ToList();
