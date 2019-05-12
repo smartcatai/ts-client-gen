@@ -24,6 +24,17 @@ namespace TSClientGen.Tests
 		}
 
 		[Test]
+		public void Adding_type_to_mapping_adds_all_descenand_types_if_attribute_specified()
+		{
+			var mapping = new TypeMapping();
+			mapping.AddType(typeof(BaseClass));
+
+			CollectionAssert.AreEquivalent(
+				new[] {typeof(BaseClass), typeof(Descendant1), typeof(Descendant2)},
+				mapping.GetGeneratedTypes().Keys);
+		}
+
+		[Test]
 		public void All_nested_types_are_written_to_module()
 		{
 			var mapping = new TypeMapping();
@@ -154,6 +165,13 @@ namespace TSClientGen.Tests
 		{
 			public Enum2 EnumProp { get; } 			
 		}
+
+		[TSRequireDescendantTypes]
+		class BaseClass {}
+
+		class Descendant1 : BaseClass {}
+
+		class Descendant2 : BaseClass {}
 
 		enum Enum1 { A, B }
 
