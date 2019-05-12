@@ -175,7 +175,7 @@ namespace TSClientGen
 				enumsModuleName = enumsModuleName.Remove(enumsModuleName.Length - 3);
 			
 			var enumModuleGenerator = new EnumModuleGenerator();
-			enumModuleGenerator.Write(enums, _arguments.GetResourceModuleName, staticMemberProvidersLookup);
+			enumModuleGenerator.Write(enums, _arguments.UseStringEnums, _arguments.GetResourceModuleName, staticMemberProvidersLookup);
 			writeFile(enumsModuleName + ".ts", enumModuleGenerator.GetResult());
 
 			var enumLocalizationAttributes = staticMemberProviders.OfType<TSEnumLocalizationAttribute>().ToList();
