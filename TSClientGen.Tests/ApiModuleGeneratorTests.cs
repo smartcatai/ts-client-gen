@@ -149,7 +149,7 @@ namespace TSClientGen.Tests
 				typeMapping,
 				customWriter,
 				(val) => throw new NotImplementedException(),
-				"common");
+				"transport");
 		}
 		
 		

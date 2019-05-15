@@ -9,7 +9,8 @@ namespace TSClientGen
 		IEnumerable<string> AssemblyPaths { get; set; }
 		string EnumsModuleName { get; set; }
 		bool UseStringEnums { get; set; }
-		string CommonModuleName { get; set; }
+		BuiltinXhrModule? BuiltinTransportModule { get; set; }
+		string CustomTransportModule { get; set; }
 		bool AppendIPrefix { get; set; }
 		string GetResourceModuleName { get; set; }
 		IEnumerable<string> LocalizationLanguages { get; set; }
