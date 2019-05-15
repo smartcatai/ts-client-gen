@@ -23,6 +23,11 @@ namespace TSClientGen
 			}
 
 			var arguments = ((Parsed<Arguments>)argsParseResult).Value;
+			if (arguments.BuiltinTransportModule == null && arguments.CustomTransportModule == null)
+			{
+				Console.WriteLine("Specify either --transport or --custom-transport command-line option");
+				return 1;
+			}
 
 			var plugins = new InjectedPlugins();
 			if (arguments.PluginsAssembly != null)

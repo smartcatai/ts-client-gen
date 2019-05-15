@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Net.Http;
 using NUnit.Framework;
 using TSClientGen.Extensibility.ApiDescriptors;
 
@@ -16,7 +17,7 @@ namespace TSClientGen.Tests
 			var generator = createGenerator(method, sb);
 			generator.WriteBody(false, false);
 			
-			TextAssert.ContainsLine("const params = { startDate: startDate.toISOString() };", sb.ToString());	
+			TextAssert.ContainsLine("const queryStringParams = { startDate: startDate.toISOString() };", sb.ToString());	
 		}
 		
 		[Test]
@@ -32,16 +33,16 @@ namespace TSClientGen.Tests
 		
 		[TestCase("get")]
 		[TestCase("post")]
-		public void Http_verb_is_respected(string httpVerb)
+		public void Http_method_is_respected(string httpMethod)
 		{
 			var method = new ApiMethod(
-				"func", "/func", httpVerb, new ApiMethodParam[0], 
+				"func", "/func", new HttpMethod(httpMethod), new ApiMethodParam[0], 
 				typeof(void), false, false);
 			var sb = new IndentedStringBuilder();
 			var generator = createGenerator(method, sb);
 			generator.WriteBody(false, false);
 			
-			TextAssert.ContainsLine($"const method = '{httpVerb}';", sb.ToString());
+			TextAssert.ContainsLine($"const method = '{httpMethod}';", sb.ToString());
 		}
 		
 		[Test]
@@ -63,7 +64,7 @@ namespace TSClientGen.Tests
 			var generator = createGenerator(method, sb);
 			generator.WriteBody(false, false);
 			
-			TextAssert.ContainsLine("const params = { id };", sb.ToString());	
+			TextAssert.ContainsLine("const queryStringParams = { id };", sb.ToString());	
 		}
 		
 		[Test]
@@ -74,21 +75,21 @@ namespace TSClientGen.Tests
 			var generator = createGenerator(method, sb);
 			generator.WriteBody(false, false);
 			
-			TextAssert.ContainsLine("return request<void>({ url, method, cancelToken });", sb.ToString());	
+			TextAssert.ContainsLine("return request<void>({ url, cancelToken, method, jsonResponseExpected });", sb.ToString());	
 		}
 		
 		[Test]
 		public void Upload_progress_callback_is_supported_when_uploading_files()
 		{
 			var method = new ApiMethod(
-				"func", "/upload", "POST", 
+				"func", "/upload", HttpMethod.Post, 
 				new ApiMethodParam[0], 
 				typeof(void), true, false);
 			var sb = new IndentedStringBuilder();
 			var generator = createGenerator(method, sb);
 			generator.WriteBody(false, false);
 			
-			TextAssert.ContainsLine("return request<void>({ url, method, data, cancelToken, onUploadProgress });", sb.ToString());	
+			TextAssert.ContainsLine("return request<void>({ url, requestBody, cancelToken, onUploadProgress, method, jsonResponseExpected });", sb.ToString());	
 		}
 
 		[Test]
@@ -99,7 +100,7 @@ namespace TSClientGen.Tests
 			var generator = createGenerator(method, sb);
 			generator.WriteBody(true, false);
 			
-			TextAssert.ContainsLine("const params = { id };", sb.ToString());	
+			TextAssert.ContainsLine("const queryStringParams = { id };", sb.ToString());	
 		}
 
 
@@ -111,7 +112,7 @@ namespace TSClientGen.Tests
 		private static ApiMethod createMethodDescriptor(string url, params (string name, Type type)[] parameters)
 		{
 			return new ApiMethod(
-				"func",url, "GET",
+				"func",url, HttpMethod.Get, 
 				parameters.Select(p => new ApiMethodParam(p.name, p.type, false, false)).ToArray(),
 				typeof(void), false, false);
 		}		

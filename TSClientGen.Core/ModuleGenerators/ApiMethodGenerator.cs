@@ -34,8 +34,6 @@ namespace TSClientGen
 
 		public void WriteBody(bool generateGetUrl, bool supportsExternalHost)
 		{
-			_result.AppendLine($"const method = '{_apiMethod.HttpVerb.ToLower()}';");
-		
 			string url = _apiMethod.UrlTemplate;
 			foreach (var param in _apiMethod.UrlParamsByPlaceholder)
 			{
@@ -44,29 +42,30 @@ namespace TSClientGen
 				{
 					paramValue += ".toISOString()";
 				}
-				url = url.Replace(param.Key,"${" + paramValue + "}");
+
+				url = url.Replace(param.Key, "${" + paramValue + "}");
 			}
-			
+
 			_result.AppendLine(supportsExternalHost
 				? $"const url = (this.hostname || '') + `{url}`;"
 				: $"const url = `{url}`;");
 
-			var requestParams = new List<string> { "url", "method" };
-			
+			var requestParams = new List<string> {"url"};
+
 			if (_apiMethod.QueryParams.Any())
 			{
-				requestParams.Add("params");
+				requestParams.Add("queryStringParams");
 				var queryParams = _apiMethod.QueryParams.Select(p =>
 				{
 					if (p.OriginalName == p.GeneratedName && p.Type != typeof(DateTime))
 						return p.OriginalName;
-					
+
 					if (p.Type == typeof(DateTime))
 						return $"{p.OriginalName}: {p.GeneratedName}.toISOString()";
 
 					return $"{p.OriginalName}: {p.GeneratedName}";
 				});
-				_result.AppendLine($"const params = {{ {string.Join(", ", queryParams)} }};");
+				_result.AppendLine($"const queryStringParams = {{ {string.Join(", ", queryParams)} }};");
 			}
 
 			if (generateGetUrl)
@@ -74,40 +73,47 @@ namespace TSClientGen
 				_result.AppendLine($"return getUri({{ {string.Join(", ", requestParams)} }});");
 				return;
 			}
-			
+
 			if (_apiMethod.UploadsFiles)
 			{
-				requestParams.Add("data");
+				requestParams.Add("requestBody");
 				_result
-					.AppendLine("const data = new FormData();")
+					.AppendLine("const requestBody = new FormData();")
 					.AppendLine("for (const f of files) {").Indent()
 					.AppendLine("const namedBlob = f as NamedBlob;")
 					.AppendLine("if (namedBlob.blob && namedBlob.name) {").Indent()
-					.AppendLine("data.append('file', namedBlob.blob, namedBlob.name);").Unindent()
+					.AppendLine("requestBody.append('file', namedBlob.blob, namedBlob.name);").Unindent()
 					.AppendLine("} else {").Indent()
-					.AppendLine("data.append('file', f as File);").Unindent()
+					.AppendLine("requestBody.append('file', f as File);").Unindent()
 					.AppendLine("}").Unindent()
 					.AppendLine("}");
 
 				if (_apiMethod.BodyParam != null)
 				{
-					_result.AppendLine($"const blob = new Blob([JSON.stringify({_apiMethod.BodyParam.GeneratedName})], {{ type: 'application/json' }});");
-					_result.AppendLine("data.append('Value', blob);");
+					_result.AppendLine(
+						$"const blob = new Blob([JSON.stringify({_apiMethod.BodyParam.GeneratedName})], {{ type: 'application/json' }});");
+					_result.AppendLine("requestBody.append('Value', blob);");
 				}
 			}
 			else if (_apiMethod.BodyParam != null)
 			{
-				requestParams.Add("data");
-				_result.AppendLine($"const data = {_apiMethod.BodyParam.GeneratedName};");
+				requestParams.Add("requestBody");
+				_result.AppendLine($"const requestBody = {_apiMethod.BodyParam.GeneratedName};");
 			}
 
-			requestParams.AddRange(new[] { "cancelToken" });
+			requestParams.Add("cancelToken");
 			if (_apiMethod.UploadsFiles)
 			{
 				requestParams.Add("onUploadProgress");
 			}
 
+			requestParams.Add("method");
+			_result.AppendLine($"const method = '{_apiMethod.HttpMethod.Method.ToLower()}';");
+
+			requestParams.Add("jsonResponseExpected");
 			string tsReturnType = _typeMapping.GetTSType(_apiMethod.ReturnType);
+			bool jsonResponseExpected = (tsReturnType != "void");
+			_result.AppendLine($"const jsonResponseExpected = {jsonResponseExpected.ToString().ToLower()};");
 			_result.AppendLine($"return request<{tsReturnType}>({{ {string.Join(", ", requestParams)} }});");
 		}
 
@@ -142,7 +148,7 @@ namespace TSClientGen
 		{
 			var identifiersInUse = new HashSet<string>(
 				moduleImports.Concat(
-					new[] {"files", "cancelToken", "onUploadProgress", "url", "method", "params", "data", "blob"}));
+					new[] {"files", "cancelToken", "onUploadProgress", "url", "method", "queryStringParams", "requestBody", "blob"}));
 
 			foreach (var param in _apiMethod.AllParams.Where(param => !_apiMethod.UploadsFiles || !param.IsBodyContent))
 			{
