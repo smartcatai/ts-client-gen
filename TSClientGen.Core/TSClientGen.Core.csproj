@@ -13,7 +13,11 @@
     </ItemGroup>
 
     <ItemGroup>
-      <EmbeddedResource Include="common.ts" />
+      <EmbeddedResource Include="transport-axios.ts" />
+      <EmbeddedResource Include="transport-contracts.ts" />
+      <EmbeddedResource Include="transport-fetch.ts" />
+      <EmbeddedResource Include="transport-jquery.ts" />
+      <EmbeddedResource Include="transport-superagent.ts" />
     </ItemGroup>
 
     <ItemGroup>

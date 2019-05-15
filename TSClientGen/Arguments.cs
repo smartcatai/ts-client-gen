@@ -23,8 +23,11 @@ namespace TSClientGen
 		[Option("string-enums")]
 		public bool UseStringEnums { get; set; }		
 
-		[Option("common-module")]
-		public string CommonModuleName { get; set; }
+		[Option("transport", SetName = "transport")]
+		public BuiltinXhrModule? BuiltinTransportModule { get; set; }
+		
+		[Option("custom-transport", SetName = "transport")]
+		public string CustomTransportModule { get; set; }
 		
 		[Option("get-resource-module")]
 		public string GetResourceModuleName { get; set; }		

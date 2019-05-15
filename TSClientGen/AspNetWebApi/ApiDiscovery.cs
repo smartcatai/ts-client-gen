@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Reflection;
 using System.Threading;
 using System.Web.Http;
@@ -63,10 +64,11 @@ namespace TSClientGen.AspNetWebApi
 			if (route == null)
 				return null;
 
-			var actionHttpMethodAttr = method.GetCustomAttributes().OfType<IActionHttpMethodProvider>().FirstOrDefault();
-			var httpVerb = getVerb(actionHttpMethodAttr);
-			if (httpVerb == null)
-				throw new Exception($"Unknown http verb '{actionHttpMethodAttr}' for method {method.Name} in type {method.DeclaringType.FullName}");				
+			var httpMethod = method.GetCustomAttributes().OfType<IActionHttpMethodProvider>()
+				.SelectMany(a => a.HttpMethods)
+				.FirstOrDefault();
+			if (httpMethod == null)
+				throw new Exception($"Can't determine http method for method {method.Name} in type {method.DeclaringType.FullName}");				
 			
 			var parameters = method.GetParameters()
 				.Where(p => p.ParameterType != typeof(CancellationToken))
@@ -78,7 +80,7 @@ namespace TSClientGen.AspNetWebApi
 				.ToList();
 
 			string urlTemplate = (routePrefix + route.Template).Replace("{action}", method.Name); 
-			var descriptor = new ApiMethod(method, urlTemplate, httpVerb, parameters);
+			var descriptor = new ApiMethod(method, urlTemplate, httpMethod, parameters);
 			if (_customMethodDescriptorProvider != null)
 			{
 				descriptor = _customMethodDescriptorProvider.DescribeMethod(method.DeclaringType, method, descriptor);
@@ -87,21 +89,9 @@ namespace TSClientGen.AspNetWebApi
 			return descriptor;
 		}
 
-		private static string getVerb(IActionHttpMethodProvider httpVerb)
+		private static HttpMethod getHttpMethod(IActionHttpMethodProvider httpVerb)
 		{
-			if (httpVerb is HttpGetAttribute)
-				return "GET";
-
-			if (httpVerb is HttpPostAttribute)
-				return "POST";
-
-			if (httpVerb is HttpPutAttribute)
-				return "PUT";
-
-			if (httpVerb is HttpDeleteAttribute)
-				return "DELETE";
-
-			return null;
+			return httpVerb.HttpMethods.FirstOrDefault();
 		}
 		
 		private readonly IMethodDescriptorProvider _customMethodDescriptorProvider;		

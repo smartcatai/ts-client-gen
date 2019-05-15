@@ -63,7 +63,7 @@ namespace TSClientGen.Tests
 				module,
 				typeMapping,
 				(val) => throw new NotImplementedException(),
-				"common");
+				"transport");
 		}
 		
 		

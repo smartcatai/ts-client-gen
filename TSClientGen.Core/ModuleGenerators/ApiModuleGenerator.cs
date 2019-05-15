@@ -11,34 +11,35 @@ namespace TSClientGen
 			ApiClientModule apiClientModule,
 			TypeMapping typeMapping,
 			Func<object, string> serializeToJson,
-			string commonModuleName)
+			string transportModuleName)
 		{
 			_apiClientModule = apiClientModule;
 			_typeMapping = typeMapping;
 			_serializeToJson = serializeToJson;
-			_commonModuleName = commonModuleName;
+			_transportModuleName = transportModuleName;
 		}
 		
 		
 		public void WriteApiClientClass()
 		{
-			var imports = new List<string> { "request" };
+			var transportContractInterfaces = new List<string>();
 			if (_apiClientModule.Methods.Any(m => !m.UploadsFiles))
 			{
-				imports.Add("HttpRequestOptions");				
+				transportContractInterfaces.Add("HttpRequestOptions");				
 			}
 			if (_apiClientModule.Methods.Any(m => m.UploadsFiles))
 			{
-				imports.Add("UploadFileHttpRequestOptions");
-				imports.Add("NamedBlob");
+				transportContractInterfaces.Add("UploadFileHttpRequestOptions");
+				transportContractInterfaces.Add("NamedBlob");
 			}
-			if (_apiClientModule.Methods.Any(m => m.GenerateUrl))
-			{
-				imports.Add("getUri");
-			}
+
+			var transportImports = _apiClientModule.Methods.Any(m => m.GenerateUrl)
+				? new[] { "request", "getUri" }
+				: new[] { "request" };
 			
 			_result
-				.AppendLine($"import {{ {string.Join(", ", imports)} }} from '{_commonModuleName}';")
+				.AppendLine($"import {{ {string.Join(", ", transportContractInterfaces)} }} from './{TransportContractsModuleName}';")
+				.AppendLine($"import {{ {string.Join(", ", transportImports)} }} from '{_transportModuleName}';")
 				.AppendLine()
 				.AppendLine($"export class {_apiClientModule.ApiClientClassName} {{")
 				.Indent();
@@ -51,7 +52,7 @@ namespace TSClientGen
 			foreach (var method in _apiClientModule.Methods)
 			{
 				var methodWriter = new ApiMethodGenerator(method, _result, _typeMapping);
-				methodWriter.ResolveConflictingParamNames(imports);
+				methodWriter.ResolveConflictingParamNames(transportImports);
 				if (method.GenerateUrl)
 				{					
 					writeMethod(
@@ -131,7 +132,9 @@ namespace TSClientGen
 		private readonly ApiClientModule _apiClientModule;
 		private readonly TypeMapping _typeMapping;
 		private readonly Func<object, string> _serializeToJson;
-		private readonly string _commonModuleName;
+		private readonly string _transportModuleName;
 		private readonly IndentedStringBuilder _result = new IndentedStringBuilder();
+		
+		public const string TransportContractsModuleName = "transport-contracts";		
 	}
 }

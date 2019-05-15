@@ -28,10 +28,6 @@ namespace TSClientGen
 			_serializeToJson = serializeToJson;
 		}
 		
-		
-		public const string DefaultCommonModuleName = "common.ts";		
-		
-		
 		public void Execute()
 		{
 			if (!Directory.Exists(_arguments.OutDir))
@@ -42,20 +38,24 @@ namespace TSClientGen
 
 			_generatedFiles = new HashSet<string>();
 
-			if (_arguments.CommonModuleName == null)
+			writeBuiltinModule(ApiModuleGenerator.TransportContractsModuleName + ".ts");
+			string builtinTransportModule = (_arguments.BuiltinTransportModule != null)
+				? $"transport-{_arguments.BuiltinTransportModule.ToString().ToLower()}.ts"
+				: null;
+			if (builtinTransportModule != null)
 			{
-				writeDefaultCommonModule();
+				writeBuiltinModule(builtinTransportModule);
 			}			
 
 			var allEnums = new HashSet<Type>();
 			foreach (var asmPath in _arguments.AssemblyPaths)
 			{
 				var asm = Assembly.LoadFrom(asmPath);
-				var commonModuleName = _arguments.CommonModuleName ?? "./" + DefaultCommonModuleName;
-				if (commonModuleName.EndsWith(".ts", StringComparison.InvariantCultureIgnoreCase))
-					commonModuleName = commonModuleName.Remove(commonModuleName.Length - 3);
+				var transportModuleName = _arguments.CustomTransportModule ?? $"./{builtinTransportModule}";
+				if (transportModuleName.EndsWith(".ts", StringComparison.InvariantCultureIgnoreCase))
+					transportModuleName = transportModuleName.Remove(transportModuleName.Length - 3);
 
-				generateClientsFromAsm(asm, commonModuleName, enumsModuleName, allEnums);				
+				generateClientsFromAsm(asm, transportModuleName, enumsModuleName, allEnums);				
 				generateResources(asm);
 
 				foreach (var attr in asm.GetCustomAttributes().OfType<TSExtendEnumAttribute>())
@@ -76,19 +76,19 @@ namespace TSClientGen
 			}
 		}
 
-		private void writeDefaultCommonModule()
+		private void writeBuiltinModule(string moduleName)
 		{
-			using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream($"TSClientGen." + DefaultCommonModuleName))
+			using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream($"TSClientGen." + moduleName))
 			using (var streamReader = new StreamReader(stream))
 			{
 				File.WriteAllText(
-					Path.Combine(_arguments.OutDir, DefaultCommonModuleName), 
+					Path.Combine(_arguments.OutDir, moduleName), 
 					streamReader.ReadToEnd());
 			}
-			_generatedFiles.Add(Path.Combine(_arguments.OutDir, DefaultCommonModuleName).ToLowerInvariant());			
+			_generatedFiles.Add(Path.Combine(_arguments.OutDir, moduleName).ToLowerInvariant());			
 		}
 		
-		private void generateClientsFromAsm(Assembly assembly, string commonModuleName, string enumsModuleName, HashSet<Type> allEnums)
+		private void generateClientsFromAsm(Assembly assembly, string transportModuleName, string enumsModuleName, HashSet<Type> allEnums)
 		{
 			var sw = new Stopwatch();
 			sw.Start();
@@ -116,7 +116,7 @@ namespace TSClientGen
 					typeMapping.AddType(type);
 				}
 				
-				var generator = new ApiModuleGenerator(module, typeMapping, _serializeToJson, commonModuleName);
+				var generator = new ApiModuleGenerator(module, typeMapping, _serializeToJson, transportModuleName);
 				generator.WriteApiClientClass();
 				generator.WriteTypeDefinitions();
 				generator.WriteEnumImports(enumsModuleName);

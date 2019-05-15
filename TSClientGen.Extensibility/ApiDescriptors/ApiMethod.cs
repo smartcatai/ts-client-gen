@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
@@ -14,7 +15,7 @@ namespace TSClientGen.Extensibility.ApiDescriptors
 		public ApiMethod(
 			string name,
 			string urlTemplate,
-			string httpVerb,
+			HttpMethod httpMethod,
 			IReadOnlyCollection<ApiMethodParam> parameters,
 			Type returnType,
 			bool uploadsFiles,
@@ -22,7 +23,7 @@ namespace TSClientGen.Extensibility.ApiDescriptors
 		{
 			Name = name;
 			UrlTemplate = urlTemplate;
-			HttpVerb = httpVerb;
+			HttpMethod = httpMethod;
 			ReturnType = returnType;
 			UploadsFiles = uploadsFiles;
 			GenerateUrl = generateUrl;
@@ -49,12 +50,12 @@ namespace TSClientGen.Extensibility.ApiDescriptors
 		public ApiMethod(
 			MethodInfo method,
 			string urlTemplate,
-			string httpVerb,
+			HttpMethod httpMethod,
 			IReadOnlyCollection<ApiMethodParam> parameters)
 			: this(
 				method.Name,
 				urlTemplate,
-				httpVerb,
+				httpMethod,
 				parameters,
 				method.ReturnType,
 				method.GetCustomAttribute<TSUploadFilesAttribute>() != null,
@@ -79,9 +80,9 @@ namespace TSClientGen.Extensibility.ApiDescriptors
 		public Type ReturnType { get; }
 		
 		/// <summary>
-		/// HTTP request verb
+		/// HTTP method
 		/// </summary>
-		public string HttpVerb { get; }
+		public HttpMethod HttpMethod { get; }
 
 		/// <summary>
 		/// Whether to generate a method in an api client class that takes a set of parameters and generates full api method url
