@@ -101,7 +101,7 @@ namespace TSClientGen
 				_result.AppendLine($"const requestBody = {_apiMethod.BodyParam.GeneratedName};");
 			}
 
-			requestParams.Add("cancelToken");
+			requestParams.Add("getAbortFunc");
 			if (_apiMethod.UploadsFiles)
 			{
 				requestParams.Add("onUploadProgress");
@@ -132,8 +132,8 @@ namespace TSClientGen
 				yield return "files: Array<NamedBlob | File>";
 
 			yield return _apiMethod.UploadsFiles
-				? "{ cancelToken, onUploadProgress }: UploadFileHttpRequestOptions = {}"
-				: "{ cancelToken }: HttpRequestOptions = {}";
+				? "{ getAbortFunc, onUploadProgress }: UploadFileHttpRequestOptions = {}"
+				: "{ getAbortFunc }: HttpRequestOptions = {}";
 		}
 
 		public IEnumerable<string> GetTypescriptParamsForUrl()
@@ -148,7 +148,7 @@ namespace TSClientGen
 		{
 			var identifiersInUse = new HashSet<string>(
 				moduleImports.Concat(
-					new[] {"files", "cancelToken", "onUploadProgress", "url", "method", "queryStringParams", "requestBody", "blob"}));
+					new[] {"files", "getAbortFunc", "onUploadProgress", "url", "method", "queryStringParams", "requestBody", "blob"}));
 
 			foreach (var param in _apiMethod.AllParams.Where(param => !_apiMethod.UploadsFiles || !param.IsBodyContent))
 			{

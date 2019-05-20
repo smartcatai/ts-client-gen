@@ -1,15 +1,18 @@
 import { RequestOptions, GetUriOptions } from './transport-contracts';
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 
 export async function request<TResponse>(request: RequestOptions): Promise<TResponse> {
-	const response = await axios.request<TResponse>({
+	const options: AxiosRequestConfig = {
 		url: request.url,
 		method: request.method,
 		params: request.queryStringParams,
 		data: request.requestBody,
-		cancelToken: request.cancelToken,
 		onUploadProgress: request.onUploadProgress
-	});
+	};
+	if (typeof request.getAbortFunc == 'function') {
+		options.cancelToken = new axios.CancelToken(request.getAbortFunc);
+	}
+	const response = await axios.request<TResponse>(options);
 	return response.data;
 }
 

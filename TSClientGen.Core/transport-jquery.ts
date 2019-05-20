@@ -1,8 +1,8 @@
 import { GetUriOptions, RequestOptions } from './transport-contracts';
 
 export async function request<TResponse>(request: RequestOptions): Promise<TResponse> {
-	if (request.cancelToken != null) {
-		throw new Error('JQuery does not support cancelling http requests');
+	if (request.getAbortFunc != null) {
+		throw new Error('JQuery does not support aborting http requests');
 	}
 	
 	return new Promise((resolve, reject) => {
