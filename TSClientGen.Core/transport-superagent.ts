@@ -2,8 +2,8 @@ import { GetUriOptions, RequestOptions } from './transport-contracts';
 import * as superagent from 'superagent';
 
 export async function request<TResponse>(request: RequestOptions): Promise<TResponse> {
-	if (request.cancelToken != null) {
-		throw new Error('SuperAgent does not support cancelling http requests');
+	if (request.getAbortFunc != null) {
+		throw new Error('SuperAgent does not support aborting http requests');
 	}
 
 	let chain: superagent.SuperAgentRequest;

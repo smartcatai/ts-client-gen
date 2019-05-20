@@ -1,8 +1,8 @@
 import { GetUriOptions, RequestOptions } from './transport-contracts';
 
 export async function request<TResponse>(request: RequestOptions): Promise<TResponse> {
-	if (request.cancelToken != null) {
-		throw new Error('Fetch API does not support cancelling http requests at the moment');
+	if (request.getAbortFunc != null) {
+		throw new Error('Fetch API does not support aborting http requests at the moment');
 	}
 
 	if (request.onUploadProgress != null) {

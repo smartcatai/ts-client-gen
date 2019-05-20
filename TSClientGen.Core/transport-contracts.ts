@@ -4,7 +4,7 @@ export interface NamedBlob {
 }
 
 export interface HttpRequestOptions {
-	cancelToken?: CancelToken
+	getAbortFunc?: (abort: () => void) => void
 }
 
 export interface UploadFileHttpRequestOptions extends HttpRequestOptions {
@@ -21,15 +21,9 @@ export type Method =
 export interface RequestOptions extends GetUriOptions {
 	method: Method;
 	requestBody?: any,
-	cancelToken?: CancelToken;
+	getAbortFunc: (abort: () => void) => void;
 	onUploadProgress?: (progressEvent: ProgressEvent) => void;
 	jsonResponseExpected: boolean;
-}
-
-export interface CancelToken {
-	promise: Promise<{ message: string }>;
-	reason?: { message: string };
-	throwIfRequested(): void;
 }
 
 export interface GetUriOptions {

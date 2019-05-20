@@ -68,14 +68,14 @@ namespace TSClientGen.Tests
 		}
 		
 		[Test]
-		public void Request_cancellation_is_supported()
+		public void Aborting_request_is_supported()
 		{
 			var method = createMethodDescriptor("/func");
 			var sb = new IndentedStringBuilder();
 			var generator = createGenerator(method, sb);
 			generator.WriteBody(false, false);
 			
-			TextAssert.ContainsLine("return request<void>({ url, cancelToken, method, jsonResponseExpected });", sb.ToString());	
+			TextAssert.ContainsLine("return request<void>({ url, getAbortFunc, method, jsonResponseExpected });", sb.ToString());	
 		}
 		
 		[Test]
@@ -89,7 +89,7 @@ namespace TSClientGen.Tests
 			var generator = createGenerator(method, sb);
 			generator.WriteBody(false, false);
 			
-			TextAssert.ContainsLine("return request<void>({ url, requestBody, cancelToken, onUploadProgress, method, jsonResponseExpected });", sb.ToString());	
+			TextAssert.ContainsLine("return request<void>({ url, requestBody, getAbortFunc, onUploadProgress, method, jsonResponseExpected });", sb.ToString());	
 		}
 
 		[Test]
