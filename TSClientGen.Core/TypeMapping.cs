@@ -220,6 +220,7 @@ namespace TSClientGen
 		private TypeDescriptor createInterfaceDescriptor(Type type)
 		{
 			var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
+				.Where(p => p.GetCustomAttribute<TSIgnoreAttribute>() == null)
 				.Select(p => new { Descriptor = createPropertyDescriptor(p), Property = p })
 				.Where(p => p.Descriptor != null)
 				.ToList();

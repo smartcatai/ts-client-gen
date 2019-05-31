@@ -63,6 +63,9 @@ namespace TSClientGen.AspNetWebApi
 			if (route == null)
 				return null;
 
+			if (method.GetCustomAttribute<TSIgnoreAttribute>() != null)
+				return null;
+
 			var actionHttpMethodAttr = method.GetCustomAttributes().OfType<IActionHttpMethodProvider>().FirstOrDefault();
 			var httpVerb = getVerb(actionHttpMethodAttr);
 			if (httpVerb == null)
@@ -70,6 +73,7 @@ namespace TSClientGen.AspNetWebApi
 			
 			var parameters = method.GetParameters()
 				.Where(p => p.ParameterType != typeof(CancellationToken))
+				.Where(p => p.GetCustomAttribute<TSIgnoreAttribute>() == null)
 				.Select(p => new ApiMethodParam(
 					p.Name,
 					p.ParameterType,

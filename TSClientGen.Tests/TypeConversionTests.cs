@@ -44,6 +44,17 @@ namespace TSClientGen.Tests
 		}
 
 		[Test]
+		public void Ignored_properties_are_excluded_from_code_generation()
+		{
+			var mapping = new TypeMapping();
+			mapping.AddType(typeof(SimpleModel));
+
+			var generatedType = mapping.GetGeneratedTypes()[typeof(SimpleModel)]; 
+			TextAssert.ContainsLine("prop1: string;", generatedType);
+			TextAssert.DoesNotContainLine("prop2: string;", generatedType);
+		}
+
+		[Test]
 		public void Generic_types_are_mapped_correctly()
 		{
 			var mapping = new TypeMapping();
@@ -124,6 +135,10 @@ namespace TSClientGen.Tests
 		// ReSharper disable once ClassNeverInstantiated.Local
 		class SimpleModel
 		{
+			public string Prop1 { get; }
+			
+			[TSIgnore]
+			public string Prop2 { get; }
 		}
 
 		class GenericModel<T>
