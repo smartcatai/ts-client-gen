@@ -64,6 +64,9 @@ namespace TSClientGen.AspNetWebApi
 			if (route == null)
 				return null;
 
+			if (method.GetCustomAttribute<TSIgnoreAttribute>() != null)
+				return null;
+
 			var httpMethod = method.GetCustomAttributes().OfType<IActionHttpMethodProvider>()
 				.SelectMany(a => a.HttpMethods)
 				.FirstOrDefault();
@@ -72,6 +75,7 @@ namespace TSClientGen.AspNetWebApi
 			
 			var parameters = method.GetParameters()
 				.Where(p => p.ParameterType != typeof(CancellationToken))
+				.Where(p => p.GetCustomAttribute<TSIgnoreAttribute>() == null)
 				.Select(p => new ApiMethodParam(
 					p.Name,
 					p.ParameterType,
@@ -87,11 +91,6 @@ namespace TSClientGen.AspNetWebApi
 			}
 
 			return descriptor;
-		}
-
-		private static HttpMethod getHttpMethod(IActionHttpMethodProvider httpVerb)
-		{
-			return httpVerb.HttpMethods.FirstOrDefault();
 		}
 		
 		private readonly IMethodDescriptorProvider _customMethodDescriptorProvider;		

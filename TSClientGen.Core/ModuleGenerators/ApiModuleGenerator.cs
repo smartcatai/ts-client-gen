@@ -54,7 +54,7 @@ namespace TSClientGen
 				var methodWriter = new ApiMethodGenerator(method, _result, _typeMapping);
 				methodWriter.ResolveConflictingParamNames(transportImports);
 				if (method.GenerateUrl)
-				{					
+				{
 					writeMethod(
 						() => methodWriter.WriteGetUrlSignature(), 
 						() => methodWriter.WriteBody(true, _apiClientModule.SupportsExternalHost));
