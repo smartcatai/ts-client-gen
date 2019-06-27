@@ -13,14 +13,20 @@ namespace TSClientGen
 			ILookup<Type, TSExtendEnumAttribute> staticMemberProvidersByEnum)
 		{
 			var requireResourceImport = false;
+			var typesWithStaticMembers = new List<Type>();
 
 			foreach (var @enum in enumTypes)
 			{
 				writeEnum(@enum);
 
-				if (!staticMemberProvidersByEnum[@enum].Any())
-					continue;
+				if (staticMemberProvidersByEnum[@enum].Any())
+				{
+					typesWithStaticMembers.Add(@enum);
+				}
+			}
 
+			foreach (var @enum in typesWithStaticMembers)
+			{
 				_result.AppendLine($"export namespace {@enum.Name} {{").Indent();
 
 				foreach (var provider in staticMemberProvidersByEnum[@enum])
