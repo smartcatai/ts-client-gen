@@ -1,20 +1,16 @@
 ﻿using System;
-using System.Linq;
 using System.Resources;
-using System.Text;
 
 namespace TSClientGen
 {
 	/// <summary>
-	/// For applying to assembly.
-	/// Allows to bind enum type to a server-side resx file and to expose enum values' localized names to the frontend.
-	/// You should provide a plugin that handles resource file generation for the frontend when using this attribute.
+	/// Is not intended for direct use, use its descendants <see cref="TSEnumLocalizationAttribute"/> or <see cref="TSClientGen.ForAssembly.TSEnumLocalizationAttribute"/> instead.
+	/// Base class for attributes that allow binding enum type to a server-side resx file and to expose enum values' localized names to the frontend.
 	/// </summary>
-	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-	public class TSEnumLocalizationAttribute : TSExtendEnumAttribute
+	public abstract class TSEnumLocalizationAttributeBase : Attribute
 	{
-		public TSEnumLocalizationAttribute(Type enumType, Type resxType, bool usePrefix = false, string[] additionalContexts = null)
-			: base(enumType)
+		protected TSEnumLocalizationAttributeBase(Type resxType, bool usePrefix = false,
+			string[] additionalContexts = null)
 		{
 			if (resxType == null) throw new ArgumentNullException(nameof(resxType));
 
@@ -23,6 +19,7 @@ namespace TSClientGen
 			AdditionalContexts = additionalContexts;
 			UsePrefix = usePrefix;
 		}
+
 
 		/// <summary>
 		/// Full name of the server-side resx file
@@ -38,41 +35,48 @@ namespace TSClientGen
 		/// Specifies whether enum values are prefixed with enum name in a server-side resource file
 		/// </summary>
 		public bool UsePrefix { get; }
-		
+
 		/// <summary>
 		/// Allows for generating more than one set of enum values' localized names
 		/// </summary>
 		public string[] AdditionalContexts { get; }
-		
+	}
 
-		public override void GenerateStaticMembers(StringBuilder sb)
+	/// <summary>
+	/// For applying to enum type.
+	/// Allows binding enum type to a server-side resx file and to expose enum values' localized names to the frontend.
+	/// You should provide a plugin that handles resource file generation for the frontend when using this attribute.
+	/// </summary>
+	[AttributeUsage(AttributeTargets.Enum)]
+	public sealed class TSEnumLocalizationAttribute : TSEnumLocalizationAttributeBase
+	{
+		public TSEnumLocalizationAttribute(Type resxType, bool usePrefix = false, string[] additionalContexts = null)
+			: base(resxType, usePrefix, additionalContexts)
 		{
-			if (AdditionalContexts == null)
+		}
+	}
+
+	namespace ForAssembly
+	{
+		/// <summary>
+		/// For applying to assembly.
+		/// Allows binding enum type to a server-side resx file and to expose enum values' localized names to the frontend.
+		/// You should provide a plugin that handles resource file generation for the frontend when using this attribute.
+		/// </summary>
+		[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
+		public sealed class TSEnumLocalizationAttribute : TSEnumLocalizationAttributeBase
+		{
+			public TSEnumLocalizationAttribute(Type enumType, Type resxType, bool usePrefix = false,
+				string[] additionalContexts = null)
+				: base(resxType, usePrefix, additionalContexts)
 			{
-				sb
-					.AppendLine($"export function localize(enumValue: {EnumType.Name}) {{")
-					.AppendLine($"\treturn getResource('{EnumType.Name}_' + {EnumType.Name}[enumValue]);")
-					.AppendLine("}");
-			}
-			else
-			{
-				var contextTypeScriptType = string.Join("|", AdditionalContexts.Select(s => $"'{s}'"));
-				sb
-					.AppendLine($"export function localize(enumValue: {EnumType.Name}, context?: {contextTypeScriptType}) {{")
-					.AppendLine($"\tconst prefix = '{EnumType.Name}_' + (context ? context + '_' : '');")
-					.AppendLine($"\treturn getResource(prefix + {EnumType.Name}[enumValue]);")
-					.AppendLine("}");
+				EnumType = enumType;
 			}
 
-			sb
-				.AppendLine("export function getLocalizedValues() {")
-				.AppendLine($"\treturn Object.keys({EnumType.Name}).map(key => parseInt(key)).filter(key => !isNaN(key)).map(id => {{")
-				.AppendLine("\t\treturn {")
-				.AppendLine("\t\t\tid: id,")
-				.AppendLine($"\t\t\tname: {EnumType.Name}.localize(id)")
-				.AppendLine("\t\t};")
-				.AppendLine("\t});")
-				.AppendLine("}");
+			/// <summary>
+			/// Enum type
+			/// </summary>
+			public Type EnumType { get; }
 		}
 	}
 }
