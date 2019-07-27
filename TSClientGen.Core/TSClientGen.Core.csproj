@@ -1,29 +1,26 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
-        <RootNamespace>TSClientGen</RootNamespace>
-        <PackageVersion>5.0.0</PackageVersion>
-        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\TSClientGen.Contract\TSClientGen.Contract.csproj" />
-      <ProjectReference Include="..\TSClientGen.Extensibility\TSClientGen.Extensibility.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <EmbeddedResource Include="transport-axios.ts" />
-      <EmbeddedResource Include="transport-contracts.ts" />
-      <EmbeddedResource Include="transport-fetch.ts" />
-      <EmbeddedResource Include="transport-jquery.ts" />
-      <EmbeddedResource Include="transport-superagent.ts" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Compile Include="..\SolutionInfo.cs">
-        <Link>Properties\SolutionInfo.cs</Link>
-      </Compile>
-    </ItemGroup>
-
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>TSClientGen</RootNamespace>
+    <PackageVersion>5.0.0</PackageVersion>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TSClientGen.Contract\TSClientGen.Contract.csproj" />
+    <ProjectReference Include="..\TSClientGen.Extensibility\TSClientGen.Extensibility.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="transport-axios.ts" />
+    <EmbeddedResource Include="transport-contracts.ts" />
+    <EmbeddedResource Include="transport-fetch.ts" />
+    <EmbeddedResource Include="transport-jquery.ts" />
+    <EmbeddedResource Include="transport-superagent.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\SolutionInfo.cs">
+      <Link>Properties\SolutionInfo.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <Import Project="..\.paket\Paket.Restore.targets" />
 </Project>

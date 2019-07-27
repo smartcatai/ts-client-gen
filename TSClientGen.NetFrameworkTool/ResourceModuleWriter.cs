@@ -2,7 +2,7 @@ using System.IO;
 using System.Resources;
 using TSClientGen.Extensibility;
 
-namespace TSClientGen.AspNetWebApi
+namespace TSClientGen.NetFrameworkTool
 {
 	public sealed class ResourceModuleWriter : IResourceModuleWriter
 	{

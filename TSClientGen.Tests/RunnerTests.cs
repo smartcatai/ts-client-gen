@@ -97,7 +97,7 @@ namespace TSClientGen.Tests
 		private static Runner createRunner()
 		{
 			return new Runner(
-				new Mock<IArguments>().Object,
+				new Arguments(),
 				new Mock<IApiDiscovery>().Object,
 				new Mock<ITypeConverter>().Object,
 				new Mock<ITypeDescriptorProvider>().Object,

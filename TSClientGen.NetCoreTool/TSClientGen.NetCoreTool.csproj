@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TSClientGen.Contract\TSClientGen.Contract.csproj" />
+    <ProjectReference Include="..\TSClientGen.Core\TSClientGen.Core.csproj" />
+    <ProjectReference Include="..\TSClientGen.Extensibility\TSClientGen.Extensibility.csproj" />
+  </ItemGroup>
+  <Import Project="..\.paket\Paket.Restore.targets" />
+</Project>

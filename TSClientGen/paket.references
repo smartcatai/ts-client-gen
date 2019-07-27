@@ -1,7 +1,0 @@
-CommandLineParser
-System.ComponentModel.Composition
-
-group NetFramework
-  Newtonsoft.Json
-  Microsoft.AspNet.WebApi.Core
-  Microsoft.AspNet.WebApi.Client

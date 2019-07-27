@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TSClientGen", "TSClientGen\TSClientGen.csproj", "{967465F8-A6C8-4ADC-B40D-D21A88D8C20A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TSClientGen.NetFrameworkTool", "TSClientGen.NetFrameworkTool\TSClientGen.NetFrameworkTool.csproj", "{967465F8-A6C8-4ADC-B40D-D21A88D8C20A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{742D33E2-3565-4617-8491-D23192AD98BF}"
 	ProjectSection(SolutionItems) = preProject
@@ -31,6 +31,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspNetFramework.WebApi", "Samples\AspNetFramework.WebApi\AspNetFramework.WebApi.csproj", "{03B9ECF4-C3D7-479C-8208-F010A4D260F3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedModels", "Samples\SharedModels\SharedModels.csproj", "{9B817D59-6383-4EA5-9A52-F403CA4E12F5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TSClientGen.NetCoreTool", "TSClientGen.NetCoreTool\TSClientGen.NetCoreTool.csproj", "{1926AC7F-1418-4C04-9EC6-81BEAE8CD19C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -70,6 +72,10 @@ Global
 		{9B817D59-6383-4EA5-9A52-F403CA4E12F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9B817D59-6383-4EA5-9A52-F403CA4E12F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9B817D59-6383-4EA5-9A52-F403CA4E12F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1926AC7F-1418-4C04-9EC6-81BEAE8CD19C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1926AC7F-1418-4C04-9EC6-81BEAE8CD19C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1926AC7F-1418-4C04-9EC6-81BEAE8CD19C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1926AC7F-1418-4C04-9EC6-81BEAE8CD19C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

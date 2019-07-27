@@ -3,7 +3,7 @@ using TSClientGen.Extensibility;
 
 namespace TSClientGen
 {
-	public class InjectedPlugins
+	public class InjectedPlugin
 	{
 		[Import(AllowDefault = true)]
 		public IMethodDescriptorProvider MethodDescriptorProvider { get; set; }
