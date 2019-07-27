@@ -40,7 +40,7 @@ namespace TSClientGen
 				}
 			}
 
-			var apiDiscovery = new ApiDiscovery(plugins.MethodDescriptorProvider);
+			var apiDiscovery = plugins.ApiDiscovery ?? new ApiDiscovery(plugins.MethodDescriptorProvider);
 			var resultFileWriter = new ResultFileWriter(
 				arguments.OutDir,
 				arguments.DefaultLocale,
