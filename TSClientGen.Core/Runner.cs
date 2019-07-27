@@ -3,10 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using TSClientGen.Extensibility;
+using TSClientGen.Extensibility.ApiDescriptors;
 
 namespace TSClientGen
 {
@@ -17,91 +17,75 @@ namespace TSClientGen
 			IApiDiscovery apiDiscovery,
 			ITypeConverter customTypeConverter,
 			ITypeDescriptorProvider typeDescriptorProvider,
-			IResourceModuleWriterFactory resourceModuleWriterFactory,
+			IResultFileWriter resultFileWriter,
 			Func<object, string> serializeToJson)
 		{
 			_arguments = arguments;
 			_apiDiscovery = apiDiscovery;
 			_customTypeConverter = customTypeConverter;
 			_typeDescriptorProvider = typeDescriptorProvider;
-			_resourceModuleWriterFactory = resourceModuleWriterFactory;
+			_resultFileWriter = resultFileWriter;
 			_serializeToJson = serializeToJson;
 		}
-		
+
 		public void Execute()
 		{
-			if (!Directory.Exists(_arguments.OutDir))
-				Directory.CreateDirectory(_arguments.OutDir);
-
 			string enumsModuleName = _arguments.EnumsModuleName ?? "enums";
-			var enumStaticMemberProviders = new List<TSExtendEnumAttribute>();
 
-			_generatedFiles = new HashSet<string>();
-
-			writeBuiltinModule(ApiModuleGenerator.TransportContractsModuleName + ".ts");
+			_resultFileWriter.WriteBuiltinModule(ApiModuleGenerator.TransportContractsModuleName + ".ts");
 			string builtinTransportModule = (_arguments.BuiltinTransportModule != null)
 				? $"transport-{_arguments.BuiltinTransportModule.ToString().ToLower()}.ts"
 				: null;
 			if (builtinTransportModule != null)
 			{
-				writeBuiltinModule(builtinTransportModule);
-			}			
+				_resultFileWriter.WriteBuiltinModule(builtinTransportModule);
+			}
 
 			var allEnums = new HashSet<Type>();
-			foreach (var asmPath in _arguments.AssemblyPaths)
+			var assemblies = _arguments.AssemblyPaths.Select(Assembly.LoadFrom).ToList();
+			foreach (var assembly in assemblies)
 			{
-				var asm = Assembly.LoadFrom(asmPath);
 				var transportModuleName = _arguments.CustomTransportModule ?? $"./{builtinTransportModule}";
 				if (transportModuleName.EndsWith(".ts", StringComparison.InvariantCultureIgnoreCase))
 					transportModuleName = transportModuleName.Remove(transportModuleName.Length - 3);
 
-				generateClientsFromAsm(asm, transportModuleName, enumsModuleName, allEnums);				
-				generateResources(asm);
+				var apiClientModules = _apiDiscovery.GetModules(assembly);
+				var staticContentModules = assembly.GetCustomAttributes().OfType<TSStaticContentAttribute>();
+				GenerateApiClients(apiClientModules, staticContentModules, transportModuleName, enumsModuleName, allEnums);
 
-				foreach (var attr in asm.GetCustomAttributes().OfType<TSExtendEnumAttribute>())
-				{
-					enumStaticMemberProviders.Add(attr);
-					allEnums.Add(attr.EnumType);
-				}
+				var resources = assembly.GetCustomAttributes().OfType<TSExposeResxAttribute>().ToList();
+				GenerateResources(resources);
 			}
 
+			var staticMemberGeneratorsByEnumType = CollectEnumStaticMemberGenerators(assemblies, allEnums);
+			var enumLocalizationsByEnumType = CollectEnumLocalizationAttributes(assemblies, allEnums);
 			if (allEnums.Any())
 			{
-				generateEnumsModule(allEnums, enumStaticMemberProviders, enumsModuleName);
+				GenerateEnumsModule(allEnums, enumsModuleName, staticMemberGeneratorsByEnumType, enumLocalizationsByEnumType);
 			}
 
 			if (_arguments.CleanupOutDir)
 			{
-				cleanupOutDir();
+				_resultFileWriter.CleanupOutDir();
 			}
 		}
 
-		private void writeBuiltinModule(string moduleName)
-		{
-			using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream($"TSClientGen." + moduleName))
-			using (var streamReader = new StreamReader(stream))
-			{
-				File.WriteAllText(
-					Path.Combine(_arguments.OutDir, moduleName), 
-					streamReader.ReadToEnd());
-			}
-			_generatedFiles.Add(Path.Combine(_arguments.OutDir, moduleName).ToLowerInvariant());			
-		}
-		
-		private void generateClientsFromAsm(Assembly assembly, string transportModuleName, string enumsModuleName, HashSet<Type> allEnums)
+		public void GenerateApiClients(
+			IEnumerable<ApiClientModule> apiClientModules,
+			IEnumerable<TSStaticContentAttribute> staticContentModules,
+			string transportModuleName,
+			string enumsModuleName,
+			HashSet<Type> allEnums)
 		{
 			var sw = new Stopwatch();
 			sw.Start();
 
 			var moduleNames = new HashSet<string>();
 
-			var staticContentByModuleName = assembly.GetCustomAttributes()
-				.OfType<TSStaticContentAttribute>()
-				.ToDictionary(attr => attr.ModuleName);
-			
+			var staticContentByModuleName = staticContentModules.ToDictionary(attr => attr.ModuleName);
+
 			// generating client modules for api controllers
-			var modules = _apiDiscovery.GetModules(assembly);
-			foreach (var module in modules)
+			foreach (var module in apiClientModules)
 			{
 				if (moduleNames.Contains(module.Name))
 					throw new Exception("Duplicate module name - " + module.Name);
@@ -115,7 +99,7 @@ namespace TSClientGen
 				{
 					typeMapping.AddType(type);
 				}
-				
+
 				var generator = new ApiModuleGenerator(module, typeMapping, _serializeToJson, transportModuleName);
 				generator.WriteApiClientClass();
 				generator.WriteTypeDefinitions();
@@ -132,7 +116,7 @@ namespace TSClientGen
 					generator.WriteStaticContent(staticContentModule);
 				}
 
-				writeFile($"{module.Name}.ts", generator.GetResult());
+				_resultFileWriter.WriteFile($"{module.Name}.ts", generator.GetResult());
 
 				Console.WriteLine($"TypeScript client `{module.Name}` generated in {sw.ElapsedMilliseconds} ms");
 				sw.Restart();
@@ -148,65 +132,150 @@ namespace TSClientGen
 				var content = string.Join(Environment.NewLine,
 					staticContent.Content.Select(entry =>
 						$"export let {entry.Key} = {_serializeToJson(entry.Value)};"));
-				writeFile($"{staticContent.ModuleName}.ts", content);
+				_resultFileWriter.WriteFile($"{staticContent.ModuleName}.ts", content);
 			}
 		}
 
-		private void generateEnumsModule(
-			IEnumerable<Type> enums,
-			IReadOnlyCollection<TSExtendEnumAttribute> staticMemberProviders,
-			string enumsModuleName)
+		public Dictionary<Type, List<Func<string>>> CollectEnumStaticMemberGenerators(
+			IReadOnlyCollection<Assembly> assemblies,
+			HashSet<Type> allEnums)
+		{
+			var generatorsByEnumType = new Dictionary<Type, List<Func<string>>>();
+
+			foreach (var attr in assemblies.SelectMany(
+				asm => asm.GetCustomAttributes().OfType<ForAssembly.TSExtendEnumAttribute>()))
+			{
+				if (!generatorsByEnumType.TryGetValue(attr.EnumType, out var list))
+				{
+					list = generatorsByEnumType[attr.EnumType] = new List<Func<string>>();
+				}
+				list.Add(attr.GenerateStaticMembers);
+				allEnums.Add(attr.EnumType);
+			}
+
+			foreach (var @enum in allEnums)
+			{
+				foreach (var attr in @enum.GetCustomAttributes().OfType<TSExtendEnumAttribute>())
+				{
+					if (!generatorsByEnumType.TryGetValue(@enum, out var list))
+					{
+						list = generatorsByEnumType[@enum] = new List<Func<string>>();
+					}
+					list.Add(attr.GenerateStaticMembers);
+				}
+			}
+
+			return generatorsByEnumType;
+		}
+
+		public Dictionary<Type, TSEnumLocalizationAttributeBase> CollectEnumLocalizationAttributes(
+			IReadOnlyCollection<Assembly> assemblies,
+			HashSet<Type> allEnums)
+		{
+			var attributesByEnumType = new Dictionary<Type, TSEnumLocalizationAttributeBase>();
+
+			foreach (var attr in assemblies.SelectMany(
+				asm => asm.GetCustomAttributes().OfType<ForAssembly.TSEnumLocalizationAttribute>()))
+			{
+				if (attributesByEnumType.ContainsKey(attr.EnumType))
+				{
+					throw new InvalidOperationException($"TSEnumLocalizationAttribute has been applied more than once for the enum {attr.EnumType.FullName}");
+				}
+				attributesByEnumType[attr.EnumType] = attr;
+				allEnums.Add(attr.EnumType);
+			}
+
+			foreach (var enumType in allEnums)
+			{
+				var attr = enumType.GetCustomAttribute<TSEnumLocalizationAttribute>();
+				if (attr != null)
+				{
+					if (attributesByEnumType.ContainsKey(enumType))
+					{
+						throw new InvalidOperationException($"TSEnumLocalizationAttribute has been applied more than once for the enum {enumType.FullName}");
+					}
+					attributesByEnumType[enumType] = attr;
+				}
+			}
+
+			return attributesByEnumType;
+		}
+
+		public void GenerateEnumsModule(
+			IReadOnlyCollection<Type> enums,
+			string enumsModuleName,
+			Dictionary<Type, List<Func<string>>> staticMemberGeneratorsByEnumType,
+			Dictionary<Type, TSEnumLocalizationAttributeBase> localizationByEnumType)
 		{
 			var sw = new Stopwatch();
 			sw.Start();
 
-			var duplicateEnumNames = enums 
+			var duplicateEnumNames = enums
 				.GroupBy(e => e.Name)
 				.Where(g => g.Count() > 1)
 				.Select(g => g.Key)
 				.ToList();
 			if (duplicateEnumNames.Any())
 			{
-				throw new InvalidOperationException($"Duplicate enum names found - {string.Join(", ", duplicateEnumNames)}");
+				throw new InvalidOperationException(
+					$"Duplicate enum names found - {string.Join(", ", duplicateEnumNames)}");
 			}
-
-			var staticMemberProvidersLookup = staticMemberProviders.ToLookup(e => e.EnumType);
 
 			if (enumsModuleName.EndsWith(".ts"))
 				enumsModuleName = enumsModuleName.Remove(enumsModuleName.Length - 3);
-			
-			var enumModuleGenerator = new EnumModuleGenerator();
-			enumModuleGenerator.Write(enums, _arguments.UseStringEnums, _arguments.GetResourceModuleName, staticMemberProvidersLookup);
-			writeFile(enumsModuleName + ".ts", enumModuleGenerator.GetResult());
 
-			var enumLocalizationAttributes = staticMemberProviders.OfType<TSEnumLocalizationAttribute>().ToList();
-			if (_resourceModuleWriterFactory != null && enumLocalizationAttributes.Any())
+			var enumModuleGenerator = new EnumModuleGenerator();
+			enumModuleGenerator.Write(
+				enums,
+				_arguments.UseStringEnums,
+				_arguments.GetResourceModuleName,
+				staticMemberGeneratorsByEnumType,
+				localizationByEnumType);
+			_resultFileWriter.WriteFile(enumsModuleName + ".ts", enumModuleGenerator.GetResult());
+
+			var localizationProvidersByEnumType = staticMemberGeneratorsByEnumType
+				.SelectMany(pair => pair.Value
+					.OfType<TSEnumLocalizationAttributeBase>()
+					.Select(gen => (EnumType: pair.Key, Generator: gen)))
+				.ToDictionary(v => v.EnumType, v => v.Generator);
+			if (localizationProvidersByEnumType.Any())
 			{
+				if (!_resultFileWriter.CanWriteResourceFiles)
+				{
+					throw new InvalidOperationException(
+						"TSEnumLocalization attributes found in processed assemblies, but no IResourceModuleWriterFactory instance has been provided via a plugin");
+				}
+
 				foreach (var culture in _arguments.LocalizationLanguages)
 				{
-					using (var resourceModuleWriter = writeResourceFile(enumsModuleName, culture))
+					using (var resourceModuleWriter = _resultFileWriter.WriteResourceFile(enumsModuleName, culture))
 					{
 						var enumResourceModuleGenerator = new EnumResourceModuleGenerator(resourceModuleWriter);
-						enumResourceModuleGenerator.WriteEnumLocalizations(enumLocalizationAttributes);
+						enumResourceModuleGenerator.WriteEnumLocalizations(localizationProvidersByEnumType);
 					}
 				}
 			}
-			
+
 			Console.WriteLine($"Enums generated in {sw.ElapsedMilliseconds} ms");
 		}
 
-		private void generateResources(Assembly targetAsm)
+		public void GenerateResources(IReadOnlyList<TSExposeResxAttribute> resources)
 		{
-			var resources = targetAsm.GetCustomAttributes().OfType<TSExposeResxAttribute>().ToList();
-			if (_resourceModuleWriterFactory == null || !resources.Any())
+			if (!resources.Any())
 				return;
-			
+
+			if (!_resultFileWriter.CanWriteResourceFiles)
+			{
+				throw new InvalidOperationException(
+					"TSExposeResx attributes found in processed assemblies, but no IResourceModuleWriterFactory instance has been provided via a plugin");
+			}
+
 			foreach (var culture in _arguments.LocalizationLanguages)
 			{
 				var cultureInfo = CultureInfo.GetCultureInfo(culture);
 				foreach (var resource in resources)
 				{
-					using (var resourceWriter = writeResourceFile(resource.ResxName, culture))
+					using (var resourceWriter = _resultFileWriter.WriteResourceFile(resource.ResxName, culture))
 					{
 						var resourceSet = resource.ResourceManager.GetResourceSet(cultureInfo, true, true);
 						foreach (DictionaryEntry entry in resourceSet)
@@ -218,61 +287,12 @@ namespace TSClientGen
 			}
 		}
 
-		private void writeFile(string filename, string text)
-		{
-			File.WriteAllText(Path.Combine(_arguments.OutDir, filename), text);
-			fixFilenameCase(filename);
-			_generatedFiles.Add(Path.Combine(_arguments.OutDir, filename).ToLowerInvariant());
-		}
 
-		private IResourceModuleWriter writeResourceFile(string filename, string culture)
-		{
-			var moduleWriter = _resourceModuleWriterFactory.Create(
-				_arguments.OutDir, filename, culture, _arguments.DefaultLocale);
-			return new ResourceFileWriter(moduleWriter, () =>
-			{
-				var fullFilename = Path.Combine(_arguments.OutDir, moduleWriter.Filename);
-				fixFilenameCase(moduleWriter.Filename);
-				_generatedFiles.Add(fullFilename.ToLowerInvariant());				
-			});
-		}
-						
-		private void fixFilenameCase(string targetFileName)
-		{
-			var existingFileName = Directory.EnumerateFiles(_arguments.OutDir, targetFileName).Single();
-			if (targetFileName != Path.GetFileName(existingFileName))
-			{
-				// filenames differ in case, renaming
-				new FileInfo(existingFileName).MoveTo(Path.Combine(_arguments.OutDir, targetFileName));
-			}
-		}
-		
-		private void cleanupOutDir()
-		{
-			var filesToDelete = Directory
-				.EnumerateFiles(_arguments.OutDir, "*.*", SearchOption.AllDirectories)
-				.Where(file => !_generatedFiles.Contains(file.ToLowerInvariant()))
-				.ToList();
-
-			if (!filesToDelete.Any())
-				return;
-
-			Console.WriteLine("Cleaning up...");
-			foreach (var existingFile in filesToDelete)
-			{
-				File.Delete(existingFile);
-				Console.WriteLine($"\t{existingFile} deleted");
-			}			
-		}
-		
-		
 		private readonly IArguments _arguments;
 		private readonly IApiDiscovery _apiDiscovery;
 		private readonly ITypeConverter _customTypeConverter;
 		private readonly ITypeDescriptorProvider _typeDescriptorProvider;
-		private readonly IResourceModuleWriterFactory _resourceModuleWriterFactory;
+		private readonly IResultFileWriter _resultFileWriter;
 		private readonly Func<object, string> _serializeToJson;
-		
-		private HashSet<string> _generatedFiles;
 	}
 }

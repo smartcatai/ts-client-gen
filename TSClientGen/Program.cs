@@ -17,12 +17,13 @@ namespace TSClientGen
 			{
 				foreach (var error in notParsed.Errors)
 				{
-					Console.WriteLine(error.ToString());					
+					Console.WriteLine(error.ToString());
 				}
-				return 1;				
+
+				return 1;
 			}
 
-			var arguments = ((Parsed<Arguments>)argsParseResult).Value;
+			var arguments = ((Parsed<Arguments>) argsParseResult).Value;
 			if (arguments.BuiltinTransportModule == null && arguments.CustomTransportModule == null)
 			{
 				Console.WriteLine("Specify either --transport or --custom-transport command-line option");
@@ -38,15 +39,21 @@ namespace TSClientGen
 					compositionContainer.ComposeParts(plugins);
 				}
 			}
-			
+
+			var apiDiscovery = new ApiDiscovery(plugins.MethodDescriptorProvider);
+			var resultFileWriter = new ResultFileWriter(
+				arguments.OutDir,
+				arguments.DefaultLocale,
+				plugins.ResourceModuleWriterFactory ?? new ResourceModuleWriterFactory());
+
 			var runner = new Runner(
 				arguments,
-				new ApiDiscovery(plugins.MethodDescriptorProvider),
+				apiDiscovery,
 				new TypeConverter(plugins.TypeConverter),
 				new TypeDescriptorProvider(plugins.TypeDescriptorProvider),
-				plugins.ResourceModuleWriterFactory ?? new ResourceModuleWriterFactory(),
+				resultFileWriter,
 				JsonConvert.SerializeObject);
-			
+
 			runner.Execute();
 			return 0;
 		}
