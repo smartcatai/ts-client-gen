@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using TSClientGen.Extensibility;
 using TSClientGen.Extensibility.ApiDescriptors;
 
-namespace TSClientGen.NetCoreTool
+namespace TSClientGen
 {
 	public class TypeDescriptorProvider : ITypeDescriptorProvider
 	{

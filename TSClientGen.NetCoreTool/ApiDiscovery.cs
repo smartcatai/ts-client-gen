@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using TSClientGen.Extensibility;
 using TSClientGen.Extensibility.ApiDescriptors;
 
-namespace TSClientGen.NetCoreTool.AspNetCore
+namespace TSClientGen
 {
 	/// <summary>
 	/// Searches assembly for the asp.net webapi controllers and generates module descriptions 

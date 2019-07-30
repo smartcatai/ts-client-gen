@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
-using TSClientGen.NetCoreTool.AspNetCore;
 
-namespace TSClientGen.NetCoreTool
+namespace TSClientGen
 {
 	class Program
 	{

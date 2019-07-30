@@ -8,7 +8,7 @@ using System.Web.Http.Controllers;
 using TSClientGen.Extensibility;
 using TSClientGen.Extensibility.ApiDescriptors;
 
-namespace TSClientGen.NetFrameworkTool
+namespace TSClientGen
 {
 	/// <summary>
 	/// Searches assembly for the asp.net webapi controllers and generates module descriptions 

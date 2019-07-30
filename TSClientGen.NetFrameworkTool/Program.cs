@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace TSClientGen.NetFrameworkTool
+namespace TSClientGen
 {
 	class Program
 	{

@@ -8,6 +8,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{742D33E2-3565-4617-8491-D23192AD98BF}"
 	ProjectSection(SolutionItems) = preProject
 		SolutionInfo.cs = SolutionInfo.cs
+		paket.template = paket.template
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{C51278F4-D7F6-4451-B2ED-E5EC5F4F7C60}"

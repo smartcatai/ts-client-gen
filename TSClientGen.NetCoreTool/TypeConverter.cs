@@ -3,7 +3,7 @@ using System.Net.Http;
 using Newtonsoft.Json.Linq;
 using TSClientGen.Extensibility;
 
-namespace TSClientGen.NetCoreTool
+namespace TSClientGen
 {
 	public class TypeConverter : ITypeConverter
 	{
