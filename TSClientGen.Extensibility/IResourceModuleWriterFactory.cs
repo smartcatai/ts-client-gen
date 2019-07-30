@@ -11,7 +11,6 @@ namespace TSClientGen.Extensibility
 		/// <param name="outDir">folder to place generated resource file to</param>
 		/// <param name="baseFilename">base name of the resource file to generate (without culture and extension)</param>
 		/// <param name="culture">culture of the resource file</param>
-		/// <param name="defaultCulture">default culture</param>
-		IResourceModuleWriter Create(string outDir, string baseFilename, string culture, string defaultCulture);
+		IResourceModuleWriter Create(string outDir, string baseFilename, string culture);
 	}
 }

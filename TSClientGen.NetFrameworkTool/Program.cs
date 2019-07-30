@@ -10,10 +10,7 @@ namespace TSClientGen.NetFrameworkTool
 			var plugin = Runner.LoadPlugin(arguments);
 
 			var apiDiscovery = plugin.ApiDiscovery ?? new ApiDiscovery(plugin.MethodDescriptorProvider);
-			var resultFileWriter = new ResultFileWriter(
-				arguments.OutDir,
-				arguments.DefaultLocale,
-				plugin.ResourceModuleWriterFactory ?? new ResourceModuleWriterFactory());
+			var resultFileWriter = new ResultFileWriter(arguments.OutDir, plugin.ResourceModuleWriterFactory);
 
 			var runner = new Runner(
 				arguments,

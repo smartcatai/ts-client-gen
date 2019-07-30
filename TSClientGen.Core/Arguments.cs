@@ -10,34 +10,31 @@ namespace TSClientGen
 
 		[Option('o', "out-dir", Required = true)]
 		public string OutDir { get; set; }
-		
+
 		[Option("cleanup-out-dir")]
 		public bool CleanupOutDir { get; set; }
-		
+
 		[Option("append-i-prefix")]
 		public bool AppendIPrefix { get; set; }
 
 		[Option("enum-module")]
 		public string EnumsModuleName { get; set; }
-		
+
 		[Option("string-enums")]
-		public bool UseStringEnums { get; set; }		
+		public bool UseStringEnums { get; set; }
 
 		[Option("transport", SetName = "transport")]
 		public BuiltinXhrModule? BuiltinTransportModule { get; set; }
-		
+
 		[Option("custom-transport", SetName = "transport")]
 		public string CustomTransportModule { get; set; }
-		
+
 		[Option("get-resource-module")]
-		public string GetResourceModuleName { get; set; }		
+		public string GetResourceModuleName { get; set; }
 
 		[Option("loc-lang", Separator = ',')]
 		public IEnumerable<string> LocalizationLanguages { get; set; }
-		
-		[Option("default-locale")]
-		public string DefaultLocale { get; set; }
-		
+
 		[Option('p', "plugins-assembly")]
 		public string PluginsAssembly { get; set; }
 	}

@@ -12,10 +12,9 @@ namespace TSClientGen
 	/// </summary>
 	public class ResultFileWriter : IResultFileWriter
 	{
-		public ResultFileWriter(string outDir, string defaultLocale, IResourceModuleWriterFactory resourceModuleWriterFactory)
+		public ResultFileWriter(string outDir, IResourceModuleWriterFactory resourceModuleWriterFactory)
 		{
 			_outDir = outDir;
-			_defaultLocale = defaultLocale;
 			_resourceModuleWriterFactory = resourceModuleWriterFactory;
 
 			if (!Directory.Exists(_outDir))
@@ -67,8 +66,7 @@ namespace TSClientGen
 		/// <param name="culture">resource file culture name</param>
 		public IResourceModuleWriter WriteResourceFile(string filename, string culture)
 		{
-			var moduleWriter = _resourceModuleWriterFactory.Create(
-				_outDir, filename, culture, _defaultLocale);
+			var moduleWriter = _resourceModuleWriterFactory.Create(_outDir, filename, culture);
 			return new ResourceFileWriter(moduleWriter, () =>
 			{
 				var fullFilename = Path.Combine(_outDir, moduleWriter.Filename);
@@ -111,7 +109,6 @@ namespace TSClientGen
 		}
 		
 		private readonly string _outDir;
-		private readonly string _defaultLocale;
 		private readonly IResourceModuleWriterFactory _resourceModuleWriterFactory;
 		private readonly HashSet<string> _generatedFiles = new HashSet<string>();
 	}
