@@ -33,7 +33,7 @@ namespace TSClientGen
 
 				if (localizationByEnumType.TryGetValue(enumType, out var localizationProvider))
 				{
-					writeEnumLocalizationFunctions(enumType, localizationProvider.AdditionalContexts, localizationProvider.UsePrefix, _result);
+					writeEnumLocalizationFunctions(enumType, localizationProvider.AdditionalSets, _result);
 					requireResourceImport = true;
 				}
 
@@ -58,10 +58,9 @@ namespace TSClientGen
 			}
 		}
 
-		private void writeEnumLocalizationFunctions(
-			Type enumType, string[] additionalContexts, bool usePrefix, IndentedStringBuilder sb)
+		private void writeEnumLocalizationFunctions(Type enumType, string[] additionalSets, IndentedStringBuilder sb)
 		{
-			if (additionalContexts == null)
+			if (additionalSets == null)
 			{
 				sb
 					.AppendLine($"export function localize(enumValue: {enumType.Name}) {{")
@@ -72,11 +71,11 @@ namespace TSClientGen
 			}
 			else
 			{
-				var contextTypeScriptType = string.Join("|", additionalContexts.Select(s => $"'{s}'"));
+				var setTsType = string.Join("|", additionalSets.Select(s => $"'{s}'"));
 				sb
-					.AppendLine($"export function localize(enumValue: {enumType.Name}, context?: {contextTypeScriptType}) {{")
+					.AppendLine($"export function localize(enumValue: {enumType.Name}, set?: {setTsType}) {{")
 					.Indent()
-					.AppendLine($"const prefix = '{enumType.Name}_' + (context ? context + '_' : '');")
+					.AppendLine($"const prefix = '{enumType.Name}_' + (set ? set + '_' : '');")
 					.AppendLine($"return getResource(prefix + {enumType.Name}[enumValue]);")
 					.Unindent()
 					.AppendLine("}");

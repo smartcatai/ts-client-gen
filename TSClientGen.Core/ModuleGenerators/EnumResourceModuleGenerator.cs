@@ -17,25 +17,25 @@ namespace TSClientGen
 			foreach (var pair in enumLocalizationProvidersByEnumType)
 			{
 				generateEnumValueEntries(pair.Key, pair.Value);
-				if (pair.Value.AdditionalContexts != null)
+				if (pair.Value.AdditionalSets != null)
 				{
-					foreach (var context in pair.Value.AdditionalContexts)
+					foreach (var set in pair.Value.AdditionalSets)
 					{
-						generateEnumValueEntries(pair.Key, pair.Value, context);
+						generateEnumValueEntries(pair.Key, pair.Value, set);
 					}
 				}
 			}
 		}
 		
-		private void generateEnumValueEntries(Type enumType, TSEnumLocalizationAttributeBase enumLocalization, string context = null)
+		private void generateEnumValueEntries(Type enumType, TSEnumLocalizationAttributeBase enumLocalization, string set = null)
 		{
 			var enumName = enumType.Name;
 			foreach (var valueName in Enum.GetNames(enumType))
 			{
-				string valueNameWithContext = (context != null) ? $"{context}_{valueName}" : valueName;
+				string valueNameWithContext = (set != null) ? $"{set}_{valueName}" : valueName;
 				string resourceKey = enumLocalization.UsePrefix ? $"{enumName}_{valueNameWithContext}" : valueNameWithContext;
 				var localization = enumLocalization.ResourceManager.GetString(resourceKey);
-				if (localization == null && context != null)
+				if (localization == null && set != null)
 				{
 					resourceKey = enumLocalization.UsePrefix ? $"{enumName}_{valueName}" : valueName;
 					localization = enumLocalization.ResourceManager.GetString(resourceKey);
@@ -43,7 +43,7 @@ namespace TSClientGen
 				if (localization == null)
 				{
 					throw new Exception(
-						$"Enum value {enumName}.{valueName} is not localized in RESX {enumLocalization.ResxName} (context - {context ?? "none"}, key - {resourceKey})");
+						$"Enum value {enumName}.{valueName} is not localized in RESX {enumLocalization.ResxName} (set - {set ?? "none"}, key - {resourceKey})");
 				}
 
 				_writer.AddResource($"{enumName}_{valueNameWithContext}", localization);
