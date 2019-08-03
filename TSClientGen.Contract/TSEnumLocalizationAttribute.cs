@@ -10,13 +10,13 @@ namespace TSClientGen
 	public abstract class TSEnumLocalizationAttributeBase : Attribute
 	{
 		protected TSEnumLocalizationAttributeBase(Type resxType, bool usePrefix = false,
-			string[] additionalContexts = null)
+			string[] additionalSets = null)
 		{
 			if (resxType == null) throw new ArgumentNullException(nameof(resxType));
 
 			ResxName = resxType.FullName;
 			ResourceManager = resxType.GetResourceManager();
-			AdditionalContexts = additionalContexts;
+			AdditionalSets = additionalSets;
 			UsePrefix = usePrefix;
 		}
 
@@ -39,7 +39,7 @@ namespace TSClientGen
 		/// <summary>
 		/// Allows for generating more than one set of enum values' localized names
 		/// </summary>
-		public string[] AdditionalContexts { get; }
+		public string[] AdditionalSets { get; }
 	}
 
 	/// <summary>
@@ -50,8 +50,8 @@ namespace TSClientGen
 	[AttributeUsage(AttributeTargets.Enum)]
 	public sealed class TSEnumLocalizationAttribute : TSEnumLocalizationAttributeBase
 	{
-		public TSEnumLocalizationAttribute(Type resxType, bool usePrefix = false, string[] additionalContexts = null)
-			: base(resxType, usePrefix, additionalContexts)
+		public TSEnumLocalizationAttribute(Type resxType, bool usePrefix = false, string[] additionalSets = null)
+			: base(resxType, usePrefix, additionalSets)
 		{
 		}
 	}
@@ -67,8 +67,8 @@ namespace TSClientGen
 		public sealed class TSEnumLocalizationAttribute : TSEnumLocalizationAttributeBase
 		{
 			public TSEnumLocalizationAttribute(Type enumType, Type resxType, bool usePrefix = false,
-				string[] additionalContexts = null)
-				: base(resxType, usePrefix, additionalContexts)
+				string[] additionalSets = null)
+				: base(resxType, usePrefix, additionalSets)
 			{
 				EnumType = enumType;
 			}
