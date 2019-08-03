@@ -34,7 +34,10 @@ namespace TSClientGen.AspNetWebApi
 				var tsModuleAttribute = controllerType.GetCustomAttribute<TSModuleAttribute>();
 				if (anyModuleAttributes && tsModuleAttribute == null)
 					continue;
-			
+
+				if (controllerType.GetCustomAttribute<TSIgnoreAttribute>() != null)
+					continue;
+
 				var controllerRoute = controllerType.GetCustomAttributes<RouteAttribute>().SingleOrDefault();
 				var routePrefix = controllerType.GetCustomAttributes<RoutePrefixAttribute>().SingleOrDefault()?.Prefix;
 				if (controllerRoute != null && routePrefix != null)
