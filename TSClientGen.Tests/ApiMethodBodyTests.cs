@@ -15,7 +15,7 @@ namespace TSClientGen.Tests
 			var method = createMethodDescriptor("/func", ("startDate", typeof(DateTime)));
 			var sb = new IndentedStringBuilder();
 			var generator = createGenerator(method, sb);
-			generator.WriteBody(false, false);
+			generator.WriteBody(false);
 			
 			TextAssert.ContainsLine("const queryStringParams = { startDate: startDate.toISOString() };", sb.ToString());	
 		}
@@ -26,9 +26,9 @@ namespace TSClientGen.Tests
 			var method = createMethodDescriptor("/func/{startDate}", ("startDate", typeof(DateTime)));
 			var sb = new IndentedStringBuilder();
 			var generator = createGenerator(method, sb);
-			generator.WriteBody(false, false);
+			generator.WriteBody(false);
 			
-			TextAssert.ContainsLine("const url = `/func/${startDate.toISOString()}`;", sb.ToString());
+			TextAssert.ContainsLine("const url = (this.options ? this.options.hostname : '') + `/func/${startDate.toISOString()}`;", sb.ToString());
 		}
 		
 		[TestCase("get")]
@@ -40,7 +40,7 @@ namespace TSClientGen.Tests
 				typeof(void), false, false);
 			var sb = new IndentedStringBuilder();
 			var generator = createGenerator(method, sb);
-			generator.WriteBody(false, false);
+			generator.WriteBody(false);
 			
 			TextAssert.ContainsLine($"const method = '{httpMethod}';", sb.ToString());
 		}
@@ -51,9 +51,9 @@ namespace TSClientGen.Tests
 			var method = createMethodDescriptor("/func/{id}", ("id", typeof(int)));
 			var sb = new IndentedStringBuilder();
 			var generator = createGenerator(method, sb);
-			generator.WriteBody(false, false);
+			generator.WriteBody(false);
 			
-			TextAssert.ContainsLine("const url = `/func/${id}`;", sb.ToString());
+			TextAssert.ContainsLine("const url = (this.options ? this.options.hostname : '') + `/func/${id}`;", sb.ToString());
 		}
 
 		[Test]
@@ -62,7 +62,7 @@ namespace TSClientGen.Tests
 			var method = createMethodDescriptor("/func", ("id", typeof(int)));
 			var sb = new IndentedStringBuilder();
 			var generator = createGenerator(method, sb);
-			generator.WriteBody(false, false);
+			generator.WriteBody(false);
 			
 			TextAssert.ContainsLine("const queryStringParams = { id };", sb.ToString());	
 		}
@@ -73,7 +73,7 @@ namespace TSClientGen.Tests
 			var method = createMethodDescriptor("/func");
 			var sb = new IndentedStringBuilder();
 			var generator = createGenerator(method, sb);
-			generator.WriteBody(false, false);
+			generator.WriteBody(false);
 			
 			TextAssert.ContainsLine("return request<void>({ url, getAbortFunc, method, jsonResponseExpected });", sb.ToString());	
 		}
@@ -87,7 +87,7 @@ namespace TSClientGen.Tests
 				typeof(void), true, false);
 			var sb = new IndentedStringBuilder();
 			var generator = createGenerator(method, sb);
-			generator.WriteBody(false, false);
+			generator.WriteBody(false);
 			
 			TextAssert.ContainsLine("return request<void>({ url, requestBody, getAbortFunc, onUploadProgress, method, jsonResponseExpected });", sb.ToString());	
 		}
@@ -98,17 +98,31 @@ namespace TSClientGen.Tests
 			var method = createMethodDescriptor("/get", ("id", typeof(int)));
 			var sb = new IndentedStringBuilder();
 			var generator = createGenerator(method, sb);
-			generator.WriteBody(true, false);
+			generator.WriteBody(true);
 			
 			TextAssert.ContainsLine("const queryStringParams = { id };", sb.ToString());	
 		}
 
-
-		private static ApiMethodGenerator createGenerator(ApiMethod apiMethod, IndentedStringBuilder sb)
+		[Test]
+		public void Api_client_options_are_passed_into_transport_level_method_call()
 		{
-			return new ApiMethodGenerator(apiMethod, sb, new TypeMapping());
+			var method = createMethodDescriptor("/func", ("id", typeof(int)));
+			var sb = new IndentedStringBuilder();
+			var generator = createGenerator(method, sb, true);
+			generator.WriteBody(false);
+
+			TextAssert.ContainsLine(
+				"return request<void>({ ...(this.options || {}), url, queryStringParams, getAbortFunc, method, jsonResponseExpected });",
+				sb.ToString());
 		}
-		
+
+
+		private static ApiMethodGenerator createGenerator(ApiMethod apiMethod, IndentedStringBuilder sb,
+			bool useApiClientOptions = false)
+		{
+			return new ApiMethodGenerator(apiMethod, sb, new TypeMapping(), useApiClientOptions);
+		}
+
 		private static ApiMethod createMethodDescriptor(string url, params (string name, Type type)[] parameters)
 		{
 			return new ApiMethod(

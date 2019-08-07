@@ -99,8 +99,8 @@ namespace TSClientGen.Tests
 			return new Runner(
 				new Arguments(),
 				new Mock<IApiDiscovery>().Object,
-				new Mock<ITypeConverter>().Object,
-				new Mock<ITypeDescriptorProvider>().Object,
+				null,
+				null,
 				new Mock<IResultFileWriter>().Object,
 				o => o.ToString());
 		}

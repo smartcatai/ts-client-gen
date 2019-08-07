@@ -29,6 +29,9 @@ namespace TSClientGen
 		[Option("custom-transport", SetName = "transport")]
 		public string CustomTransportModule { get; set; }
 
+		[Option("use-api-client-options")]
+		public bool UseApiClientOptions { get; set; }
+
 		[Option("get-resource-module")]
 		public string GetResourceModuleName { get; set; }
 

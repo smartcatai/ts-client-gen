@@ -33,9 +33,6 @@ namespace TSClientGen.Extensibility.ApiDescriptors
 				}
 			}
 			ExplicitlyRequiredTypes = additionalTypes;
-			
-			SupportsExternalHost = controllerType.GetCustomAttribute<TSSupportsExternalHostAttribute>() != null;			
-			
 		}
 		
 		
@@ -58,11 +55,5 @@ namespace TSClientGen.Extensibility.ApiDescriptors
 		/// List of types that were explicitly added for this module
 		/// </summary>
 		public IReadOnlyCollection<Type> ExplicitlyRequiredTypes { get; }
-		
-		/// <summary>
-		/// Whether a constructor of this api client class will take a parameter
-		/// containing the target hostname against which the requests will be issued
-		/// </summary>
-		public bool SupportsExternalHost { get; }
 	}
 }

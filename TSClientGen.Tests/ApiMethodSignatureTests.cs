@@ -116,7 +116,7 @@ namespace TSClientGen.Tests
 		
 		private static ApiMethodGenerator createGenerator(ApiMethod apiMethod)
 		{
-			return new ApiMethodGenerator(apiMethod, new IndentedStringBuilder(), new TypeMapping());
+			return new ApiMethodGenerator(apiMethod, new IndentedStringBuilder(), new TypeMapping(), false);
 		}
 
 		class Model { }

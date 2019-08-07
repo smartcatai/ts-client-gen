@@ -55,15 +55,27 @@ namespace TSClientGen.Tests
 			TextAssert.ContainsLine("import { Enum1, Enum2 } from './enums'", generator.GetResult());
 		}
 
-		
-		private ApiModuleGenerator createGenerator(TypeMapping typeMapping)
+		[Test]
+		public void Api_client_options_are_saved_to_private_field()
+		{
+			var generator = createGenerator(new TypeMapping(), "./transport", true);
+			generator.WriteApiClientClass();
+
+			var output = generator.GetResult();
+			TextAssert.ContainsLine("import { request, ApiClientOptions } from './transport';", output);
+			TextAssert.ContainsLine("constructor(private options?: ApiClientOptions & { hostname?: string }) {}", output);
+		}
+
+
+		private ApiModuleGenerator createGenerator(TypeMapping typeMapping, string transportModuleName = "./transport", bool useApiClientOptions = false)
 		{
 			var module = new ApiClientModule("client", "client", new ApiMethod[0], typeof(Controller));
 			return new ApiModuleGenerator(
 				module,
 				typeMapping,
 				(val) => throw new NotImplementedException(),
-				"transport");
+				transportModuleName,
+				useApiClientOptions);
 		}
 		
 		

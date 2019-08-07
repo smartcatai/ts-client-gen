@@ -75,12 +75,14 @@ import { request } from './transport-axios';
 import { HttpRequestOptions } from './transport-contracts';
 
 export class SimpleClient {
+    constructor(private options?: { hostname?: string }) {}
+    
 	public get(requestParam: Request, { getAbortFunc }: HttpRequestOptions = {}) {
 		const method = 'get';
-		const url = `/simple/name`;
+		const url = (this.options ? this.options.hostname : '') + `/simple/name`;
 		const queryStringParams = { request: requestParam };
 		return request<Response>({ url, method, queryStringParams, getAbortFunc });
-	}	
+	}
 }
 
 export default new SimpleClient();
@@ -97,26 +99,17 @@ By default TSClientGen uses a controller name with the `Controller` suffix trimm
 
 ## Command-line parameters reference
 * `--asm <assemblies>` (or `-a <assemblies>`) - specifies an assembly or list of .net assemblies with asp.net api controllers to generate api client modules for. Specify several assemblies using a space delimiter. This is a required parameter.
-
 * `--out-dir <folder>` (or `-o <folder>`) - specifies an output folder for the code generation results.
-
 * `--cleanup-out-dir` - instructs TSClientGen to clean up all the files from output folder that were not created or updated as the result of the code generation. See [Cleaning up output folder contents](#Cleaning-up-output-folder-contents) for details.
-
 * `--append-i-prefix` - instructs TSClientGen to append I prefix to all the generated interface definitions (e.g. `IRequest` instead of `Request`). This is handy in case you want to follow a widespread C# naming conventions for interfaces in your client-side api client modules.
-
 * `--enum-module <modulename>` - specifies a name for generated module containing all the enums. See [Enums](#Enums) for more details on how TSClientGen handles enums.
-
 * `--string-enums` - instucts TSClientGen to generate string enums instead of default number ones. See [TypeScript enums](https://www.typescriptlang.org/docs/handbook/enums.html) for more details on enums in TypeScript and [Enums](#Enums) for more details on how TSClientGen handles enums.
-
 * `--transport <axios|jquery|fetch|superagent>` -specifies a client-side http request library to use. You can specify either `--transport` or `--custom-transport` parameter but not both at the same time.
-
 * `--custom-transport <modulename>` - specifies a path to custom transport module for performing http requests to server, serving as a replacement for one of the out-of-the-box transport modules. Allows for [swapping the client-side http request library](#Swapping-the-client-side-http-request-library). Please note that you should specify module path relative to the output folder of the code generation, because this path will be used in imports in generated client modules.
-
 * `--get-resource-module <modulename>` - specifies a path to custom TypeScript module responsible for retrieving localized strings from client-side localization resources. This module should export a function named `getResource` that is used for enum value localizations. You have to provide this command-line parameter if you use enum value localization feature (have instances of TSEnumLocalization attributes in your api assemblies). See [Expose server-side enum value localizations to client-side codebase](#Expose-server-side-enum-value-localizations-to-client-side-codebase) for more detailed description of this feature and command line parameter.
-
 * `--loc-lang <languages>` - specifies a comma-separated list of supported localization cultures for application. These cultures will be passed down to `CultureInfo.GetCultureInfo` method, so they must represend valid .net culture names.  Provide this parameter if you use some of the localization features of the TypeScript code generation. Please note that in order to generate client-side resources you also have to provide a plugin assembly with the implementation of `IResourceModuleWriterFactory` interface in it. See [Expose server-side resources to client-side-codebase](#Expose-server-side-resources-to-client-side-codebase) and [Expose server-side enum value localizations to client-side-codebase](#Expose-server-side-enum-value-localizations-to-client-side-codebase) sections for more details.
-
 * `--plugins-assembly <assemblypath>` (or `-p <assemblypath>`) - specifies a plugin assembly for customizing and extending the code generation process. This assembly should contain a bunch of classes implementing interfaces from `TSClientGen.Extensibility.dll` and marked with [MEF](https://docs.microsoft.com/en-us/dotnet/framework/mef/) `Export` attribute. See the section about [customizing TSClientGen with plugins](#Customize-with-a-plugin) for more details on the topic.
+* `--use-api-client-options` - this boolean switch is intended for use together with a custom transport module. It allows the generated api client classes to take some custom options on construction and then pass these options down to `request` and `getUrl` methods of the custom transport module to be handled there. See [Providing a custom transport module to handle http requests](#Providing-a-custom-transport-module-to-handle-http-requests) for more details.
 
 ## Basic features
 
@@ -143,7 +136,21 @@ You can instruct TSClientGen to generate descendant classes for the base class e
 Most of the time you may want to use this command-line option. This will be the case when you have a dedicated folder for the generated api client modules and you generate all of your api client modules by a single run of TSClientGen. It's easier to keep track of what files have been autogenerated by keeping them in a separate folder, so it's a recommended approach. You wouldn't want to accidentally introduce some manual changes to autogenerated files and loose these changes on the next TSClientGen tool run.
 There are however some use cases for not using this command-line option. One of them is keeping your auto-generated api client modules in a common folder along with other files (which is not recommended). The other is running TSClientGen tool several times for getting a complete set of api client modules. You may want to do that if you need to split your generated enum module into several modules or to use different client-side ajax libraries for different parts of your api. You can't do that with a single run of TSClientGen tool, but you can achieve these goals by running the tool multiple times specifying the `--cleanup-out-dir` option, the same value for `--out-dir` param and different values for `--enum-module` and\or `--transport` or `--custom-transport` params.
 
+### Issue requests to an external host instead of a page host
+
+By default a generated api client will issue requests to the page host, without specifying a hostname. But you can instruct it to explicitly specify a hostname for requests issued. In order to do this, you need to import the api client class from generated module and instantiate it with an object containing `hostname` property. All server requests made by this instance of api client class will then be issued to a specified hostname:
+
+```typescript
+import { ExternalApiClient } from 'server-api/ExternalApi';
+
+const api = new ExternalApiClient({ hostname: 'https://api-on-another-host.com' });
+api.postData(...);
+```
+
+The single parameter of the api client class constructor can be also used for passing any other custom options that should affect its behavior and be handled by a transport-level module - see [Custom options for generated api clients](#Custom-options-for-generated-api-clients) for more details.
+
 ### Aborting in-flight http requests
+
 The last parameter of each generated api client method is optional and contains an object of type [`HttpRequestOptions`](https://github.com/smartcatai/ts-client-gen/blob/aspnetcore/TSClientGen.Core/transport-contracts.ts):
 ```typescript
 export interface HttpRequestOptions {
@@ -183,11 +190,21 @@ export function getUri(config: GetUriOptions): string {
 ...
 }
 ```
-[`transport-contracts`](https://github.com/smartcatai/ts-client-gen/blob/aspnetcore/TSClientGen.Core/transport-contracts.ts) is a special module with a bunch of interfaces defining contracts for any custom or builtin transport module. Autogenerated api client modules rely on these contracts to make use of a transport module. This module always appear as the code generation result in the output folder. You should make yourself acquainted with the contents of this module before writing a custom transport module.
+[`transport-contracts`](https://github.com/smartcatai/ts-client-gen/blob/aspnetcore/TSClientGen.Core/transport-contracts.ts) is a special module with a bunch of interfaces defining contracts for any custom or builtin transport module. Generated api client modules rely on these contracts to make use of a transport module. This module always appear as the code generation result in the output folder. You should make yourself acquainted with the contents of this module before writing a custom transport module.
 
 **TBD provide more details on contracts**
 
-**TBD provide means to extend RequestOptions object via passing an object to the TypeScript api client class constructor (and maybe get rid of the `TSSupportsExternalHost` attribute)**
+#### Custom options for generated api clients
+
+You can build any service features you like into your custom transport module. The examples of such features could be logging, appending special request headers, parsing special response headers, handling authentication and so on. But odds are your service features will need some options to be provided in runtime, by the means of parameterizing the instance of api client class. TSClientGen supports such use case via the `--use-api-client-options` command-line parameter. Specifying this parameter results in the following changes to the contract of your custom transport module and the generated api client class:
+
+* Custom transport module will have to export a type (class, interface or type alias) under the name of `ApiClientOptions`. It should be an object and should contain properties for the api client class options you need. For example, it could look like `export interface ApiClientOptions { logLevel: LogLevel }` if your custom transport module supports logging and you need to specify logging level when creating an instance of api client class;
+* The api client class constructor's sole parameter type will be the [intersection](https://www.typescriptlang.org/docs/handbook/advanced-types.html#intersection-types) of this `ApiClientOptions` type (imported from the transport module) and the default `{ hostname?: string }`type. See [Issue requests to an external host instead of a page host](#Issue-requests-to-an-external-host-instead-of-a-page-host) for details about the purpose and usage of the `hostname` parameter.
+* The signatures of the custom transport module's `request` and `getUri` methods will be the intersections of the `ApiClientOptions` type with `RequestOptions` or `GetUriOptions` respectively.
+
+Thus you will be able to provide an options object when constructing api client instance in runtime, and these options will be passed down into your custom transport module methods that do the actual low-level work. The combination of the `--use-api-client-options` command-line option with implementation of the custom transport module allows you to built any logic and service features you like into the code-generated api clients.
+
+When using the generated api client, please note that you will have to import api client class from generated module and explicitly instantiate it in order to pass options. All generated api modules also have a default export containing a ready-to-use instance of the api client class. This instance however is constructed without any options, just by calling a class constructor without parameters. When authoring a custom transport module, please also keep in mind the presence of such default export and be ready to get an empty options object in both `request` and `getUri` methods.
 
 ## Customizing with attributes
 
@@ -243,17 +260,6 @@ public downloadFileUrl(reportName: string, date: Date) {
 Generated method for building url saves you a burden of synchronizing url template and parameters list between server-side and client-side codebases. It uses `getUri` method from the imported transport module, and that means that each transport can implement its own url building logic, and you have to implement `getUri` with url building logic in your custom transport module implementation if you have one. For any builtin transport module the url building implementation for `request` method matches the one for `getUri` method. The same should be true for any custom transport module too.
 
 The reason for relying on transport module for url generation is that some http client libraries - jQuery and axios - take care of building a query string from parameters object. For such transport modules it makes perfect sense to reuse their query string building facilities instead of overriding them with some TSClientGen hardcoded implementation. For those transport modules whose underlying libraries do not provide the ability to build query string from parameters object (fetch api and superagent), the builtin modules provide fairly simple hardcoded implementations. You can consult query string building implementation in [fetch API transport module](https://github.com/smartcatai/ts-client-gen/blob/aspnetcore/TSClientGen.Core/transport-fetch.ts) if you need one for your custom transport module.
-
-### Issue requests to an external host instead of a page host
-
-By default generated api clients will issue server requests without specifying a hostname. If you need to explicitly specify the protocol, hostname or port, you should enable this feature on selected api parts in your server codebase. This is done via applying the
-`TSSupportsExternalHost` attribute to api controllers. Applying this attribute to a controller results in adding the `hostname` parameter to the constructor of the generated api client class. In order to be able to specify a hostname, yo will need to import api client class from generated module and instantiate it with the hostname parameter. All server requests made by this instance of api client class will then be issued to a specified hostname:
-```typescript
-import { ExternalApiClient } from 'server-api/ExternalApi';
-
-const api = new ExternalApiClient('https://api-on-another-host.com');
-api.postData(...);
-```
 
 ### Exclude specific api methods, api method parameters or type properties from code generation
 
@@ -361,4 +367,4 @@ If altering api methods definitions via [`IMethodDescriptorProvider`](#Alter-api
 
 This can be done by implementing the [`IApiDiscovery`](https://github.com/smartcatai/ts-client-gen/blob/develop/TSClientGen.Extensibility/IApiDiscovery.cs) interface in your TSClientGen plugin. The interface is pretty simple and contains only one method that is named `GetModules`. It takes an assembly as a parameter and should return a collection of [`ApiClientModule`](https://github.com/smartcatai/ts-client-gen/blob/develop/TSClientGen.Extensibility/ApiDescriptors/ApiClientModule.cs) instances. An instance of `ApiClientModule` class completely describes one api client module with all its methods.
 
-Note that you don't necessarily have to use existing classes as a source of api modules. You can hardcode api modules list in your implementation, read it from some xml or json file or take it wherefrom you like. One of the constructors of `ApiClientModule` class takes api controller .net type as a parameter, but it uses it only for getting [`TSRequireTypeAttribute`](#Include-additional-types-to-generated-code) and [`TSSupportsExternalHostAttribute`](#Issue-requests-to-an-external-host-instead-of-a-page-host) custom attributes. You can use another constructor that doesn't require controller type as a parameter whenever you need to.
+Note that you don't necessarily have to use existing classes as a source of api modules. You can hardcode api modules list in your implementation, read it from some xml or json file or take it wherefrom you like. One of the constructors of `ApiClientModule` class takes api controller .net type as a parameter, but it uses it only for getting [`TSRequireTypeAttribute`](#Include-additional-types-to-generated-code) custom attributes. You can use another constructor that doesn't require controller type as a parameter whenever you need to.

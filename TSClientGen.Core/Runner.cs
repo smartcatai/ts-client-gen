@@ -139,7 +139,7 @@ namespace TSClientGen
 					typeMapping.AddType(type);
 				}
 
-				var generator = new ApiModuleGenerator(module, typeMapping, _serializeToJson, transportModuleName);
+				var generator = new ApiModuleGenerator(module, typeMapping, _serializeToJson, transportModuleName, _arguments.UseApiClientOptions);
 				generator.WriteApiClientClass();
 				generator.WriteTypeDefinitions();
 				generator.WriteEnumImports(enumsModuleName);

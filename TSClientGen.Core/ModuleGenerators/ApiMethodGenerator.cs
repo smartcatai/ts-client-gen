@@ -7,11 +7,16 @@ namespace TSClientGen
 {
 	public class ApiMethodGenerator
 	{
-		public ApiMethodGenerator(ApiMethod apiMethod, IndentedStringBuilder result, TypeMapping typeMapping)
+		public ApiMethodGenerator(
+			ApiMethod apiMethod,
+			IndentedStringBuilder result,
+			TypeMapping typeMapping,
+			bool supportApiClientOptions)
 		{
 			_apiMethod = apiMethod;
 			_result = result;
 			_typeMapping = typeMapping;
+			_supportApiClientOptions = supportApiClientOptions;
 		}
 
 		public void WriteSignature()
@@ -32,7 +37,7 @@ namespace TSClientGen
 				.Append(")");
 		}
 
-		public void WriteBody(bool generateGetUrl, bool supportsExternalHost)
+		public void WriteBody(bool generateGetUrl)
 		{
 			string url = _apiMethod.UrlTemplate;
 			foreach (var param in _apiMethod.UrlParamsByPlaceholder)
@@ -46,11 +51,10 @@ namespace TSClientGen
 				url = url.Replace(param.Key, "${" + paramValue + "}");
 			}
 
-			_result.AppendLine(supportsExternalHost
-				? $"const url = (this.hostname || '') + `{url}`;"
-				: $"const url = `{url}`;");
+			_result.AppendLine($"const url = (this.options ? this.options.hostname : '') + `{url}`;");
 
-			var requestParams = new List<string> {"url"};
+			var requestParams = new List<string> { "url" };
+			string requestParamsObj;
 
 			if (_apiMethod.QueryParams.Any())
 			{
@@ -70,7 +74,10 @@ namespace TSClientGen
 
 			if (generateGetUrl)
 			{
-				_result.AppendLine($"return getUri({{ {string.Join(", ", requestParams)} }});");
+				requestParamsObj = _supportApiClientOptions
+					? $"{{ ...(this.options || {{}}), {string.Join(", ", requestParams)} }}"
+					: $"{{ {string.Join(", ", requestParams)} }}";
+				_result.AppendLine($"return getUri({requestParamsObj});");
 				return;
 			}
 
@@ -114,7 +121,11 @@ namespace TSClientGen
 			string tsReturnType = _typeMapping.GetTSType(_apiMethod.ReturnType);
 			bool jsonResponseExpected = (tsReturnType != "void");
 			_result.AppendLine($"const jsonResponseExpected = {jsonResponseExpected.ToString().ToLower()};");
-			_result.AppendLine($"return request<{tsReturnType}>({{ {string.Join(", ", requestParams)} }});");
+
+			requestParamsObj = _supportApiClientOptions
+				? $"{{ ...(this.options || {{}}), {string.Join(", ", requestParams)} }}"
+				: $"{{ {string.Join(", ", requestParams)} }}";
+			_result.AppendLine($"return request<{tsReturnType}>({requestParamsObj});");
 		}
 
 		public IEnumerable<string> GetTypescriptParams()
@@ -175,5 +186,6 @@ namespace TSClientGen
 		private readonly ApiMethod _apiMethod;		
 		private readonly IndentedStringBuilder _result;
 		private readonly TypeMapping _typeMapping;
+		private readonly bool _supportApiClientOptions;
 	}
 }

@@ -11,18 +11,20 @@ namespace TSClientGen
 			ApiClientModule apiClientModule,
 			TypeMapping typeMapping,
 			Func<object, string> serializeToJson,
-			string transportModuleName)
+			string transportModuleName,
+			bool useApiClientOptions)
 		{
 			_apiClientModule = apiClientModule;
 			_typeMapping = typeMapping;
 			_serializeToJson = serializeToJson;
 			_transportModuleName = transportModuleName;
+			_useApiClientOptions = useApiClientOptions;
 		}
 		
 		
 		public void WriteApiClientClass()
 		{
-			var transportContractInterfaces = new List<string>();
+			var transportContractInterfaces = new List<string>(3);
 			if (_apiClientModule.Methods.Any(m => !m.UploadsFiles))
 			{
 				transportContractInterfaces.Add("HttpRequestOptions");				
@@ -33,36 +35,43 @@ namespace TSClientGen
 				transportContractInterfaces.Add("NamedBlob");
 			}
 
-			var transportImports = _apiClientModule.Methods.Any(m => m.GenerateUrl)
-				? new[] { "request", "getUri" }
-				: new[] { "request" };
-			
+			var transportImports = new List<string>(3) { "request" };
+			if (_apiClientModule.Methods.Any(m => m.GenerateUrl))
+			{
+				transportImports.Add("getUri");
+			}
+			if (_useApiClientOptions)
+			{
+				transportImports.Add("ApiClientOptions");
+			}
+
+			string optionsType = _useApiClientOptions
+				? "ApiClientOptions & { hostname?: string }"
+				: "{ hostname?: string }";
+
 			_result
 				.AppendLine($"import {{ {string.Join(", ", transportContractInterfaces)} }} from './{TransportContractsModuleName}';")
 				.AppendLine($"import {{ {string.Join(", ", transportImports)} }} from '{_transportModuleName}';")
 				.AppendLine()
 				.AppendLine($"export class {_apiClientModule.ApiClientClassName} {{")
-				.Indent();
-			
-			if (_apiClientModule.SupportsExternalHost)
-			{
-				_result.AppendLine("constructor(private hostname?: string) {}").AppendLine();
-			}
+				.Indent()
+				.AppendLine($"constructor(private options?: {optionsType}) {{}}")
+				.AppendLine();
 			
 			foreach (var method in _apiClientModule.Methods)
 			{
-				var methodWriter = new ApiMethodGenerator(method, _result, _typeMapping);
+				var methodWriter = new ApiMethodGenerator(method, _result, _typeMapping, _useApiClientOptions);
 				methodWriter.ResolveConflictingParamNames(transportImports);
 				if (method.GenerateUrl)
 				{
 					writeMethod(
 						() => methodWriter.WriteGetUrlSignature(), 
-						() => methodWriter.WriteBody(true, _apiClientModule.SupportsExternalHost));
+						() => methodWriter.WriteBody(true));
 				}
 
 				writeMethod(
 					() => methodWriter.WriteSignature(),
-					() => methodWriter.WriteBody(false, _apiClientModule.SupportsExternalHost));
+					() => methodWriter.WriteBody(false));
 			}
 
 			_result
@@ -133,6 +142,7 @@ namespace TSClientGen
 		private readonly TypeMapping _typeMapping;
 		private readonly Func<object, string> _serializeToJson;
 		private readonly string _transportModuleName;
+		private readonly bool _useApiClientOptions;
 		private readonly IndentedStringBuilder _result = new IndentedStringBuilder();
 		
 		public const string TransportContractsModuleName = "transport-contracts";		
