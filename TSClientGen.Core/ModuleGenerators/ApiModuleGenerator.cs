@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TSClientGen.Extensibility;
 using TSClientGen.Extensibility.ApiDescriptors;
 
 namespace TSClientGen
@@ -10,11 +11,13 @@ namespace TSClientGen
 		public ApiModuleGenerator(
 			ApiClientModule apiClientModule,
 			TypeMapping typeMapping,
+			IApiClientWriter customApiClientWriter,
 			Func<object, string> serializeToJson,
 			string commonModuleName)
 		{
 			_apiClientModule = apiClientModule;
 			_typeMapping = typeMapping;
+			_customApiClientWriter = customApiClientWriter;
 			_serializeToJson = serializeToJson;
 			_commonModuleName = commonModuleName;
 		}
@@ -39,7 +42,13 @@ namespace TSClientGen
 			
 			_result
 				.AppendLine($"import {{ {string.Join(", ", imports)} }} from '{_commonModuleName}';")
-				.AppendLine()
+				.AppendLine();
+
+			_customApiClientWriter?.WriteImports(_result);
+			_result.AppendLine();
+			_customApiClientWriter?.WriteCodeBeforeApiClientClass(_result);
+
+			_result
 				.AppendLine($"export class {_apiClientModule.ApiClientClassName} {{")
 				.Indent();
 			
@@ -68,6 +77,8 @@ namespace TSClientGen
 				.Unindent()
 				.AppendLine("}").AppendLine()
 				.AppendLine($"export default new {_apiClientModule.ApiClientClassName}();").AppendLine();
+
+			_customApiClientWriter?.WriteCodeAfterApiClientClass(_result);
 		}
 
 		public void WriteTypeDefinitions()
@@ -130,8 +141,9 @@ namespace TSClientGen
 		
 		private readonly ApiClientModule _apiClientModule;
 		private readonly TypeMapping _typeMapping;
+		private readonly IApiClientWriter _customApiClientWriter;
 		private readonly Func<object, string> _serializeToJson;
 		private readonly string _commonModuleName;
-		private readonly IndentedStringBuilder _result = new IndentedStringBuilder();
+		private readonly IIndentedStringBuilder _result = new IndentedStringBuilder();
 	}
 }

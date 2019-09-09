@@ -1,5 +1,6 @@
 using System;
 using NUnit.Framework;
+using TSClientGen.Extensibility;
 using TSClientGen.Extensibility.ApiDescriptors;
 
 namespace TSClientGen.Tests
@@ -55,13 +56,49 @@ namespace TSClientGen.Tests
 			TextAssert.ContainsLine("import { Enum1, Enum2 } from './enums'", generator.GetResult());
 		}
 
-		
-		private ApiModuleGenerator createGenerator(TypeMapping typeMapping)
+		[Test]
+		public void Should_write_custom_imports_if_api_generation_extensions_provided()
+		{
+			var mapping = new TypeMapping();
+			var customWriterMock = new CustomApiWriter();
+			var generator = createGenerator(mapping, customWriterMock);
+
+			generator.WriteApiClientClass();
+
+			TextAssert.ContainsLine("import { foo } from 'bar'", generator.GetResult());
+		}
+
+		[Test]
+		public void Should_write_custom_prefix_if_api_generation_extensions_provided()
+		{
+			var mapping = new TypeMapping();
+			var customWriterMock = new CustomApiWriter();
+			var generator = createGenerator(mapping, customWriterMock);
+
+			generator.WriteApiClientClass();
+
+			TextAssert.ContainsLine("foo.before();", generator.GetResult());
+		}
+
+		[Test]
+		public void Should_write_custom_suffix_if_api_generation_extensions_provided()
+		{
+			var mapping = new TypeMapping();
+			var customWriterMock = new CustomApiWriter();
+			var generator = createGenerator(mapping, customWriterMock);
+
+			generator.WriteApiClientClass();
+
+			TextAssert.ContainsLine("foo.after();", generator.GetResult());
+		}
+
+		private ApiModuleGenerator createGenerator(TypeMapping typeMapping, IApiClientWriter customWriter = null)
 		{
 			var module = new ApiClientModule("client", new ApiMethod[0], typeof(Controller));
 			return new ApiModuleGenerator(
 				module,
 				typeMapping,
+				customWriter,
 				(val) => throw new NotImplementedException(),
 				"common");
 		}
@@ -84,5 +121,23 @@ namespace TSClientGen.Tests
 		enum Enum1 { A, B }
 
 		enum Enum2 { C, D }
+
+		class CustomApiWriter : IApiClientWriter
+		{
+			public void WriteImports(IIndentedStringBuilder builder)
+			{
+				builder.AppendLine("import { foo } from 'bar'");
+			}
+
+			public void WriteCodeBeforeApiClientClass(IIndentedStringBuilder builder)
+			{
+				builder.AppendLine("foo.before();");
+			}
+
+			public void WriteCodeAfterApiClientClass(IIndentedStringBuilder builder)
+			{
+				builder.AppendLine("foo.after();");
+			}
+		}
 	}
 }

@@ -39,6 +39,7 @@ namespace TSClientGen
 				new ApiDiscovery(plugins.MethodDescriptorProvider),
 				new TypeConverter(plugins.TypeConverter),
 				new TypeDescriptorProvider(plugins.TypeDescriptorProvider),
+				plugins.CustomApiClientWriter,
 				plugins.ResourceModuleWriterFactory ?? new ResourceModuleWriterFactory(),
 				JsonConvert.SerializeObject);
 			

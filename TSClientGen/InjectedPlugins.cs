@@ -16,5 +16,8 @@ namespace TSClientGen
 		
 		[Import(AllowDefault = true)]
 		public IResourceModuleWriterFactory ResourceModuleWriterFactory { get; set; }
+
+		[Import(AllowDefault = true)]
+		public IApiClientWriter CustomApiClientWriter { get; set; }
 	}
 }
