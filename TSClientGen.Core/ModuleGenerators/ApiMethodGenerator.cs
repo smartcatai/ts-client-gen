@@ -7,7 +7,7 @@ namespace TSClientGen
 {
 	public class ApiMethodGenerator
 	{
-		public ApiMethodGenerator(ApiMethod apiMethod, IndentedStringBuilder result, TypeMapping typeMapping)
+		public ApiMethodGenerator(ApiMethod apiMethod, IIndentedStringBuilder result, TypeMapping typeMapping)
 		{
 			_apiMethod = apiMethod;
 			_result = result;
@@ -167,7 +167,7 @@ namespace TSClientGen
 		
 		
 		private readonly ApiMethod _apiMethod;		
-		private readonly IndentedStringBuilder _result;
+		private readonly IIndentedStringBuilder _result;
 		private readonly TypeMapping _typeMapping;
 	}
 }

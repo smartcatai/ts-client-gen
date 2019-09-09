@@ -4,9 +4,9 @@ using System.Text;
 
 namespace TSClientGen
 {
-	public class IndentedStringBuilder
+	public class IndentedStringBuilder : IIndentedStringBuilder
 	{
-		public IndentedStringBuilder Indent()
+		public IIndentedStringBuilder Indent()
 		{
 			if (!_shouldWriteIndenting && _result.Length > 0)
 				throw new InvalidOperationException("Trying to indent while not finished writing the current line");
@@ -16,7 +16,7 @@ namespace TSClientGen
 			return this;
 		}
 
-		public IndentedStringBuilder Unindent()
+		public IIndentedStringBuilder Unindent()
 		{
 			if (_indentLevel == 0)
 				throw new InvalidOperationException("Trying to unindent while current indent level is already 0");
@@ -28,14 +28,14 @@ namespace TSClientGen
 			return this;
 		}
 
-		public IndentedStringBuilder Append(string text)
+		public IIndentedStringBuilder Append(string text)
 		{
 			writeIndentingIfNeeded();
 			_result.Append(text);
 			return this;
 		}
 
-		public IndentedStringBuilder AppendLine(string text = null)
+		public IIndentedStringBuilder AppendLine(string text = null)
 		{
 			writeIndentingIfNeeded();
 			if (text != null)
@@ -47,7 +47,7 @@ namespace TSClientGen
 			return this;
 		}
 
-		public IndentedStringBuilder AppendText(string text)
+		public IIndentedStringBuilder AppendText(string text)
 		{
 			var lines = text.Split(new[] {Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries);
 			foreach (var line in lines)

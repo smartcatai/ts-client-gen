@@ -17,6 +17,7 @@ namespace TSClientGen
 			IApiDiscovery apiDiscovery,
 			ITypeConverter customTypeConverter,
 			ITypeDescriptorProvider typeDescriptorProvider,
+			IApiClientWriter customApiClientWriter,
 			IResourceModuleWriterFactory resourceModuleWriterFactory,
 			Func<object, string> serializeToJson)
 		{
@@ -24,6 +25,7 @@ namespace TSClientGen
 			_apiDiscovery = apiDiscovery;
 			_customTypeConverter = customTypeConverter;
 			_typeDescriptorProvider = typeDescriptorProvider;
+			_customApiClientWriter = customApiClientWriter;
 			_resourceModuleWriterFactory = resourceModuleWriterFactory;
 			_serializeToJson = serializeToJson;
 		}
@@ -115,7 +117,7 @@ namespace TSClientGen
 					typeMapping.AddType(type);
 				}
 				
-				var generator = new ApiModuleGenerator(module, typeMapping, _serializeToJson, commonModuleName);
+				var generator = new ApiModuleGenerator(module, typeMapping, _customApiClientWriter, _serializeToJson, commonModuleName);
 				generator.WriteApiClientClass();
 				generator.WriteTypeDefinitions();
 				generator.WriteEnumImports(enumsModuleName);
@@ -263,12 +265,12 @@ namespace TSClientGen
 				Console.WriteLine($"\t{existingFile} deleted");
 			}			
 		}
-		
-		
+
 		private readonly IArguments _arguments;
 		private readonly IApiDiscovery _apiDiscovery;
 		private readonly ITypeConverter _customTypeConverter;
 		private readonly ITypeDescriptorProvider _typeDescriptorProvider;
+		private readonly IApiClientWriter _customApiClientWriter;
 		private readonly IResourceModuleWriterFactory _resourceModuleWriterFactory;
 		private readonly Func<object, string> _serializeToJson;
 		
