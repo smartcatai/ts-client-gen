@@ -44,18 +44,23 @@ namespace TSClientGen
 				.AppendLine($"import {{ {string.Join(", ", imports)} }} from '{_commonModuleName}';")
 				.AppendLine();
 
-			_customApiClientWriter?.WriteImports(_result);
+			_customApiClientWriter?.WriteImports(_result, _apiClientModule);
 			_result.AppendLine();
-			_customApiClientWriter?.WriteCodeBeforeApiClientClass(_result);
+			_customApiClientWriter?.WriteCodeBeforeApiClientClass(_result, _apiClientModule);
 
 			_result
 				.AppendLine($"export class {_apiClientModule.ApiClientClassName} {{")
 				.Indent();
-			
+
+			_result.Append("constructor(");
 			if (_apiClientModule.SupportsExternalHost)
 			{
-				_result.AppendLine("constructor(private hostname?: string) {}").AppendLine();
+				_result.Append("private hostname?: string");
 			}
+
+			_result.AppendLine(") {");
+			_customApiClientWriter?.ExtendApiClientConstructor(_result, _apiClientModule);
+			_result.AppendLine("}");
 			
 			foreach (var method in _apiClientModule.Methods)
 			{
@@ -72,13 +77,15 @@ namespace TSClientGen
 					() => methodWriter.WriteSignature(),
 					() => methodWriter.WriteBody(false, _apiClientModule.SupportsExternalHost));
 			}
+			
+			_customApiClientWriter?.ExtendApiClientClass(_result, _apiClientModule);
 
 			_result
 				.Unindent()
 				.AppendLine("}").AppendLine()
 				.AppendLine($"export default new {_apiClientModule.ApiClientClassName}();").AppendLine();
 
-			_customApiClientWriter?.WriteCodeAfterApiClientClass(_result);
+			_customApiClientWriter?.WriteCodeAfterApiClientClass(_result, _apiClientModule);
 		}
 
 		public void WriteTypeDefinitions()

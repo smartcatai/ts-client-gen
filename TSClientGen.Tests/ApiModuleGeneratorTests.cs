@@ -1,4 +1,5 @@
 using System;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using TSClientGen.Extensibility;
 using TSClientGen.Extensibility.ApiDescriptors;
@@ -57,6 +58,19 @@ namespace TSClientGen.Tests
 		}
 
 		[Test]
+		public void Should_write_empty_constructor_by_default()
+		{
+			var mapping = new TypeMapping();
+			var whitespaces = new Regex(@"\s");
+			var generator = createGenerator(mapping);
+			
+			generator.WriteApiClientClass();
+
+			var result = whitespaces.Replace(generator.GetResult(), "");
+			StringAssert.Contains("constructor(){}", result);
+		}
+
+		[Test]
 		public void Should_write_custom_imports_if_api_generation_extensions_provided()
 		{
 			var mapping = new TypeMapping();
@@ -91,6 +105,30 @@ namespace TSClientGen.Tests
 
 			TextAssert.ContainsLine("foo.after();", generator.GetResult());
 		}
+		
+		[Test]
+		public void Should_extend_constructor_if_api_generation_extensions_provided()
+		{
+			var mapping = new TypeMapping();
+			var customWriterMock = new CustomApiWriter();
+			var generator = createGenerator(mapping, customWriterMock);
+
+			generator.WriteApiClientClass();
+
+			TextAssert.ContainsLine("foo.extendConstructor();", generator.GetResult());
+		}
+		
+		[Test]
+		public void Should_extend_class_body_if_api_generation_extensions_provided()
+		{
+			var mapping = new TypeMapping();
+			var customWriterMock = new CustomApiWriter();
+			var generator = createGenerator(mapping, customWriterMock);
+
+			generator.WriteApiClientClass();
+
+			TextAssert.ContainsLine("public bar() { return foo.bar(); }", generator.GetResult());
+		}
 
 		private ApiModuleGenerator createGenerator(TypeMapping typeMapping, IApiClientWriter customWriter = null)
 		{
@@ -124,19 +162,29 @@ namespace TSClientGen.Tests
 
 		class CustomApiWriter : IApiClientWriter
 		{
-			public void WriteImports(IIndentedStringBuilder builder)
+			public void WriteImports(IIndentedStringBuilder builder, ApiClientModule apiClientModule)
 			{
 				builder.AppendLine("import { foo } from 'bar'");
 			}
 
-			public void WriteCodeBeforeApiClientClass(IIndentedStringBuilder builder)
+			public void WriteCodeBeforeApiClientClass(IIndentedStringBuilder builder, ApiClientModule apiClientModule)
 			{
 				builder.AppendLine("foo.before();");
 			}
 
-			public void WriteCodeAfterApiClientClass(IIndentedStringBuilder builder)
+			public void WriteCodeAfterApiClientClass(IIndentedStringBuilder builder, ApiClientModule apiClientModule)
 			{
 				builder.AppendLine("foo.after();");
+			}
+
+			public void ExtendApiClientConstructor(IIndentedStringBuilder builder, ApiClientModule apiClientModule)
+			{
+				builder.AppendLine("foo.extendConstructor();");
+			}
+
+			public void ExtendApiClientClass(IIndentedStringBuilder builder, ApiClientModule apiClientModule)
+			{
+				builder.AppendLine("public bar() { return foo.bar(); }");
 			}
 		}
 	}
