@@ -48,11 +48,6 @@ NUGET
       Microsoft.NETCore.Targets (>= 1.1) - restriction: || (&& (== net472) (< net45)) (== netstandard2.0)
       System.Runtime (>= 4.3) - restriction: || (&& (== net472) (< net45)) (== netstandard2.0)
 
-GROUP Build
-NUGET
-  remote: https://www.nuget.org/api/v2
-    vswhere (2.4.1)
-
 GROUP Test
 STORAGE: NONE
 RESTRICTION: == netcoreapp2.1

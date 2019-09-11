@@ -10,13 +10,6 @@ nuget System.ComponentModel.Composition 4.5.0
 nuget Newtonsoft.Json 6.0.8
 nuget System.Resources.ResourceManager 4.3.0
 
-
-group Build
-    source https://nuget.org/api/v2
-
-    nuget vswhere 2.4.1
-
-
 group Test
     source https://nuget.org/api/v2
     framework: netcoreapp2.1
