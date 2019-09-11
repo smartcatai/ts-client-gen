@@ -1,21 +1,16 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
-        <AssemblyName>TSClientGen.Contract</AssemblyName>
-        <RootNamespace>TSClientGen</RootNamespace>
-        <PackageVersion>5.0.0</PackageVersion>
-        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <PackageReference Include="System.Resources.ResourceManager" Version="4.3.0" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Compile Include="..\SolutionInfo.cs">
-        <Link>Properties\SolutionInfo.cs</Link>
-      </Compile>
-    </ItemGroup>
-
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>TSClientGen.Contract</AssemblyName>
+    <RootNamespace>TSClientGen</RootNamespace>
+    <PackageVersion>5.0.0</PackageVersion>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\SolutionInfo.cs">
+      <Link>Properties\SolutionInfo.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <Import Project="..\.paket\Paket.Restore.targets" />
 </Project>
