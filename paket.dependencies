@@ -1,5 +1,5 @@
 version 5.219.0
-framework: auto-detect
+framework: net472, netstandard2.0
 
 source https://www.nuget.org/api/v2/
 
@@ -8,7 +8,20 @@ nuget Microsoft.AspNet.WebApi.Client 5.2.3
 nuget Microsoft.AspNet.WebApi.Core 5.2.3
 nuget System.ComponentModel.Composition 4.5.0
 nuget Newtonsoft.Json 6.0.8
-nuget NUnit ~> 3.10
-nuget NUnit3TestAdapter ~> 3.10
-nuget Microsoft.NET.Test.Sdk ~> 15.5
-nuget vswhere 2.4.1
+nuget System.Resources.ResourceManager 4.3.0
+
+
+group Build
+    source https://nuget.org/api/v2
+
+    nuget vswhere 2.4.1
+
+
+group Test
+    source https://nuget.org/api/v2
+    framework: netcoreapp2.1
+    storage: none
+
+    nuget NUnit >= 3.10 < 4.0
+    nuget NUnit3TestAdapter >= 3.10 < 4.0
+    nuget Microsoft.NET.Test.Sdk >= 15.5 < 16.0

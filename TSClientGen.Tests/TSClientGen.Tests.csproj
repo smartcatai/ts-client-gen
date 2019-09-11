@@ -1,26 +1,18 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <TargetFramework>netcoreapp2.1</TargetFramework>
-        <PackageVersion>5.0.0</PackageVersion>
-        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.1" />
-      <PackageReference Include="NUnit" Version="3.11.0" />
-      <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\TSClientGen.Contract\TSClientGen.Contract.csproj" />
-      <ProjectReference Include="..\TSClientGen.Core\TSClientGen.Core.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Compile Include="..\SolutionInfo.cs">
-        <Link>Properties\SolutionInfo.cs</Link>
-      </Compile>
-    </ItemGroup>
-
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <PackageVersion>5.0.0</PackageVersion>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TSClientGen.Contract\TSClientGen.Contract.csproj" />
+    <ProjectReference Include="..\TSClientGen.Core\TSClientGen.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\SolutionInfo.cs">
+      <Link>Properties\SolutionInfo.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <Import Project="..\.paket\Paket.Restore.targets" />
 </Project>
