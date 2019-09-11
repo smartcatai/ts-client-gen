@@ -1,5 +1,4 @@
 type project
-include-referenced-projects true
 projectUrl https://github.com/smartcatai/ts-client-gen
 licenseUrl https://github.com/smartcatai/ts-client-gen/blob/develop/LICENSE.txt
 description TSClientGen tool - contains attributes to apply to your code for altering the TypeScript code generation results
