@@ -4,6 +4,12 @@
     <OutputType>Exe</OutputType>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <OutputPath>bin\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <OutputPath>bin\</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\TSClientGen.Contract\TSClientGen.Contract.csproj" />
     <ProjectReference Include="..\TSClientGen.Core\TSClientGen.Core.csproj" />

@@ -6,10 +6,7 @@ projectUrl https://github.com/smartcatai/ts-client-gen
 licenseUrl https://github.com/smartcatai/ts-client-gen/blob/develop/LICENSE.txt
 description Tool to generate TypeScript client for the asp.net web api
 developmentDependency true
-dependencies
-  TSClientGen.Contract ~> 5.1.0
-  TSClientGen.Extensibility ~> 5.1.0
+
+// TODO: migrate to <PackAsTool>True</PackAsTool> when target netcoreapp
 files
-  bin\*.* ==> tools
-  !bin\*.vshost.*
-  !bin\*.xml
+    bin/net472 ==> tools

@@ -1,5 +1,5 @@
 type project
-include-referenced-projects true
+interproject-references keep-major
 projectUrl https://github.com/smartcatai/ts-client-gen
 licenseUrl https://github.com/smartcatai/ts-client-gen/blob/develop/LICENSE.txt
 description TSClientGen tool - contains interfaces to implement in a plugin for the TSClienGen tool
