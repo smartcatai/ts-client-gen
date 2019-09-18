@@ -1,7 +1,7 @@
-version 5.219.0
+version 5.216.0
 framework: net472, netstandard2.0
 
-source https://www.nuget.org/api/v2/
+source https://api.nuget.org/v3/index.json
 
 nuget CommandLineParser 2.4.3
 nuget Microsoft.AspNet.WebApi.Client 5.2.3
@@ -11,10 +11,24 @@ nuget Newtonsoft.Json 6.0.8
 nuget System.Resources.ResourceManager 4.3.0
 
 group Test
-    source https://nuget.org/api/v2
+    source https://api.nuget.org/v3/index.json
     framework: netcoreapp2.1
     storage: none
 
     nuget NUnit >= 3.10 < 4.0
     nuget NUnit3TestAdapter >= 3.10 < 4.0
     nuget Microsoft.NET.Test.Sdk >= 15.5 < 16.0
+
+// [ FAKE GROUP ]
+group Build
+    storage none
+    source https://api.nuget.org/v3/index.json
+    framework: net472, netcoreapp2.1, netstandard2.0
+
+    nuget Fake.DotNet.Cli
+    nuget Fake.IO.FileSystem
+    nuget Fake.Core.Target
+    nuget Fake.DotNet.Paket
+    nuget Fake.Api.GitHub
+    nuget Fake.Core.ReleaseNotes
+    nuget Fake.DotNet.AssemblyInfoFile
