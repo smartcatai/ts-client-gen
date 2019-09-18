@@ -14,3 +14,6 @@ packages/*
 nuget/*.nupkg
 .idea/.idea.TSClientGen
 paket-files
+.fake/
+github_token
+/.paket/load/
