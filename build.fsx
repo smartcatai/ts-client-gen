@@ -11,7 +11,6 @@ let slnFile = "./TSClientGen.sln"
 let nugetOutput = "./nuget"
 let gitOwner = "smartcatai"
 let githubRepoName = "ts-client-gen"
-let gitHubToken = Fake.IO.File.readAsString "github_token"
 let release = Fake.Core.ReleaseNotes.load "RELEASE_NOTES.md"
 let buildConfig = DotNet.BuildConfiguration.Release
 
@@ -77,6 +76,7 @@ Target.create "Pack" (fun _ ->
 
 Target.create "GithubRelease" (fun _ ->
 
+    let gitHubToken = Fake.IO.File.readAsString "github_token"
     let files = !! (nugetOutput + "/*.nupkg")
 
     GitHub.createClientWithToken gitHubToken
