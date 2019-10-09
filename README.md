@@ -1,4 +1,6 @@
 # TSClientGen (aka ts-client-gen)
+[![NuGet](https://img.shields.io/nuget/v/TSClientGen.svg)]((https://nuget.org/packages/TSClientGen))  [![Releases](https://img.shields.io/badge/docs-Releases-green.svg?style=flat)](https://github.com/smartcatai/ts-client-gen/blob/develop/RELEASE_NOTES.md)
+
 TSClientGen is a tool to generate TypeScript client for api exposed by .net web application. It is easy to use and highly extensible at the same time. When using most of its features it can be seen more like a strongly-typed bridge connecting your TypeScript client-side and .NET server-side codebases.
 
 You can run this tool by hand and then place the generated TypeScript modules into your client-side codebase or you can build the execution of this tool into your client-side build pipeline so that you won't even need to store generated modules in source control. It's up to you to decide how deeply you would like to integrate the api client module code generation into your development process.
