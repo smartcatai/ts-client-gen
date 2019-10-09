@@ -28,6 +28,7 @@ You can run this tool by hand and then place the generated TypeScript modules in
 * [Customizing with a plugin](#customizing-with-a-plugin)
   + [Alter api methods descriptions before code generation](#alter-api-methods-descriptions-before-code-generation)
   + [Alter interface descriptions before code generation](#alter-interface-descriptions-before-code-generation)
+  + [Add custom code to generated api client modules](#add-custom-code-to-generated-api-client-modules)
   + [Expose server-side resources to client-side codebase](#expose-server-side-resources-to-client-side-codebase)
   + [Expose server-side enum value localizations to client-side codebase](#expose-server-side-enum-value-localizations-to-client-side-codebase)
   + [Provide a custom mechanism for discovering api from .net assembly](#provide-a-custom-mechanism-for-discovering-api-from-net-assembly)
@@ -332,6 +333,18 @@ You can alter complex type descriptions before they are passed down to code gene
 You should return the `TypeDescriptor` instance that will serve as an input for the code generation process instead of the original one provided as a second argument. The `TypeDescriptor` class is immutable, so you have to create a new instance of it if you want to modify it in some way. You can also return the original `TypeDescriptor` instance if you do not want to make any changes to this type descriptor.
 
 By implementing the `ITypeDescriptorProvider` interface you can add, remove or modify the list of type's properties before passing the type to code generation. You can also replace a base type for the type in question for the purposes of code generation. But note that you can alter only properties that are directly contained in the type described by `TypeDescriptor`. You can't in any way modify the TypeScript representation for the nested objects contained in the properties of this type.
+
+### Add custom code to generated api client modules
+
+TSClientGen allows you to add any custom TypeScript code to the generated api client modules. This may be used for extending api client classes with some additional functionality or for instance for registering api client instances in some global registry (like a DI container). You can extend api client modules by implementing the [IApiClientWriter](https://github.com/smartcatai/ts-client-gen/blob/develop/TSClientGen.Extensibility/IApiClientWriter.cs) interface in the plugin assembly.
+
+The [IApiClientWriter](https://github.com/smartcatai/ts-client-gen/blob/develop/TSClientGen.Extensibility/IApiClientWriter.cs) interface contains several methods, each of which accepts two parameters of the types [IIndentedStringBuilder](https://github.com/smartcatai/ts-client-gen/blob/develop/TSClientGen.Contract/IIndentedStringBuilder.cs) and [ApiClientModule](https://github.com/smartcatai/ts-client-gen/blob/develop/TSClientGen.Extensibility/ApiDescriptors/ApiClientModule.cs). The first parameter is used for writing TypeScript code into the generated module and is a thin wrapper around `StringBuilder` that takes care of the indentations. The second one is the descriptor providing all the info about the api client module being generated. The methods of the interface are the following:	
+
+- `WriteImports` - appends code right after all the built-in imports of the api client module. If you import some additional modules into api client module, they probably should go here;
+- `WriteCodeBeforeApiClientClass`- appends code right before the api client class declaration. This is effectively the same point as for `WriteImports`, but after the empty line separating import statements from the api client class declaration.
+- `WriteCodeAfterApiClientClass` - appends code to the very end of the module (after the api client class definition and default export).
+- `ExtendApiClientConstructor`- appends code to the api client class constructor (by default is has an empty body). Use this to add some custom initialization for the api client class.
+- `ExtendApiClientClass` - appends code to the end of the api client class definition, after all methods have been defined. Use this to add custom members to the api client class.
 
 ### Expose server-side resources to client-side codebase
 
