@@ -36,9 +36,20 @@ You can run this tool by hand and then place the generated TypeScript modules in
   + [Provide a custom mechanism for discovering api from .net assembly](#provide-a-custom-mechanism-for-discovering-api-from-net-assembly)
 
 ## Basic usage
-Install the [nuget package](https://www.nuget.org/packages/TSClientGen/) and call TSClientGen.exe with these command line parameters:
+TSClientGen tool comes in two flavors:
+
+* .net core tool - [TSClientGen.NetCoreTool](https://www.nuget.org/packages/TSClientGen.NetCoreTool/) nuget package. You can install it as a global or local dotnet tool:
+
+  ```shell
+  dotnet tool install -g TSClientGen.NetCoreTool
+  ```
+
+* .net framework tool - [TSClientGen.NetFrameworkTool](https://www.nuget.org/packages/TSClientGen.NetFrameworkTool/) nuget package. Install the package to your solution and navigate to package folder's `tool` subfolder or add it to the PATH environment variable to be able to call it from the command line.
+
+After the package has been installed, the usage of both .net framework and .net core versions of the tool is the same:
+
 ```shell
-TSClientGen.exe --asm MyWebApi.dll --out-dir .\output --transport axios --cleanup-out-dir
+tsclientgen --asm MyWebApi.dll --out-dir .\output --transport axios --cleanup-out-dir
 ```
 The parameters here are the following
 * `--asm` - space-delimited list of assemblies containing web api controllers;

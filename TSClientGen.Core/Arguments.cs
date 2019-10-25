@@ -3,7 +3,7 @@ using CommandLine;
 
 namespace TSClientGen
 {
-	class Arguments : IArguments
+	public class Arguments
 	{
 		[Option('a', "asm", Separator = ',', Required = true)]
 		public IEnumerable<string> AssemblyPaths { get; set; }

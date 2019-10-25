@@ -1,10 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.ComponentModel.Composition.Hosting;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using CommandLine;
 using TSClientGen.Extensibility;
 using TSClientGen.Extensibility.ApiDescriptors;
 
@@ -13,7 +16,7 @@ namespace TSClientGen
 	public class Runner
 	{
 		public Runner(
-			IArguments arguments,
+			Arguments arguments,
 			IApiDiscovery apiDiscovery,
 			ITypeConverter customTypeConverter,
 			ITypeDescriptorProvider typeDescriptorProvider,
@@ -28,6 +31,42 @@ namespace TSClientGen
 			_customApiClientWriter = customApiClientWriter;
 			_resultFileWriter = resultFileWriter;
 			_serializeToJson = serializeToJson;
+		}
+
+		public static Arguments ParseArguments(string[] args)
+		{
+			var argsParseResult = Parser.Default.ParseArguments<Arguments>(args);
+			if (argsParseResult is NotParsed<Arguments> notParsed)
+			{
+				foreach (var error in notParsed.Errors)
+				{
+					Console.WriteLine(error.ToString());
+				}
+				return null;
+			}
+
+			var arguments = ((Parsed<Arguments>) argsParseResult).Value;
+			if (arguments.BuiltinTransportModule == null && arguments.CustomTransportModule == null)
+			{
+				Console.WriteLine("Specify either --transport or --custom-transport command-line option");
+				return null;
+			}
+
+			return arguments;
+		}
+
+		public static InjectedPlugin LoadPlugin(Arguments arguments)
+		{
+			var plugins = new InjectedPlugin();
+			if (arguments.PluginsAssembly != null)
+			{
+				var pluginsAssembly = Assembly.LoadFrom(arguments.PluginsAssembly);
+				using (var compositionContainer = new CompositionContainer(new AssemblyCatalog(pluginsAssembly)))
+				{
+					compositionContainer.ComposeParts(plugins);
+				}
+			}
+			return plugins;
 		}
 
 		public void Execute()
@@ -290,7 +329,7 @@ namespace TSClientGen
 		}
 
 
-		private readonly IArguments _arguments;
+		private readonly Arguments _arguments;
 		private readonly IApiDiscovery _apiDiscovery;
 		private readonly ITypeConverter _customTypeConverter;
 		private readonly ITypeDescriptorProvider _typeDescriptorProvider;
