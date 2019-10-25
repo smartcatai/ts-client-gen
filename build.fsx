@@ -6,8 +6,10 @@ open Fake.DotNet
 open Fake.IO
 open Fake.IO.Globbing.Operators
 open Fake.Core.TargetOperators
+open System.Xml
 
 let slnFile = "./TSClientGen.sln"
+let netCoreToolPrjFile = "./TSClientGen.NetCoreTool/TSClientGen.NetCoreTool.csproj"
 let nugetOutput = "./nuget"
 let gitOwner = "smartcatai"
 let githubRepoName = "ts-client-gen"
@@ -29,21 +31,43 @@ Target.create "CheckVersions" (fun _ ->
 
     let getAssemblyVersion aiFile =
         match AssemblyInfoFile.getAttributeValue "AssemblyInformationalVersion" aiFile with
-        | Some v -> v.Trim '"'
+        | Some v -> v.Trim '"' |> Some
         | None ->
             match AssemblyInfoFile.getAttributeValue "AssemblyVersion" aiFile with
-            | Some v -> v.Trim '"'
-            | None -> failwith ("Can't find assembly version attribute in " + (Path.toRelativeFromCurrent aiFile))
+            | Some v -> v.Trim '"' |> Some
+            | None -> Path.toRelativeFromCurrent aiFile
+                        |> sprintf "Can't find assembly version attribute in %s"
+                        |> failwith
 
-    let invalidVersions =
-        !! "./**/AssemblyInfo.cs"
-        |> Seq.filter (fun aiFile -> SemVer.parse(getAssemblyVersion aiFile).Normalize() <> release.SemVer.Normalize())
-        |> List.ofSeq
+    let getPackageVersion csprojFile =
+        let doc = new XmlDocument()       
+        let versions = 
+            doc.Load (filename = csprojFile);
+            doc.SelectNodes "//PackageVersion/text()"
+                |> Seq.cast<XmlNode>
+                |> Seq.map (fun node -> node.Value)
+                |> Seq.toList
+        match versions with
+            | [version] -> Some version
+            | [_;_] -> Path.toRelativeFromCurrent csprojFile
+                        |> sprintf "More than one PackageVersion property found in %s"
+                        |> failwith
+            | _ -> None
 
-    for aiFile in invalidVersions do
-        Trace.traceErrorfn
-            "Assembly version in %s is not equal to the version in RELEASE_NOTES.md"
-            (Path.toRelativeFromCurrent aiFile)
+    let getInvalidVersions pattern parseVersion =
+        let hasInvalidVersion file =
+            match parseVersion file with
+               | Some version -> SemVer.parse(version).Normalize() <> release.SemVer.Normalize()
+               | None -> false
+        !! pattern |> Seq.filter hasInvalidVersion |> List.ofSeq
+
+    let invalidAssemblyInfoVersions = getInvalidVersions "./**/AssemblyInfo.cs" getAssemblyVersion
+    let invalidCsprojVersions = getInvalidVersions "./**/*.csproj" getPackageVersion        
+    let invalidVersions = List.append invalidAssemblyInfoVersions invalidCsprojVersions
+
+    for file in invalidVersions do
+        Path.toRelativeFromCurrent file
+            |> Trace.traceErrorfn "Assembly version in %s is not equal to the version in RELEASE_NOTES.md"
 
     if not invalidVersions.IsEmpty then
         failwith "Invalid versions for some assemblies"
@@ -72,6 +96,11 @@ Target.create "Pack" (fun _ ->
                                 OutputPath = nugetOutput;
                                 BuildConfig = buildConfig.ToString();
                                 Version = release.SemVer.AsString })
+    
+    DotNet.pack (fun opt -> { opt with
+                                    NoBuild = true;
+                                    NoRestore = true;
+                                    OutputPath = Some nugetOutput; }) netCoreToolPrjFile
 )
 
 Target.create "GithubRelease" (fun _ ->

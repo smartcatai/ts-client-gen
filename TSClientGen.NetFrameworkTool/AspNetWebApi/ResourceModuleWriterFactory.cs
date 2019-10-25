@@ -1,7 +1,7 @@
 using System.Globalization;
 using TSClientGen.Extensibility;
 
-namespace TSClientGen.AspNetWebApi
+namespace TSClientGen.NetFrameworkTool
 {
 	public class ResourceModuleWriterFactory : IResourceModuleWriterFactory
 	{

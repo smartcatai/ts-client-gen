@@ -1,14 +1,27 @@
 version 5.216.0
-framework: net472, netstandard2.0
+framework: netstandard2.0
 
 source https://api.nuget.org/v3/index.json
 
 nuget CommandLineParser 2.4.3
-nuget Microsoft.AspNet.WebApi.Client 5.2.3
-nuget Microsoft.AspNet.WebApi.Core 5.2.3
 nuget System.ComponentModel.Composition 4.5.0
-nuget Newtonsoft.Json 6.0.8
 nuget System.Resources.ResourceManager 4.3.0
+
+group NetCore
+    source https://api.nuget.org/v3/index.json
+    framework: netcoreapp2.1
+    storage: none
+
+    nuget Microsoft.AspNetCore.Mvc.Core ~> 2.2.0
+
+group NetFramework
+    source https://api.nuget.org/v3/index.json
+    framework: net472
+    storage: none
+	
+    nuget Microsoft.AspNet.WebApi.Client ~> 5.2.0
+    nuget Microsoft.AspNet.WebApi.Core ~> 5.2.0
+    nuget Newtonsoft.Json 6.0.8	
 
 group Test
     source https://api.nuget.org/v3/index.json
