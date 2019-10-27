@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System;
+using System.Text.Json;
 
 namespace TSClientGen.NetCoreTool
 {
@@ -18,6 +19,10 @@ namespace TSClientGen.NetCoreTool
 				arguments.DefaultLocale,
 				plugin.ResourceModuleWriterFactory);
 
+			var serializeToJson = plugin.JsonSerializer != null
+				? (Func<object, string>) plugin.JsonSerializer.Serialize
+				: obj => JsonSerializer.Serialize(obj, obj.GetType());
+
 			var runner = new Runner(
 				arguments,
 				apiDiscovery,
@@ -25,7 +30,7 @@ namespace TSClientGen.NetCoreTool
 				plugin.TypeDescriptorProvider,
 				plugin.CustomApiClientWriter,
 				resultFileWriter,
-				obj => JsonSerializer.Serialize(obj, obj.GetType()));
+				serializeToJson);
 
 			runner.Execute();
 			return 0;
