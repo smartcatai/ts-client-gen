@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 
 namespace TSClientGen.NetFrameworkTool
 {
@@ -15,6 +16,10 @@ namespace TSClientGen.NetFrameworkTool
 				arguments.DefaultLocale,
 				plugin.ResourceModuleWriterFactory ?? new ResourceModuleWriterFactory());
 
+			var serializeToJson = plugin.JsonSerializer != null
+				? (Func<object, string>) plugin.JsonSerializer.Serialize
+				: JsonConvert.SerializeObject;
+
 			var runner = new Runner(
 				arguments,
 				apiDiscovery,
@@ -22,7 +27,7 @@ namespace TSClientGen.NetFrameworkTool
 				new TypeDescriptorProvider(plugin.TypeDescriptorProvider),
 				plugin.CustomApiClientWriter,
 				resultFileWriter,
-				JsonConvert.SerializeObject);
+				serializeToJson);
 
 			runner.Execute();
 			return 0;

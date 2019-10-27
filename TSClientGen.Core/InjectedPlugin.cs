@@ -22,5 +22,8 @@ namespace TSClientGen
 
 		[Import(AllowDefault = true)]
 		public IApiClientWriter CustomApiClientWriter { get; set; }
+
+		[Import(AllowDefault = true)]
+		public IJsonSerializer JsonSerializer { get; set; }
 	}
 }
