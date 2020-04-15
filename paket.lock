@@ -2,10 +2,10 @@ RESTRICTION: == net472
 NUGET
   remote: https://www.nuget.org/api/v2
     CommandLineParser (2.4.3)
-    Microsoft.AspNet.WebApi.Client (5.2.3)
+    Microsoft.AspNet.WebApi.Client (5.2.7)
       Newtonsoft.Json (>= 6.0.4)
-    Microsoft.AspNet.WebApi.Core (5.2.3)
-      Microsoft.AspNet.WebApi.Client (>= 5.2.3)
+    Microsoft.AspNet.WebApi.Core (5.2.7)
+      Microsoft.AspNet.WebApi.Client (>= 5.2.7)
     Microsoft.CodeCoverage (16.0.1)
     Microsoft.NET.Test.Sdk (15.9.1)
       Microsoft.CodeCoverage (>= 15.9.1)
@@ -13,4 +13,4 @@ NUGET
     NUnit (3.11)
     NUnit3TestAdapter (3.13)
     System.ComponentModel.Composition (4.5)
-    vswhere (2.4.1)
+    vswhere (2.6.7)
