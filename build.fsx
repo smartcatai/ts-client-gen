@@ -9,7 +9,7 @@ open Fake.Core.TargetOperators
 open System.Xml
 
 let slnFile = "./TSClientGen.sln"
-let netCoreToolPrjFile = "./TSClientGen.NetCoreTool/TSClientGen.NetCoreTool.csproj"
+let netCoreToolPrjFile = "./TSClientGen/TSClientGen.csproj"
 let nugetOutput = "./nuget"
 let gitOwner = "smartcatai"
 let githubRepoName = "ts-client-gen"
@@ -28,7 +28,6 @@ Target.create "Restore" (fun _ ->
 )
 
 Target.create "CheckVersions" (fun _ ->
-
     let getAssemblyVersion aiFile =
         match AssemblyInfoFile.getAttributeValue "AssemblyInformationalVersion" aiFile with
         | Some v -> v.Trim '"' |> Some
@@ -40,7 +39,7 @@ Target.create "CheckVersions" (fun _ ->
                         |> failwith
 
     let getPackageVersion csprojFile =
-        let doc = new XmlDocument()       
+        let doc = XmlDocument()
         let versions = 
             doc.Load (filename = csprojFile);
             doc.SelectNodes "//PackageVersion/text()"
@@ -62,7 +61,7 @@ Target.create "CheckVersions" (fun _ ->
         !! pattern |> Seq.filter hasInvalidVersion |> List.ofSeq
 
     let invalidAssemblyInfoVersions = getInvalidVersions "./**/AssemblyInfo.cs" getAssemblyVersion
-    let invalidCsprojVersions = getInvalidVersions "./**/*.csproj" getPackageVersion        
+    let invalidCsprojVersions = getInvalidVersions "./**/*.csproj" getPackageVersion
     let invalidVersions = List.append invalidAssemblyInfoVersions invalidCsprojVersions
 
     for file in invalidVersions do
@@ -72,7 +71,7 @@ Target.create "CheckVersions" (fun _ ->
     if not invalidVersions.IsEmpty then
         failwith "Invalid versions for some assemblies"
 
-    Trace.trace "All assembly versions are equals to release version"
+    Trace.trace "All assembly versions are equal to the release version"
 )
 
 Target.create "Build" (fun _ ->
@@ -91,11 +90,17 @@ Target.create "Test" (fun _ ->
                                 Configuration = buildConfig }) slnFile
 )
 
-Target.create "Pack" (fun _ ->
+Target.create "Pack" (fun p ->
+    let argVersion =
+        match p.Context.Arguments with
+        | ["--version"; v] -> Some v
+        | _ -> None
+
     Paket.pack (fun opt -> { opt with
+                                ToolType = ToolType.CreateLocalTool();
                                 OutputPath = nugetOutput;
-                                BuildConfig = buildConfig.ToString();
-                                Version = release.SemVer.AsString })
+                                BuildConfig = string buildConfig;
+                                Version = argVersion |> Option.defaultValue release.SemVer.AsString })
     
     DotNet.pack (fun opt -> { opt with
                                     NoBuild = true;

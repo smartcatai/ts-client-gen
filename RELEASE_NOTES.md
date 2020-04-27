@@ -1,11 +1,12 @@
 # Release Notes
 
-## 5.3.0 - 2019-10-27
+## 6.0.0 - 2019-04-24
 
-- Tool for .net core
-- Support custom IApiDiscovery implemenation in a plugin
-- Support TSEnumLocalization and TSExtendEnum attributes on enum types as well as on assembly
-- Enum value localization - renamed additional contexts to additional sets
+* Support generating clients for ASP.NET Core 3.1 projects
+* Drop support for non-Core ASP.NET Web API projects
+* Support custom IApiDiscovery implemenation in a plugin
+* Support TSEnumLocalization and TSExtendEnum attributes on enum types as well as on assembly
+* Enum value localization - renamed additional contexts to additional sets
 
 ## 5.2.0 - 2019-10-03
 

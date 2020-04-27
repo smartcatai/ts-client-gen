@@ -1,15 +1,14 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading;
-using System.Web.Http;
-using System.Web.Http.Controllers;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
 using TSClientGen.Extensibility;
 using TSClientGen.Extensibility.ApiDescriptors;
 
-namespace TSClientGen.NetFrameworkTool
+namespace TSClientGen
 {
 	/// <summary>
 	/// Searches assembly for the asp.net webapi controllers and generates module descriptions 
@@ -25,7 +24,7 @@ namespace TSClientGen.NetFrameworkTool
 		public IEnumerable<ApiClientModule> GetModules(Assembly assembly)
 		{
 			var controllerTypes = assembly.GetTypes()
-				.Where(t => typeof(IHttpController).IsAssignableFrom(t))
+				.Where(t => typeof(ControllerBase).IsAssignableFrom(t))
 				.ToList();
 			var anyModuleAttributes = controllerTypes.Any(t => t.GetCustomAttributes<TSModuleAttribute>().Any());
 
@@ -35,26 +34,18 @@ namespace TSClientGen.NetFrameworkTool
 				if (anyModuleAttributes && tsModuleAttribute == null)
 					continue;
 
-				if (controllerType.GetCustomAttribute<TSIgnoreAttribute>() != null)
-					continue;
+				var controllerName = controllerType.Name.Replace("Controller", string.Empty);
 
-				var controllerRoute = controllerType.GetCustomAttributes<RouteAttribute>().SingleOrDefault();
-				var routePrefix = controllerType.GetCustomAttributes<RoutePrefixAttribute>().SingleOrDefault()?.Prefix;
-				if (controllerRoute != null && routePrefix != null)
-				{
-					throw new Exception(
-						$"Controller {controllerType.FullName} has Route and RoutePrefix attributes at the same time");
-				}
+				var controllerRoute = controllerType.GetCustomAttributes<RouteAttribute>()
+					.Select(route => route.Template)
+					.FirstOrDefault();
 
-				routePrefix = string.IsNullOrEmpty(routePrefix) ? "/" : "/" + routePrefix + "/";
-
-				var moduleName = tsModuleAttribute?.ModuleName ??
-				                 controllerType.Name.Replace("Controller", string.Empty);
+				var moduleName = tsModuleAttribute?.ModuleName ?? controllerName;
 				var apiClientClassName = controllerType.Name.Replace("Controller", "Client");
 				var actions = controllerType
 					.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly).ToArray();
 				var methods = actions
-					.Select(a => tryDescribeApiMethod(a, controllerRoute, routePrefix))
+					.Select(a => tryDescribeApiMethod(a, controllerRoute, controllerName))
 					.Where(a => a != null)
 					.ToList();
 
@@ -63,21 +54,14 @@ namespace TSClientGen.NetFrameworkTool
 		}
 
 
-		private ApiMethod tryDescribeApiMethod(MethodInfo method, RouteAttribute controllerRoute, string routePrefix)
+		private ApiMethod tryDescribeApiMethod(MethodInfo method, string routePrefix, string controllerName)
 		{
-			var route = method.GetCustomAttributes<RouteAttribute>().SingleOrDefault() ?? controllerRoute;
-			if (route == null)
-				return null;
-
 			if (method.GetCustomAttribute<TSIgnoreAttribute>() != null)
 				return null;
 
-			var httpMethod = method.GetCustomAttributes().OfType<IActionHttpMethodProvider>()
-				.SelectMany(a => a.HttpMethods)
-				.FirstOrDefault();
-			if (httpMethod == null)
-				throw new Exception(
-					$"Can't determine http method for method {method.Name} in type {method.DeclaringType.FullName}");
+			var routeAttribute = method.GetCustomAttributes<RouteAttribute>().FirstOrDefault();
+			var httpMethodAttribute = method.GetCustomAttributes<HttpMethodAttribute>().FirstOrDefault();
+			var httpMethod = httpMethodAttribute?.HttpMethods.First() ?? "GET";
 
 			var parameters = method.GetParameters()
 				.Where(p => p.ParameterType != typeof(CancellationToken))
@@ -89,8 +73,10 @@ namespace TSClientGen.NetFrameworkTool
 					p.GetCustomAttributes<FromBodyAttribute>().Any()))
 				.ToList();
 
-			string urlTemplate = (routePrefix + route.Template).Replace("{action}", method.Name);
-			var descriptor = new ApiMethod(method, urlTemplate, httpMethod, parameters);
+			string urlTemplate = $"{routePrefix}/{httpMethodAttribute?.Template ?? routeAttribute?.Template}"
+				.Replace("[controller]", controllerName)
+				.Replace("[action]", method.Name);
+			var descriptor = new ApiMethod(method, urlTemplate, new HttpMethod(httpMethod), parameters);
 			if (_customMethodDescriptorProvider != null)
 			{
 				descriptor = _customMethodDescriptorProvider.DescribeMethod(method.DeclaringType, method, descriptor);

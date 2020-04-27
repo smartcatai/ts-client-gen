@@ -1,43 +1,43 @@
-version 5.216.0
+version 5.244.0
+
 framework: netstandard2.0
+storage: none
+strategy: max
 
 source https://api.nuget.org/v3/index.json
 
-nuget CommandLineParser 2.4.3
-nuget System.ComponentModel.Composition 4.5.0
-nuget System.Resources.ResourceManager 4.3.0
+nuget CommandLineParser ~> 2.7
+nuget System.ComponentModel.Composition ~> 4.7
 
-group NetCore
-    source https://api.nuget.org/v3/index.json
-    framework: netcoreapp2.1
+group Library
+    framework: netstandard2.0
+    lowest_matching: true
     storage: none
+    strategy: min
 
-    nuget Microsoft.AspNetCore.Mvc.Core ~> 2.2.0
-
-group NetFramework
     source https://api.nuget.org/v3/index.json
-    framework: net472
-    storage: none
-	
-    nuget Microsoft.AspNet.WebApi.Client ~> 5.2.0
-    nuget Microsoft.AspNet.WebApi.Core ~> 5.2.0
-    nuget Newtonsoft.Json 6.0.8	
+
+    nuget System.Resources.ResourceManager ~> 4.3
 
 group Test
-    source https://api.nuget.org/v3/index.json
-    framework: netcoreapp2.1
+    framework: netcoreapp3.1
     storage: none
+    strategy: max
 
-    nuget NUnit >= 3.10 < 4.0
-    nuget NUnit3TestAdapter >= 3.10 < 4.0
-    nuget Microsoft.NET.Test.Sdk >= 15.5 < 16.0
-    nuget Moq ~> 4.12
+    source https://api.nuget.org/v3/index.json
+
+    nuget Microsoft.NET.Test.Sdk ~> 16.6
+    nuget Moq ~> 4.14
+    nuget NUnit ~> 3.12
+    nuget NUnit3TestAdapter ~> 3.16
 
 // [ FAKE GROUP ]
 group Build
-    storage none
+    framework: netstandard2.0
+    storage: none
+    strategy: max
+
     source https://api.nuget.org/v3/index.json
-    framework: net472, netcoreapp2.1, netstandard2.0
 
     nuget Fake.DotNet.Cli
     nuget Fake.IO.FileSystem

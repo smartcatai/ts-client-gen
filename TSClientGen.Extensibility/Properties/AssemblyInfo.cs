@@ -1,8 +1,7 @@
 ﻿using System.Reflection;
-using System.Runtime.CompilerServices;
 
-[assembly: AssemblyVersion("5.3.0")]
-[assembly: AssemblyInformationalVersion("5.3.0")]
+[assembly: AssemblyVersion("6.0.0")]
+[assembly: AssemblyInformationalVersion("6.0.0")]
 
 [assembly: AssemblyTitle("TSClientGen.Extensibility")]
 [assembly: AssemblyDescription("Contracts assembly for authoring plugins for TSClientGen tool")]

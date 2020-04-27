@@ -1,1 +1,2 @@
-System.Resources.ResourceManager
+group Library
+	System.Resources.ResourceManager

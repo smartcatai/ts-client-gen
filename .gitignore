@@ -15,5 +15,6 @@ nuget/*.nupkg
 .idea/.idea.TSClientGen
 paket-files
 .fake/
+.ionide/
 github_token
 /.paket/load/
