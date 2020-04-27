@@ -1,9 +1,8 @@
 using System;
 using System.Net.Http;
-using Newtonsoft.Json.Linq;
 using TSClientGen.Extensibility;
 
-namespace TSClientGen.NetFrameworkTool
+namespace TSClientGen
 {
 	public class TypeConverter : ITypeConverter
 	{
@@ -18,7 +17,7 @@ namespace TSClientGen.NetFrameworkTool
 			if (result != null)
 				return result;
 
-			if (type == typeof(HttpResponseMessage) || type == typeof(JObject) || type == typeof(JValue))
+			if (type == typeof(HttpResponseMessage))
 				return "any";
 
 			return null;

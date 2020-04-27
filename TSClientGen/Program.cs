@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.Json;
 
-namespace TSClientGen.NetCoreTool
+namespace TSClientGen
 {
 	class Program
 	{

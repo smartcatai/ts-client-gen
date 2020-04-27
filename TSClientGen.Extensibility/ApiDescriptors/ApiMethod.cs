@@ -112,7 +112,7 @@ namespace TSClientGen.Extensibility.ApiDescriptors
 		/// <summary>
 		/// Whether this method uploads any files in a multipart data request to the server
 		/// </summary>
-		public bool UploadsFiles { get;  }
+		public bool UploadsFiles { get; }
 
 		
 		private static readonly Regex _routeParamPattern = new Regex(@"\{(.*?)(:.*?)*\}", RegexOptions.Compiled);

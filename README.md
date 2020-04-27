@@ -1,7 +1,7 @@
 # TSClientGen (aka ts-client-gen)
 [![NuGet](https://img.shields.io/nuget/v/TSClientGen.svg)]((https://nuget.org/packages/TSClientGen))  [![Releases](https://img.shields.io/badge/docs-Releases-green.svg?style=flat)](https://github.com/smartcatai/ts-client-gen/blob/develop/RELEASE_NOTES.md)
 
-TSClientGen is a tool to generate TypeScript client for api exposed by .net web application. It is easy to use and highly extensible at the same time. When using most of its features it can be seen more like a strongly-typed bridge connecting your TypeScript client-side and .NET server-side codebases.
+TSClientGen is a tool to generate TypeScript clients for APIs exposed by an ASP.NET Core web application. It is easy to use and highly extensible at the same time. When using most of its features it can be seen more like a strongly-typed bridge connecting your TypeScript client-side and .NET server-side codebases.
 
 You can run this tool by hand and then place the generated TypeScript modules into your client-side codebase or you can build the execution of this tool into your client-side build pipeline so that you won't even need to store generated modules in source control. It's up to you to decide how deeply you would like to integrate the api client module code generation into your development process.
 
@@ -36,21 +36,15 @@ You can run this tool by hand and then place the generated TypeScript modules in
   + [Provide a custom mechanism for discovering api from .net assembly](#provide-a-custom-mechanism-for-discovering-api-from-net-assembly)
 
 ## Basic usage
-TSClientGen tool comes in two flavors:
 
-* .net core tool - [TSClientGen.NetCoreTool](https://www.nuget.org/packages/TSClientGen.NetCoreTool/) nuget package. You can install it as a global or local dotnet tool:
+* .NET Core tool - [TSClientGen](https://www.nuget.org/packages/TSClientGen/) nuget package. You can install it as a global or local dotnet tool:
 
   ```shell
-  dotnet tool install -g TSClientGen.NetCoreTool
+  dotnet tool install -g TSClientGen
+
+  tsclientgen --asm MyWebApi.dll --out-dir output --transport axios --cleanup-out-dir
   ```
 
-* .net framework tool - [TSClientGen.NetFrameworkTool](https://www.nuget.org/packages/TSClientGen.NetFrameworkTool/) nuget package. Install the package to your solution and navigate to package folder's `tool` subfolder or add it to the PATH environment variable to be able to call it from the command line.
-
-After the package has been installed, the usage of both .net framework and .net core versions of the tool is the same:
-
-```shell
-tsclientgen --asm MyWebApi.dll --out-dir .\output --transport axios --cleanup-out-dir
-```
 The parameters here are the following
 * `--asm` - space-delimited list of assemblies containing web api controllers;
 * `--out-dir` - output directory for generated TypeScript code;
@@ -321,7 +315,7 @@ TSClientGen supports it with the [TSStaticContentAttribute](https://github.com/s
 
 You can't emit any arbitrary TypeScript code using the `TSStaticContentAttribute`. It allows you to emit only objects (arrays or primitive types also count) that can be serialized to JSON. The structure of the generated TypeScript is also restricted to a set of named exports of variables.
 
-The tool for .net framework uses [`JsonConvert.SerializeObject`](https://www.newtonsoft.com/json/help/html/M_Newtonsoft_Json_JsonConvert_SerializeObject.htm) method provided by Newtonsoft.Json library to serialize the value of the `Content` property. The .net core tool calls [`JsonSerializer.Serialize`](https://docs.microsoft.com/en-us/dotnet/api/system.text.json.jsonserializer.serialize?view=netcore-3.0#System_Text_Json_JsonSerializer_Serialize_System_Object_System_Type_System_Text_Json_JsonSerializerOptions) method from the new .net core JSON serialization API residing in System.Text.Json. In both cases you have an option to replace the default JSON serialization with your own by implementing the [`IJsonSerializer`](https://github.com/smartcatai/ts-client-gen/blob/develop/TSClientGen.Extensibility/IJsonSerializer.cs) interface in your plugin assembly.
+The tool calls [`JsonSerializer.Serialize`](https://docs.microsoft.com/en-us/dotnet/api/system.text.json.jsonserializer.serialize?view=netcore-3.0#System_Text_Json_JsonSerializer_Serialize_System_Object_System_Type_System_Text_Json_JsonSerializerOptions) method from the new `System.Text.Json` serialization API. You also have an option to replace the default JSON serialization with your own by implementing the [`IJsonSerializer`](https://github.com/smartcatai/ts-client-gen/blob/develop/TSClientGen.Extensibility/IJsonSerializer.cs) interface in your plugin assembly.
 
 ## Customizing with a plugin
 

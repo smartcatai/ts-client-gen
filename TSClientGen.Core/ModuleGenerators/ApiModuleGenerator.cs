@@ -28,7 +28,7 @@ namespace TSClientGen
 			var transportContractInterfaces = new List<string>();
 			if (_apiClientModule.Methods.Any(m => !m.UploadsFiles))
 			{
-				transportContractInterfaces.Add("HttpRequestOptions");				
+				transportContractInterfaces.Add("HttpRequestOptions");
 			}
 			if (_apiClientModule.Methods.Any(m => m.UploadsFiles))
 			{

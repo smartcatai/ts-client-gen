@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TSClientGen.NetFrameworkTool", "TSClientGen.NetFrameworkTool\TSClientGen.NetFrameworkTool.csproj", "{967465F8-A6C8-4ADC-B40D-D21A88D8C20A}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{742D33E2-3565-4617-8491-D23192AD98BF}"
 	ProjectSection(SolutionItems) = preProject
 		SolutionInfo.cs = SolutionInfo.cs
@@ -25,14 +23,14 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TSClientGen.Extensibility", "TSClientGen.Extensibility\TSClientGen.Extensibility.csproj", "{C3CD49CD-2202-4CF1-81DA-0686607D0777}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{FD20D7C0-58E6-46C2-9B38-3C9EC08B48C7}"
-ProjectSection(SolutionItems) = preProject
-	build.fsx = build.fsx
-	fake.sh = fake.sh
-	fake.cmd = fake.cmd
-	RELEASE_NOTES.md = RELEASE_NOTES.md
-EndProjectSection
+	ProjectSection(SolutionItems) = preProject
+		build.fsx = build.fsx
+		fake.sh = fake.sh
+		fake.cmd = fake.cmd
+		RELEASE_NOTES.md = RELEASE_NOTES.md
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TSClientGen.NetCoreTool", "TSClientGen.NetCoreTool\TSClientGen.NetCoreTool.csproj", "{3B74074C-3AA7-47C2-BC48-E930081F5E73}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TSClientGen", "TSClientGen\TSClientGen.csproj", "{3B74074C-3AA7-47C2-BC48-E930081F5E73}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -40,10 +38,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{967465F8-A6C8-4ADC-B40D-D21A88D8C20A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{967465F8-A6C8-4ADC-B40D-D21A88D8C20A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{967465F8-A6C8-4ADC-B40D-D21A88D8C20A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{967465F8-A6C8-4ADC-B40D-D21A88D8C20A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D1BD4C62-3A9C-4037-BCF9-6F4A90992058}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D1BD4C62-3A9C-4037-BCF9-6F4A90992058}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D1BD4C62-3A9C-4037-BCF9-6F4A90992058}.Release|Any CPU.ActiveCfg = Release|Any CPU

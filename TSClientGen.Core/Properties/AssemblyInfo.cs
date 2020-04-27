@@ -1,8 +1,7 @@
 ﻿using System.Reflection;
-using System.Runtime.CompilerServices;
 
-[assembly: AssemblyVersion("5.3.0")]
-[assembly: AssemblyInformationalVersion("5.3.0")]
+[assembly: AssemblyVersion("6.0.0")]
+[assembly: AssemblyInformationalVersion("6.0.0")]
 
 [assembly: AssemblyTitle("TSClientGen.Core")]
 [assembly: AssemblyDescription("Main assembly with the code generation stuff")]
