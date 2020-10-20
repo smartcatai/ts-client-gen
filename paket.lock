@@ -12,5 +12,6 @@ NUGET
     Newtonsoft.Json (12.0.3)
     NUnit (3.11)
     NUnit3TestAdapter (3.13)
+    System.ComponentModel.Annotations (4.7)
     System.ComponentModel.Composition (4.5)
     vswhere (2.6.7)

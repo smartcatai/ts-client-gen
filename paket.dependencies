@@ -7,6 +7,7 @@ nuget CommandLineParser 2.4.3
 nuget Microsoft.AspNet.WebApi.Client 5.2.7
 nuget Microsoft.AspNet.WebApi.Core 5.2.7
 nuget System.ComponentModel.Composition 4.5.0
+nuget System.ComponentModel.Annotations 4.7.0
 nuget Newtonsoft.Json 12.0.3
 nuget NUnit ~> 3.10
 nuget NUnit3TestAdapter ~> 3.10

@@ -3,3 +3,4 @@ Newtonsoft.Json
 Microsoft.AspNet.WebApi.Core
 Microsoft.AspNet.WebApi.Client
 System.ComponentModel.Composition
+System.ComponentModel.Annotations

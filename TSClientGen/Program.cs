@@ -12,6 +12,7 @@ namespace TSClientGen
 	{
 		static int Main(string[] args)
 		{
+			FunctionsAssemblyResolver.Init();
 			var argsParseResult = Parser.Default.ParseArguments<Arguments>(args);
 			if (argsParseResult is NotParsed<Arguments> notParsed)
 			{
