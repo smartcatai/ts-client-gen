@@ -274,17 +274,14 @@ namespace TSClientGen
 				localizationByEnumType);
 			_resultFileWriter.WriteFile(enumsModuleName + ".ts", enumModuleGenerator.GetResult());
 
-			var localizationProvidersByEnumType = staticMemberGeneratorsByEnumType
-				.SelectMany(pair => pair.Value
-					.OfType<TSEnumLocalizationAttributeBase>()
-					.Select(gen => (EnumType: pair.Key, Generator: gen)))
-				.ToDictionary(v => v.EnumType, v => v.Generator);
-			if (localizationProvidersByEnumType.Any())
+			if (localizationByEnumType.Any())
 			{
 				if (!_resultFileWriter.CanWriteResourceFiles)
 				{
 					throw new InvalidOperationException(
-						"TSEnumLocalization attributes found in processed assemblies, but no IResourceModuleWriterFactory instance has been provided via a plugin");
+						"TSEnumLocalization attributes found in processed assemblies, " +
+						"but no IResourceModuleWriterFactory instance has been provided via a plugin"
+					);
 				}
 
 				foreach (var culture in _arguments.LocalizationLanguages)
@@ -292,7 +289,7 @@ namespace TSClientGen
 					using (var resourceModuleWriter = _resultFileWriter.WriteResourceFile(enumsModuleName, culture))
 					{
 						var enumResourceModuleGenerator = new EnumResourceModuleGenerator(resourceModuleWriter);
-						enumResourceModuleGenerator.WriteEnumLocalizations(localizationProvidersByEnumType);
+						enumResourceModuleGenerator.WriteEnumLocalizations(localizationByEnumType);
 					}
 				}
 			}

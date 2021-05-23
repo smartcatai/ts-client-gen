@@ -1,5 +1,9 @@
 # Release Notes
 
+## 6.0.1 - 2021-05-23
+
+- Fix enum resource generation
+
 ## 6.0.0 - 2019-04-24
 
 * Support generating clients for ASP.NET Core 3.1 projects
