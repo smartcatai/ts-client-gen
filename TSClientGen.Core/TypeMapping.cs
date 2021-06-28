@@ -361,21 +361,17 @@ namespace TSClientGen
 			}
 			
 			result.AppendLine("{").Indent();
-			
+
 			foreach (var property in typeDescriptor.Properties)
 			{
-				if (property.InlineTypeDefinition == null)
-				{
-					var name = property.Name;
-					if (Nullable.GetUnderlyingType(property.Type) != null)
-						name += "?";
+				var name = property.Name;
+				if (property.IsOptional) // is short-circuited to false if no null-checking is allowed for overrides
+					name += "?";
+				var type = property.InlineTypeDefinition ?? GetTSType(property.Type);
+				if (property.IsNullable) // is short-circuited to false if no null-checking is allowed for overrides
+					type += " | null";
 
-					result.AppendLine($"{name}: {GetTSType(property.Type)};");
-				}
-				else
-				{
-					result.AppendLine($"{property.Name}: {property.InlineTypeDefinition};");					
-				}
+				result.AppendLine($"{name}: {type};");
 			}
 
 			result.Unindent().AppendLine("}");
