@@ -135,7 +135,8 @@ namespace TSClientGen
 				var typeMapping = new TypeMapping(
 					_customTypeConverter,
 					_typeDescriptorProvider,
-					_arguments.AppendIPrefix);
+					_arguments.AppendIPrefix,
+					TypeMappingConfig.FromArgs(_arguments));
 				foreach (var type in module.ExplicitlyRequiredTypes.Where(t => !t.IsEnum))
 				{
 					typeMapping.AddType(type);

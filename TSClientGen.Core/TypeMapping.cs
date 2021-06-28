@@ -18,11 +18,13 @@ namespace TSClientGen
 		public TypeMapping(
 			ITypeConverter customTypeConverter = null,
 			ITypeDescriptorProvider typeDescriptorProvider = null,
-			bool appendIPrefix = false)
+			bool appendIPrefix = false,
+			TypeMappingConfig config = default)
 		{
 			_customTypeConverter = customTypeConverter;
 			_typeDescriptorProvider = typeDescriptorProvider;
 			_appendIPrefix = appendIPrefix;
+			_config = config;
 		}
 
 
@@ -307,6 +309,7 @@ namespace TSClientGen
 		
 		
 		private readonly bool _appendIPrefix;
+		private readonly TypeMappingConfig _config;
 		private readonly ITypeConverter _customTypeConverter;
 		private readonly ITypeDescriptorProvider _typeDescriptorProvider;
 
