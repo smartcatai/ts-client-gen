@@ -21,7 +21,7 @@ group Library
     nuget System.Resources.ResourceManager ~> 4.3
 
 group Test
-    framework: netcoreapp3.1
+    framework: netcoreapp3.1,netstandard2.0
     storage: none
     strategy: max
 
