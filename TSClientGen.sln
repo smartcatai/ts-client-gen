@@ -32,6 +32,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{FD20D7C0
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TSClientGen", "TSClientGen\TSClientGen.csproj", "{3B74074C-3AA7-47C2-BC48-E930081F5E73}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TSClientGen.Tests.CodeGen", "TSClientGen.Tests.CodeGen\TSClientGen.Tests.CodeGen.csproj", "{0624F403-169E-4525-8E5C-9834CA92CB35}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -58,6 +60,10 @@ Global
 		{3B74074C-3AA7-47C2-BC48-E930081F5E73}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3B74074C-3AA7-47C2-BC48-E930081F5E73}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3B74074C-3AA7-47C2-BC48-E930081F5E73}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0624F403-169E-4525-8E5C-9834CA92CB35}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0624F403-169E-4525-8E5C-9834CA92CB35}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0624F403-169E-4525-8E5C-9834CA92CB35}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0624F403-169E-4525-8E5C-9834CA92CB35}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
