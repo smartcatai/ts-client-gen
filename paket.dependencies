@@ -8,6 +8,7 @@ source https://api.nuget.org/v3/index.json
 
 nuget CommandLineParser ~> 2.7
 nuget System.ComponentModel.Composition ~> 4.7
+nuget Namotion.Reflection ~> 1.0
 
 group Library
     framework: netstandard2.0
