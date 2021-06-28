@@ -129,6 +129,14 @@ By default TSClientGen uses controller name with the `Controller` suffix removed
 
 * `--plugins-assembly <assemblypath>` (or `-p <assemblypath>`) - specifies a plugin assembly for customizing and extending the code generation process. This assembly should contain a bunch of classes implementing interfaces from `TSClientGen.Extensibility.dll` and marked with [MEF](https://docs.microsoft.com/en-us/dotnet/framework/mef/) `Export` attribute. See the section about [customizing TSClientGen with plugins](#Customize-with-a-plugin) for more details on the topic.
 
+* `--nullability` (or `-N`): accepts `'Default' | 'JsonProperty' | 'Nrt' | 'DataAnnotations'`.
+  * `Default`: the previous behavior (reference types are always required, value types are optional if wrapped into `Nullable<T>`). This is the default.
+  * `JsonProperty`: nullability/optionality is decided based on `JsonPropertyAttribute.Required` value. This is the most explicit way to describe it because JsonProperty.Required has all of the four possible combinations of optional/required, null/not null. If no attribute found, `Default` is used as a fallback.
+  * `Nrt`: nullability of reference types is checked via C# 8 NRT, value types use `Default` policy. Nullable reference type is nullable and required by default, which may be overriden with `--nullable-props-are-optional-too-if-unspecified`. if no nullable context is found (e.g. no `#nullable enable` is present for the type being mapped or it's assembly), falls back to `Default`.
+  * `DataAnnotations`: reference type property is nullable and required if no `System.ComponentModel.DataAnnotations.RequiredAttribute` is present on it. It also may be made optional via the `--nullable-props-are-optional-too-if-unspecified` option.
+* `--nullable-props-are-optional-too-if-unspecified`: make nullable properties optional too if no explicit optionality is given (like it's done via `JsonProperty`). Default is false.
+* `--check-nullability-for-overrides`: check if the overriden (by the `TSSubstituteTypepropertyAttribute`, for example) property is nullable/optional and apply nullability/optionality to an overriden type. Default is false.
+
 ## Basic features
 
 ### Enums
