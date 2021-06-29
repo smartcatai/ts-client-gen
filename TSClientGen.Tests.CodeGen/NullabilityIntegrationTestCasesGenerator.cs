@@ -126,8 +126,8 @@ namespace TSClientGen.Tests.CodeGen
 							isNullable && !isValueType,
 							isNullable && (isValueType || nullablePropsAreOptionalTooIfUnspecifiedExplicitly)),
 						PropertyAttr.RequiredAttr _ => (
-							isNullable && !isValueType,
-							isNullable && (isValueType || nullablePropsAreOptionalTooIfUnspecifiedExplicitly)),
+							false,
+							isNullable),
 						PropertyAttr.JsonAlways _ => (false, false),
 						PropertyAttr.JsonDefault _ => (true, true),
 						PropertyAttr.JsonAllowNull _ => (true, false),

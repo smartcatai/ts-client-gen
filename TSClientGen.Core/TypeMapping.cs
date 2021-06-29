@@ -242,9 +242,6 @@ namespace TSClientGen
 
 		private (bool optional, bool nullable) resolveNullability(PropertyInfo p, bool hasOverrides)
 		{
-			if (hasOverrides && !_config.CheckNullabilityForOverrides)
-				return (false, false);
-
 			var pType = p.PropertyType;
 
 			return resolve(_config.NullabilityHandling);
@@ -262,7 +259,7 @@ namespace TSClientGen
 						return nullability switch
 						{
 							Nullability.NotNullable => (false, false),
-							Nullability.Nullable => (_config.NullablePropertiesAreOptionalTooIfUnspecified, true),
+							Nullability.Nullable => (false, true),
 							Nullability.Unknown => resolve(),
 							Nullability unknown => throw new InvalidOperationException(
 								$"Unknown value {unknown} for type {typeof(Nullability).FullName}")
@@ -272,7 +269,7 @@ namespace TSClientGen
 							return resolve();
 						// don't reference the assembly just to get the name of an attribute preventing the dependency conflicts
 						var nullable = p.CustomAttributes.All(x => x.AttributeType.Name != "RequiredAttribute");
-						return (_config.NullablePropertiesAreOptionalTooIfUnspecified, nullable);
+						return (false, nullable);
 					case NullabilityHandling.JsonProperty:
 						var attr = p.GetCustomAttributes();
 						var jsonPropertyAttribute =
