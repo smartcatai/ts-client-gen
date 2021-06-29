@@ -56,35 +56,28 @@ namespace TSClientGen.Tests.CodeGen
 				from isValueType in _flags
 				from isNullableType in _flags
 				from attr in PropertyAttr.All
-				from allowOverrideOverriding in _flags
 				let valueTypeNullable = isValueType && isNullableType
 				let useNullableReferenceTypes = !isValueType && isNullableType && attr is PropertyAttr.None
 				let isNullable = valueTypeNullable || useNullableReferenceTypes
 				where isNullable || isValueType || attr is PropertyAttr.None
-				select (isValueType, isNullable, useNullableReferenceTypes, attr, allowOverrideOverriding);
-			foreach (var (isValueType, isNullable, useNrt, attr, allowOverrideOverriding) in parameters)
+				select (isValueType, isNullable, useNullableReferenceTypes, attr);
+			foreach (var (isValueType, isNullable, useNrt, attr) in parameters)
 			{
 				var type =
-					generateTestType(isValueType, isNullable, useNrt, attr, allowOverrideOverriding);
+					generateTestType(isValueType, isNullable, useNrt, attr, true);
 				typeDefinitions.Add(type.typeDefinition);
-				foreach (var nullablePropsAreOptionalToo in _flags)
-				{
-					var expectation = generateExpectation(type.typeName, isValueType, isNullable, attr,
-						allowOverrideOverriding, nullablePropsAreOptionalToo);
-					var configCtorCall = generateConfigCtorCall(attr, useNrt, allowOverrideOverriding,
-						nullablePropsAreOptionalToo);
-					var caseName = nullablePropsAreOptionalToo
-						? type.typeName + "__nulls_make_prop_optional"
-						: type.typeName;
-					sb
-						.Append("yield return (")
-						.AppendLine()
-						.Append("typeof(").Append(type.typeName).Append("),").AppendLine()
-						.Append('"').Append(caseName).Append("\",").AppendLine()
-						.Append(configCtorCall).Append(",").AppendLine()
-						.Append(expectation).AppendLine()
-						.Append(");").AppendLine().AppendLine();
-				}
+
+				var expectation = generateExpectation(type.typeName, isValueType, isNullable, attr, true, false);
+				var configCtorCall = generateConfigCtorCall(attr, useNrt);
+				var caseName = type.typeName;
+				sb
+					.Append("yield return (")
+					.AppendLine()
+					.Append("typeof(").Append(type.typeName).Append("),").AppendLine()
+					.Append('"').Append(caseName).Append("\",").AppendLine()
+					.Append(configCtorCall).Append(",").AppendLine()
+					.Append(expectation).AppendLine()
+					.Append(");").AppendLine().AppendLine();
 			}
 
 			sb.AppendLine().Append("}").AppendLine().AppendLine();
@@ -94,8 +87,7 @@ namespace TSClientGen.Tests.CodeGen
 				.AppendLine().Append("}");
 			return sb.ToString();
 
-			string generateConfigCtorCall(PropertyAttr attr, bool useNullReferenceTypes, bool allowOverrideOverriding,
-				bool nullablePropsAreOptionalTooIfUnspecifiedExplicitly)
+			string generateConfigCtorCall(PropertyAttr attr, bool useNullReferenceTypes)
 			{
 				var nullHandling =
 					useNullReferenceTypes
@@ -107,11 +99,7 @@ namespace TSClientGen.Tests.CodeGen
 							_ => "JsonProperty"
 						};
 				var sb = new StringBuilder();
-				sb.Append("new TypeMappingConfig(").AppendLine()
-					.Append("nullabilityHandling: NullabilityHandling.").Append(nullHandling).Append(",").AppendLine()
-					.Append("checkNullabilityForOverrides: ").Append(allowOverrideOverriding.ToString().ToLowerInvariant()).Append(",").AppendLine()
-					.Append("nullablePropertiesAreOptionalTooIfUnspecified: ").Append(nullablePropsAreOptionalTooIfUnspecifiedExplicitly.ToString().ToLowerInvariant()).AppendLine()
-					.Append(")");
+				sb.Append("new TypeMappingConfig(NullabilityHandling.").Append(nullHandling).Append(")");
 				return sb.ToString();
 			}
 

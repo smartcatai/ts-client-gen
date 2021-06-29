@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using TSClientGen.Extensibility;
 using TSClientGen.Extensibility.ApiDescriptors;
 using Namotion.Reflection;
+using TSClientGen.Nullability;
 
 namespace TSClientGen
 {
@@ -26,6 +27,7 @@ namespace TSClientGen
 			_typeDescriptorProvider = typeDescriptorProvider;
 			_appendIPrefix = appendIPrefix;
 			_config = config;
+			_nullabilityHandler = NullabilityHandlerResolver.FromConfig(config);
 		}
 
 
@@ -240,74 +242,6 @@ namespace TSClientGen
 			return descriptor;
 		}
 
-		private (bool optional, bool nullable) resolveNullability(PropertyInfo p, bool hasOverrides)
-		{
-			var pType = p.PropertyType;
-
-			return resolve(_config.NullabilityHandling);
-			
-			(bool optional, bool nullable) resolve(NullabilityHandling nullabilityHandling = NullabilityHandling.Default)
-			{
-				switch (nullabilityHandling)
-				{
-					case NullabilityHandling.Default:
-						return (Nullable.GetUnderlyingType(pType) != null, false);
-					case NullabilityHandling.Nrt:
-						if (pType.IsValueType)
-							return resolve();
-						var nullability = p.ToContextualProperty().Nullability;
-						return nullability switch
-						{
-							Nullability.NotNullable => (false, false),
-							Nullability.Nullable => (false, true),
-							Nullability.Unknown => resolve(),
-							Nullability unknown => throw new InvalidOperationException(
-								$"Unknown value {unknown} for type {typeof(Nullability).FullName}")
-						};
-					case NullabilityHandling.DataAnnotations:
-						if (pType.IsValueType)
-							return resolve();
-						// don't reference the assembly just to get the name of an attribute preventing the dependency conflicts
-						var nullable = p.CustomAttributes.All(x => x.AttributeType.Name != "RequiredAttribute");
-						return (false, nullable);
-					case NullabilityHandling.JsonProperty:
-						var attr = p.GetCustomAttributes();
-						var jsonPropertyAttribute =
-							attr.SingleOrDefault(x => x.GetType().Name == "JsonPropertyAttribute");
-						var required =
-							jsonPropertyAttribute?.GetType()
-								.GetProperty("Required", BindingFlags.Public | BindingFlags.Instance)
-								!.GetValue(jsonPropertyAttribute);
-						if (required == null)
-							return resolve();
-						var requiredValue = (int)required;
-						
-						// TODO: consider handling of NullValueHandling and DefaultValueHandling enums
-						// below are values of Newtonsoft.Json.Required attribute.
-						// They may change between versions of course, but I believe there's a really small chance of this to happen
-						// The property is not required. The default state.
-						const int @default = 0;
-						// The property must be defined in JSON but can be a null value.
-						const int allowNull = 1;
-						// The property must be defined in JSON and cannot be a null value.
-						const int always = 2;
-						// The property is not required but it cannot be a null value.
-						const int disallowNull = 3;
-						return requiredValue switch
-						{
-							@default => (true, true /* if jsonAttribute, then jsonAttribute all the way. So Default allows nulls for value types too */),
-							allowNull => (false, true),
-							always => (false, false),
-							disallowNull => (true, false),
-							int unknown => throw new InvalidOperationException($"Unknown value {unknown} for Newtonsoft.Json.Required enum")
-						};
-					default:
-						throw new InvalidOperationException(
-							$"Unknown value {nullabilityHandling} for {typeof(NullabilityHandling).FullName} enum");
-				}
-			}
-		}
-
 		private TypePropertyDescriptor createPropertyDescriptor(PropertyInfo p)
 		{
 			if (p.GetCustomAttributes<IgnoreDataMemberAttribute>().Any())
@@ -331,10 +265,10 @@ namespace TSClientGen
 				propertyInlineDefinition = mapping.TypeDefinition;
 			}
 
-			var hasOverrides = (mapping?.SubstituteType?.Name ?? mapping?.TypeDefinition) != null;
-			var (optional, nullable) = resolveNullability(p, hasOverrides);
+			var tsZeroType = _nullabilityHandler.GetTsNullability(p);
 
-			return new TypePropertyDescriptor(propertyName, propertyType, nullable, optional, propertyInlineDefinition);
+			return new TypePropertyDescriptor(propertyName, propertyType, tsZeroType.IsNullable, tsZeroType.IsOptional,
+				propertyInlineDefinition);
 		}
 
 		private string toLowerCamelCase(string name)
@@ -378,6 +312,7 @@ namespace TSClientGen
 		
 		private readonly bool _appendIPrefix;
 		private readonly TypeMappingConfig _config;
+		private readonly INullabilityHandler _nullabilityHandler;
 		private readonly ITypeConverter _customTypeConverter;
 		private readonly ITypeDescriptorProvider _typeDescriptorProvider;
 
