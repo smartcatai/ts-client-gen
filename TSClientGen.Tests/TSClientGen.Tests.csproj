@@ -16,7 +16,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="NullabilityIntegration\NullabilityIntegrationTestCasesGenerator.Example.cs" />
-    <None Include="NullabilityIntegration\NullabilityIntegrationTestCasesGenerator.Example.cs" />
   </ItemGroup>
   <Import Project="..\.paket\Paket.Restore.targets" />
 </Project>

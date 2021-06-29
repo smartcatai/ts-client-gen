@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 using TSClientGen.Extensibility;
 using TSClientGen.Extensibility.ApiDescriptors;
-using Namotion.Reflection;
 using TSClientGen.Nullability;
 
 namespace TSClientGen

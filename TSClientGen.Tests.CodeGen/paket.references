@@ -1,4 +1,0 @@
-group Test
-    Microsoft.CodeAnalysis.CSharp
-    Microsoft.CodeAnalysis.Analyzers
-    Newtonsoft.Json
