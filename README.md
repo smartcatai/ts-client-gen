@@ -132,8 +132,8 @@ By default TSClientGen uses controller name with the `Controller` suffix removed
 * `--nullability` (or `-N`): accepts `'Default' | 'JsonProperty' | 'Nrt' | 'DataAnnotations'`.
   * `Default`: the previous behavior (reference types are always required, value types are optional if wrapped into `Nullable<T>`, but also applies to overrides (TsSubstituteType)). This is the default.
   * `JsonProperty`: nullability/optionality is decided based on `JsonPropertyAttribute.Required` value. This is the most explicit way to describe it because JsonProperty.Required has all of the four possible combinations of optional/required, null/not null. If no attribute found, `Default` is used as a fallback.
-  * `Nrt`: nullability of reference types is checked via C# 8 NRT, value types use `Default` policy. Nullable reference type is nullable and required by default. If no nullable context is found (e.g. no `#nullable enable` is present for the type being mapped or it's assembly), falls back to `Default`.
-  * `DataAnnotations`: reference type property is nullable and required if no `System.ComponentModel.DataAnnotations.RequiredAttribute` is present on it.
+  * `Nrt`: nullability of reference types is checked via C# 8 NRT, value types use `Default` policy. Nullable reference type is nullable and required by default. If no nullable context is found (e.g. no `#nullable enable` is present for the type being mapped or it's assembly), it falls back to `Default`.
+  * `DataAnnotations`:  property is optional and not nullable if no `System.ComponentModel.DataAnnotations.RequiredAttribute` is present on it, required and not nullable otherwise.
 
 ## Basic features
 
