@@ -7,15 +7,11 @@
   <ItemGroup>
     <ProjectReference Include="..\TSClientGen.Contract\TSClientGen.Contract.csproj" />
     <ProjectReference Include="..\TSClientGen.Core\TSClientGen.Core.csproj" />
-    <ProjectReference Include="..\TSClientGen.Tests.CodeGen\TSClientGen.Tests.CodeGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SolutionInfo.cs">
       <Link>Properties\SolutionInfo.cs</Link>
     </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="NullabilityIntegration\NullabilityIntegrationTestCasesGenerator.Example.cs" />
   </ItemGroup>
   <Import Project="..\.paket\Paket.Restore.targets" />
 </Project>
