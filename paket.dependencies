@@ -8,6 +8,7 @@ source https://api.nuget.org/v3/index.json
 
 nuget CommandLineParser ~> 2.7
 nuget System.ComponentModel.Composition ~> 4.7
+nuget Namotion.Reflection ~> 1.0
 
 group Library
     framework: netstandard2.0
@@ -30,6 +31,7 @@ group Test
     nuget Moq ~> 4.14
     nuget NUnit ~> 3.12
     nuget NUnit3TestAdapter ~> 3.16
+    nuget Newtonsoft.Json ~> 12.0
 
 // [ FAKE GROUP ]
 group Build

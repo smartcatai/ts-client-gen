@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TSClientGen.Extensibility;
 using TSClientGen.Extensibility.ApiDescriptors;
+using TSClientGen.Nullability;
 
 namespace TSClientGen
 {
@@ -18,11 +19,14 @@ namespace TSClientGen
 		public TypeMapping(
 			ITypeConverter customTypeConverter = null,
 			ITypeDescriptorProvider typeDescriptorProvider = null,
-			bool appendIPrefix = false)
+			bool appendIPrefix = false,
+			TypeMappingConfig config = default)
 		{
 			_customTypeConverter = customTypeConverter;
 			_typeDescriptorProvider = typeDescriptorProvider;
 			_appendIPrefix = appendIPrefix;
+			_config = config;
+			_nullabilityHandler = NullabilityHandlerResolver.FromConfig(config);
 		}
 
 
@@ -260,7 +264,10 @@ namespace TSClientGen
 				propertyInlineDefinition = mapping.TypeDefinition;
 			}
 
-			return new TypePropertyDescriptor(propertyName, propertyType, propertyInlineDefinition);
+			var tsZeroType = _nullabilityHandler.GetTsNullability(p);
+
+			return new TypePropertyDescriptor(propertyName, propertyType, tsZeroType.IsNullable, tsZeroType.IsOptional,
+				propertyInlineDefinition);
 		}
 
 		private string toLowerCamelCase(string name)
@@ -284,21 +291,17 @@ namespace TSClientGen
 			}
 			
 			result.AppendLine("{").Indent();
-			
+
 			foreach (var property in typeDescriptor.Properties)
 			{
-				if (property.InlineTypeDefinition == null)
-				{
-					var name = property.Name;
-					if (Nullable.GetUnderlyingType(property.Type) != null)
-						name += "?";
+				var name = property.Name;
+				if (property.IsOptional) // is short-circuited to false if no null-checking is allowed for overrides
+					name += "?";
+				var type = property.InlineTypeDefinition ?? GetTSType(property.Type);
+				if (property.IsNullable) // is short-circuited to false if no null-checking is allowed for overrides
+					type += " | null";
 
-					result.AppendLine($"{name}: {GetTSType(property.Type)};");
-				}
-				else
-				{
-					result.AppendLine($"{property.Name}: {property.InlineTypeDefinition};");					
-				}
+				result.AppendLine($"{name}: {type};");
 			}
 
 			result.Unindent().AppendLine("}");
@@ -307,6 +310,8 @@ namespace TSClientGen
 		
 		
 		private readonly bool _appendIPrefix;
+		private readonly TypeMappingConfig _config;
+		private readonly INullabilityHandler _nullabilityHandler;
 		private readonly ITypeConverter _customTypeConverter;
 		private readonly ITypeDescriptorProvider _typeDescriptorProvider;
 

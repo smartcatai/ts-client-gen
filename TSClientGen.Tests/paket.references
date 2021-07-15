@@ -3,3 +3,4 @@ group Test
     Moq
     NUnit
     NUnit3TestAdapter
+    Newtonsoft.Json

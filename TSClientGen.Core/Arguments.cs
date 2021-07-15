@@ -40,5 +40,8 @@ namespace TSClientGen
 		
 		[Option('p', "plugins-assembly")]
 		public string PluginsAssembly { get; set; }
+
+		[Option('N', "nullability")]
+		public NullabilityHandling NullabilityHandling { get; set; } = NullabilityHandling.Default;
 	}
 }

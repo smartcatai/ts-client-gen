@@ -1,5 +1,8 @@
 # Release Notes
 
+## 7.0.0 - 2021-06-30
+- Add a bunch of options for generating nullable/optional properties, even for reference types.
+
 ## 6.0.1 - 2021-05-23
 
 - Fix enum resource generation

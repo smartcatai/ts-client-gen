@@ -8,13 +8,25 @@ namespace TSClientGen.Extensibility.ApiDescriptors
 	/// </summary>
 	public class TypePropertyDescriptor
 	{
-		public TypePropertyDescriptor(string name, Type type, string inlineTypeDefinition = null)
+		public TypePropertyDescriptor(string name, Type type, bool isNullable, bool isOptional, string inlineTypeDefinition = null)
 		{
 			Name = name;
 			Type = type;
+			IsNullable = isNullable;
+			IsOptional = isOptional;
 			InlineTypeDefinition = inlineTypeDefinition;
 		}
 
+		/// <summary>
+		/// Does property accept `null` as a correct value
+		/// </summary>
+		public bool IsNullable { get; }
+
+		/// <summary>
+		/// Could property be omitted from JSON
+		/// </summary>
+		public bool IsOptional { get; }
+		
 		/// <summary>
 		/// Property name
 		/// </summary>
