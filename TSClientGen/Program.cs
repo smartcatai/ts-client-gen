@@ -27,7 +27,7 @@ namespace TSClientGen
 				arguments,
 				apiDiscovery,
 				new TypeConverter(plugin.TypeConverter),
-				plugin.TypeDescriptorProvider,
+				new TypeDescriptorProvider(plugin.TypeDescriptorProvider),
 				plugin.CustomApiClientWriter,
 				resultFileWriter,
 				serializeToJson);

@@ -1,5 +1,9 @@
 # Release Notes
 
+## 6.1.0-smartcat - 2021-08-05
+
+- Add JsonProperty type descriptor
+
 ## 6.0.1 - 2021-05-23
 
 - Fix enum resource generation

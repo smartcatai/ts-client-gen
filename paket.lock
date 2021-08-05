@@ -4,6 +4,7 @@ RESTRICTION: == netstandard2.0
 NUGET
   remote: https://api.nuget.org/v3/index.json
     CommandLineParser (2.7.82)
+    Newtonsoft.Json (12.0.3)
     System.ComponentModel.Composition (4.7)
 
 GROUP Build
