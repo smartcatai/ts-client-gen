@@ -104,7 +104,7 @@ namespace TSClientGen
 			{
 				string separator = ", ";
 				if (enumTypes.Count > 3)
-					separator += Environment.NewLine + "\t";
+					separator += "\r\n" + "\t";
 
 				if (enumTypes.Count < 4)
 				{

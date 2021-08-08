@@ -18,12 +18,12 @@ namespace TSClientGen
 	{
 		public TypeMapping(
 			ITypeConverter customTypeConverter = null,
-			ITypeDescriptorProvider typeDescriptorProvider = null,
+			IEnumerable<ITypeDescriptorProvider> typeDescriptorProvider = null,
 			bool appendIPrefix = false,
 			TypeMappingConfig config = default)
 		{
 			_customTypeConverter = customTypeConverter;
-			_typeDescriptorProvider = typeDescriptorProvider;
+			_typeDescriptorProviders = typeDescriptorProvider?.ToArray() ?? Array.Empty<ITypeDescriptorProvider>();
 			_appendIPrefix = appendIPrefix;
 			_config = config;
 			_nullabilityHandler = NullabilityHandlerResolver.FromConfig(config);
@@ -236,8 +236,10 @@ namespace TSClientGen
 			{
 				return propertiesByDescriptor.Value[prop];
 			}
-			
-			descriptor = _typeDescriptorProvider?.DescribeType(type, descriptor, GetPropertyInfo) ?? descriptor;
+
+			foreach (var typeDescriptorProvider in _typeDescriptorProviders)
+				descriptor = typeDescriptorProvider.DescribeType(type, descriptor, GetPropertyInfo);
+
 			return descriptor;
 		}
 
@@ -313,7 +315,7 @@ namespace TSClientGen
 		private readonly TypeMappingConfig _config;
 		private readonly INullabilityHandler _nullabilityHandler;
 		private readonly ITypeConverter _customTypeConverter;
-		private readonly ITypeDescriptorProvider _typeDescriptorProvider;
+		private readonly IReadOnlyCollection<ITypeDescriptorProvider> _typeDescriptorProviders;
 
 		private readonly Dictionary<Type, string> _typeDefinitions = new Dictionary<Type, string>();
 		private readonly Dictionary<Type, string> _typeNames = new Dictionary<Type, string>();

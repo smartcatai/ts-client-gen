@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
+using System.ComponentModel.Composition.Primitives;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -19,7 +20,7 @@ namespace TSClientGen
 			Arguments arguments,
 			IApiDiscovery apiDiscovery,
 			ITypeConverter customTypeConverter,
-			ITypeDescriptorProvider typeDescriptorProvider,
+			IEnumerable<ITypeDescriptorProvider> typeDescriptorProvider,
 			IApiClientWriter customApiClientWriter,
 			IResultFileWriter resultFileWriter,
 			Func<object, string> serializeToJson)
@@ -171,7 +172,7 @@ namespace TSClientGen
 
 				moduleNames.Add(staticContent.ModuleName);
 
-				var content = string.Join(Environment.NewLine,
+				var content = string.Join("\r\n",
 					staticContent.Content.Select(entry =>
 						$"export let {entry.Key} = {_serializeToJson(entry.Value)};"));
 				_resultFileWriter.WriteFile($"{staticContent.ModuleName}.ts", content);
@@ -330,7 +331,7 @@ namespace TSClientGen
 		private readonly Arguments _arguments;
 		private readonly IApiDiscovery _apiDiscovery;
 		private readonly ITypeConverter _customTypeConverter;
-		private readonly ITypeDescriptorProvider _typeDescriptorProvider;
+		private readonly IEnumerable<ITypeDescriptorProvider> _typeDescriptorProvider;
 		private readonly IApiClientWriter _customApiClientWriter;
 		private readonly IResultFileWriter _resultFileWriter;
 		private readonly Func<object, string> _serializeToJson;

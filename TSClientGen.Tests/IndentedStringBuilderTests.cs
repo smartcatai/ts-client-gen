@@ -31,7 +31,7 @@ namespace TSClientGen.Tests
 		public void Indenting_is_applied_on_new_line_only()
 		{
 			Assert.AreEqual(
-				"\tsome word" + Environment.NewLine + "\tanother word", 
+				"\tsome word" + "\r\n" + "\tanother word", 
 				new IndentedStringBuilder()
 					.Indent()
 					.Append("some ").AppendLine("word")
@@ -63,10 +63,10 @@ namespace TSClientGen.Tests
 		[Test]
 		public void Appent_text_adds_indenting_to_all_new_lines()
 		{
-			var text = new StringBuilder().AppendLine("some text").AppendLine("another text").ToString();
+			var text = new StringBuilder().Append("\r\n").Append("some text").Append("\r\n").Append("another text").ToString();
 			
 			Assert.AreEqual(
-				"\tsome text" + Environment.NewLine + "\tanother text" + Environment.NewLine,
+				"\tsome text" + "\r\n" + "\tanother text" + "\r\n",
 				new IndentedStringBuilder().Indent().AppendText(text).ToString());
 		}
 	}
