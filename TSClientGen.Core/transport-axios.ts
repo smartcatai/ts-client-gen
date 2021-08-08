@@ -16,4 +16,11 @@ export async function request<TResponse>(request: RequestOptions): Promise<TResp
 	return response.data;
 }
 
-export const getUri: (options: GetUriOptions) => string = axios.getUri;
+export const getUri: (options: GetUriOptions) => string = function (options: GetUriOptions) {
+	const axiosOptions: AxiosRequestConfig = {
+		url: options.url,
+		params: options.queryStringParams,
+	};
+
+	return axios.getUri(axiosOptions);
+};
