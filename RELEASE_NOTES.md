@@ -1,5 +1,8 @@
 # Release Notes
 
+## 7.1.2 - 2021-08-10
+- Set axios default post header to application/json
+
 ## 7.1.1 - 2021-08-09
 - Fix getUri function of axios transport
 
