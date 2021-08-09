@@ -18,12 +18,12 @@ namespace TSClientGen
 	{
 		public TypeMapping(
 			ITypeConverter customTypeConverter = null,
-			IEnumerable<ITypeDescriptorProvider> typeDescriptorProvider = null,
+			IEnumerable<ITypeDescriptorProvider> typeDescriptorProviders = null,
 			bool appendIPrefix = false,
 			TypeMappingConfig config = default)
 		{
 			_customTypeConverter = customTypeConverter;
-			_typeDescriptorProviders = typeDescriptorProvider?.ToArray() ?? Array.Empty<ITypeDescriptorProvider>();
+			_typeDescriptorProviders = typeDescriptorProviders?.ToArray() ?? Array.Empty<ITypeDescriptorProvider>();
 			_appendIPrefix = appendIPrefix;
 			_config = config;
 			_nullabilityHandler = NullabilityHandlerResolver.FromConfig(config);

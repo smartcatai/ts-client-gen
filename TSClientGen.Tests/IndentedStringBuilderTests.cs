@@ -61,9 +61,9 @@ namespace TSClientGen.Tests
 		}
 
 		[Test]
-		public void Appent_text_adds_indenting_to_all_new_lines()
+		public void Append_text_adds_indenting_to_all_new_lines()
 		{
-			var text = new StringBuilder().Append("\r\n").Append("some text").Append("\r\n").Append("another text").ToString();
+			var text = new StringBuilder().Append("some text").Append("\r\n").Append("another text").Append("\r\n").ToString();
 			
 			Assert.AreEqual(
 				"\tsome text" + "\r\n" + "\tanother text" + "\r\n",

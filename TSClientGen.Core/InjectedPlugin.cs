@@ -13,7 +13,7 @@ namespace TSClientGen
 		public IMethodDescriptorProvider MethodDescriptorProvider { get; set; }
 
 		[ImportMany]
-		public IEnumerable<ITypeDescriptorProvider> TypeDescriptorProvider { get; set; }
+		public IEnumerable<ITypeDescriptorProvider> TypeDescriptorProviders { get; set; }
 
 		[Import(AllowDefault = true)]
 		public ITypeConverter TypeConverter { get; set; }
