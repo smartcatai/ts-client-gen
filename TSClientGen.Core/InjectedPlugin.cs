@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using TSClientGen.Extensibility;
 
@@ -11,8 +12,8 @@ namespace TSClientGen
 		[Import(AllowDefault = true)]
 		public IMethodDescriptorProvider MethodDescriptorProvider { get; set; }
 
-		[Import(AllowDefault = true)]
-		public ITypeDescriptorProvider TypeDescriptorProvider { get; set; }
+		[ImportMany]
+		public IEnumerable<ITypeDescriptorProvider> TypeDescriptorProviders { get; set; }
 
 		[Import(AllowDefault = true)]
 		public ITypeConverter TypeConverter { get; set; }

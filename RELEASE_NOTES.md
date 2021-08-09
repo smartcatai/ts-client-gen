@@ -1,5 +1,8 @@
 # Release Notes
 
+## 7.1.0 - 2021-08-09
+- Allow to import multiple ITypeDescriptorProvider implementations
+
 ## 7.0.0 - 2021-06-30
 - Add a bunch of options for generating nullable/optional properties, even for reference types.
 

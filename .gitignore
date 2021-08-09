@@ -12,7 +12,7 @@ TestResults
 TestResult.xml
 packages/*
 nuget/*.nupkg
-.idea/.idea.TSClientGen
+.idea/
 paket-files
 .fake/
 .ionide/

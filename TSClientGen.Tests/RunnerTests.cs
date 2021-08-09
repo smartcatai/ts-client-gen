@@ -100,7 +100,7 @@ namespace TSClientGen.Tests
 				new Mock<Arguments>().Object,
 				new Mock<IApiDiscovery>().Object,
 				new Mock<ITypeConverter>().Object,
-				new Mock<ITypeDescriptorProvider>().Object,
+				new Mock<IEnumerable<ITypeDescriptorProvider>>().Object,
 				new Mock<IApiClientWriter>().Object,
 				new Mock<IResultFileWriter>().Object,
 				o => o.ToString());

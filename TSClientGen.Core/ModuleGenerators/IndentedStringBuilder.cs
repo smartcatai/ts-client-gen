@@ -39,9 +39,9 @@ namespace TSClientGen
 		{
 			writeIndentingIfNeeded();
 			if (text != null)
-				_result.AppendLine(text);
+				_result.Append(text).Append("\r\n");
 			else
-				_result.AppendLine();
+				_result.Append("\r\n");
 			
 			_shouldWriteIndenting = true;
 			return this;
@@ -49,7 +49,7 @@ namespace TSClientGen
 
 		public IIndentedStringBuilder AppendText(string text)
 		{
-			var lines = text.Split(new[] {Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries);
+			var lines = text.Split(new[] {"\r\n"}, StringSplitOptions.RemoveEmptyEntries);
 			foreach (var line in lines)
 			{
 				AppendLine(line);
