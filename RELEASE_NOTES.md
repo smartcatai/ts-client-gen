@@ -1,5 +1,8 @@
 # Release Notes
 
+## 7.1.3 - 2021-10-04
+- Set axios default put header to application/json
+
 ## 7.1.2 - 2021-08-10
 - Set axios default post header to application/json
 

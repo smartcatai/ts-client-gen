@@ -2,6 +2,7 @@ import { RequestOptions, GetUriOptions } from './transport-contracts';
 import axios, { AxiosRequestConfig } from 'axios';
 
 axios.defaults.headers.post['Content-Type'] = 'application/json';
+axios.defaults.headers.put['Content-Type'] = 'application/json';
 
 export async function request<TResponse>(request: RequestOptions): Promise<TResponse> {
 	const options: AxiosRequestConfig = {
