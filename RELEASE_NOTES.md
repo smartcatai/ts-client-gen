@@ -1,5 +1,8 @@
 # Release Notes
 
+## 7.2.0 - 2021-11-15
+- Added useAxiosInstanceTransformer function for customization axios requests
+
 ## 7.1.3 - 2021-10-04
 - Set axios default put header to application/json
 
