@@ -89,7 +89,7 @@ namespace TSClientGen.Tests
 			var generator = createGenerator(method, sb);
 			generator.WriteBody(false, false);
 			
-			TextAssert.ContainsLine("return request<void>({ url, requestBody, getAbortFunc, onUploadProgress, method, jsonResponseExpected });", sb.ToString());	
+			TextAssert.ContainsLine("return request<void>({ url, requestBody, getAbortFunc, onUploadProgress, timeout, method, jsonResponseExpected });", sb.ToString());
 		}
 
 		[Test]

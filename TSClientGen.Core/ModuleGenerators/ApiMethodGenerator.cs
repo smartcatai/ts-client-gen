@@ -105,6 +105,7 @@ namespace TSClientGen
 			if (_apiMethod.UploadsFiles)
 			{
 				requestParams.Add("onUploadProgress");
+				requestParams.Add("timeout");
 			}
 
 			requestParams.Add("method");
@@ -132,7 +133,7 @@ namespace TSClientGen
 				yield return "files: Array<NamedBlob | File>";
 
 			yield return _apiMethod.UploadsFiles
-				? "{ getAbortFunc, onUploadProgress }: UploadFileHttpRequestOptions = {}"
+				? "{ getAbortFunc, onUploadProgress, timeout }: UploadFileHttpRequestOptions = {}"
 				: "{ getAbortFunc }: HttpRequestOptions = {}";
 		}
 
@@ -148,7 +149,7 @@ namespace TSClientGen
 		{
 			var identifiersInUse = new HashSet<string>(
 				moduleImports.Concat(
-					new[] {"files", "getAbortFunc", "onUploadProgress", "url", "method", "queryStringParams", "requestBody", "blob"}));
+					new[] {"files", "getAbortFunc", "onUploadProgress", "timeout", "url", "method", "queryStringParams", "requestBody", "blob"}));
 
 			foreach (var param in _apiMethod.AllParams.Where(param => !_apiMethod.UploadsFiles || !param.IsBodyContent))
 			{

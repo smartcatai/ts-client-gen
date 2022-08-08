@@ -18,7 +18,8 @@ export async function request<TResponse>(request: RequestOptions): Promise<TResp
 		method: request.method,
 		params: request.queryStringParams,
 		data: request.requestBody,
-		onUploadProgress: request.onUploadProgress
+		onUploadProgress: request.onUploadProgress,
+		timeout: request.timeout
 	};
 	if (typeof request.getAbortFunc == 'function') {
 		options.cancelToken = new axios.CancelToken(request.getAbortFunc);

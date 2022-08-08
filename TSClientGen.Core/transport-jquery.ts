@@ -4,6 +4,10 @@ export async function request<TResponse>(request: RequestOptions): Promise<TResp
 	if (request.getAbortFunc != null) {
 		throw new Error('JQuery does not support aborting http requests');
 	}
+
+	if (request.timeout != null) {
+		throw new Error('Fetch API does not support timeout at the moment');
+	}
 	
 	return new Promise((resolve, reject) => {
 		const options: any = {

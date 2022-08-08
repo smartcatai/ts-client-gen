@@ -8,7 +8,8 @@ export interface HttpRequestOptions {
 }
 
 export interface UploadFileHttpRequestOptions extends HttpRequestOptions {
-	onUploadProgress?: (progressEvent: ProgressEvent) => void
+	onUploadProgress?: (progressEvent: ProgressEvent) => void;
+	timeout?: number;
 }
 
 export type Method =
@@ -24,6 +25,7 @@ export interface RequestOptions extends GetUriOptions {
 	getAbortFunc: (abort: () => void) => void;
 	onUploadProgress?: (progressEvent: ProgressEvent) => void;
 	jsonResponseExpected: boolean;
+	timeout?: number;
 }
 
 export interface GetUriOptions {

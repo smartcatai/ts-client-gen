@@ -6,6 +6,10 @@ export async function request<TResponse>(request: RequestOptions): Promise<TResp
 		throw new Error('SuperAgent does not support aborting http requests');
 	}
 
+	if (request.timeout != null) {
+		throw new Error('Fetch API does not support timeout at the moment');
+	}
+
 	let chain: superagent.SuperAgentRequest;
 	const url = getUri(request);
 	switch (request.method) {
