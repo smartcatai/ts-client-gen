@@ -1,4 +1,4 @@
-version 5.244.0
+version 7.1.5
 
 framework: netstandard2.0
 storage: none
@@ -35,7 +35,7 @@ group Test
 
 // [ FAKE GROUP ]
 group Build
-    framework: netstandard2.0
+    framework: net6.0
     storage: none
     strategy: max
 
