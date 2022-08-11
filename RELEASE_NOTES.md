@@ -1,6 +1,7 @@
 # Release Notes
 
-## 7.3.0 - 2022-08-08
+## 8.0.0 - 2022-08-11
+- Removed useAxiosInstanceTransformer function for customization axios requests
 - Added timeout param for axios upload requests
 - Updated dependencies versions
 
