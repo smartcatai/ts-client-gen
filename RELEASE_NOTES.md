@@ -1,6 +1,6 @@
 # Release Notes
 
-## 7.3.0-alpha - 2022-08-08
+## 7.3.0 - 2022-08-08
 - Added timeout param for axios upload requests
 - Updated dependencies versions
 
