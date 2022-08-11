@@ -9,6 +9,10 @@ export async function request<TResponse>(request: RequestOptions): Promise<TResp
 		throw new Error('Fetch API does not support upload progress notifications at the moment');
 	}
 
+	if (request.timeout != null) {
+		throw new Error('Fetch API does not support timeout at the moment');
+	}
+
 	const fetchRequest: Partial<Request> = {
 		url: getUri(request),
 		method: request.method,

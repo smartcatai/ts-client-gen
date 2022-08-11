@@ -91,7 +91,7 @@ namespace TSClientGen.Tests
 			
 			var generator = createGenerator(method);
 			Assert.AreEqual(
-				"{ getAbortFunc, onUploadProgress }: UploadFileHttpRequestOptions = {}",
+				"{ getAbortFunc, onUploadProgress, timeout }: UploadFileHttpRequestOptions = {}",
 				generator.GetTypescriptParams().Last());
 		}
 
