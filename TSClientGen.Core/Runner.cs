@@ -6,6 +6,7 @@ using System.ComponentModel.Composition.Hosting;
 using System.ComponentModel.Composition.Primitives;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using CommandLine;
@@ -23,6 +24,7 @@ namespace TSClientGen
 			IEnumerable<ITypeDescriptorProvider> typeDescriptorProviders,
 			IApiClientWriter customApiClientWriter,
 			IResultFileWriter resultFileWriter,
+			IImportEnumModuleGenerator importEnumModuleGenerator,
 			Func<object, string> serializeToJson)
 		{
 			_arguments = arguments;
@@ -31,6 +33,7 @@ namespace TSClientGen
 			_typeDescriptorProviders = typeDescriptorProviders;
 			_customApiClientWriter = customApiClientWriter;
 			_resultFileWriter = resultFileWriter;
+			_importEnumModuleGenerator = importEnumModuleGenerator;
 			_serializeToJson = serializeToJson;
 		}
 
@@ -267,14 +270,24 @@ namespace TSClientGen
 			if (enumsModuleName.EndsWith(".ts"))
 				enumsModuleName = enumsModuleName.Remove(enumsModuleName.Length - 3);
 
-			var enumModuleGenerator = new EnumModuleGenerator();
-			enumModuleGenerator.Write(
-				enums,
-				_arguments.UseStringEnums,
-				_arguments.GetResourceModuleName,
-				staticMemberGeneratorsByEnumType,
-				localizationByEnumType);
-			_resultFileWriter.WriteFile(enumsModuleName + ".ts", enumModuleGenerator.GetResult());
+			foreach (var enumType in enums)
+			{
+				var enumModuleGenerator = new EnumModuleGenerator();
+				enumModuleGenerator.Write(
+					enumType,
+					_arguments.UseStringEnums,
+					_arguments.GetResourceModuleName,
+					staticMemberGeneratorsByEnumType.TryGetValue(enumType, out var generator) ? generator : null,
+					localizationByEnumType.TryGetValue(enumType, out var localization) ? localization : null
+				);
+
+				var filePath = Path.Combine(enumsModuleName, enumType.Name, "index.ts");
+
+				_resultFileWriter.WriteFile(filePath, enumModuleGenerator.GetResult());
+			}
+
+			var importEnumModule = _importEnumModuleGenerator.Generate(enums, enumsModuleName);
+			_resultFileWriter.WriteFile($"{enumsModuleName}.ts", importEnumModule);
 
 			if (localizationByEnumType.Any())
 			{
@@ -286,12 +299,15 @@ namespace TSClientGen
 					);
 				}
 
-				foreach (var culture in _arguments.LocalizationLanguages)
+				foreach (var kvp in localizationByEnumType)
 				{
-					using (var resourceModuleWriter = _resultFileWriter.WriteResourceFile(enumsModuleName, culture))
+					var (enumType, localization) = (kvp.Key, kvp.Value);
+					foreach (var culture in _arguments.LocalizationLanguages)
 					{
+						var folderPath = Path.Combine(enumsModuleName, enumType.Name);
+						using var resourceModuleWriter = _resultFileWriter.WriteResourceFile(folderPath, culture);
 						var enumResourceModuleGenerator = new EnumResourceModuleGenerator(resourceModuleWriter);
-						enumResourceModuleGenerator.WriteEnumLocalizations(localizationByEnumType);
+						enumResourceModuleGenerator.WriteEnumLocalizations(enumType, localization);
 					}
 				}
 			}
@@ -334,6 +350,7 @@ namespace TSClientGen
 		private readonly IEnumerable<ITypeDescriptorProvider> _typeDescriptorProviders;
 		private readonly IApiClientWriter _customApiClientWriter;
 		private readonly IResultFileWriter _resultFileWriter;
+		private readonly IImportEnumModuleGenerator _importEnumModuleGenerator;
 		private readonly Func<object, string> _serializeToJson;
 	}
 }

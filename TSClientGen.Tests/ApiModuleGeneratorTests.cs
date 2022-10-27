@@ -65,7 +65,8 @@ namespace TSClientGen.Tests
 			var generator = createGenerator(mapping);
 			generator.WriteEnumImports("enums");
 			
-			TextAssert.ContainsLine("import { Enum1, Enum2 } from './enums'", generator.GetResult());
+			TextAssert.ContainsLine("import { Enum1 } from './enums/Enum1'", generator.GetResult());
+			TextAssert.ContainsLine("import { Enum2 } from './enums/Enum2'", generator.GetResult());
 		}
 
 		[Test]

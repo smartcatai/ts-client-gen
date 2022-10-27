@@ -48,11 +48,14 @@ namespace TSClientGen
 		/// <param name="contents">file contents to write</param>
 		public void WriteFile(string filename, string contents)
 		{
-			File.WriteAllText(Path.Combine(_outDir, filename), contents);
+			var fullFilePath = Path.Combine(_outDir, filename);
+			ensureDirectories(fullFilePath);
+
+			File.WriteAllText(fullFilePath, contents);
 			fixFilenameCase(filename);
-			_generatedFiles.Add(Path.Combine(_outDir, filename).ToLowerInvariant());
+			_generatedFiles.Add(fullFilePath.ToLowerInvariant());
 		}
-		
+
 		/// <summary>
 		/// Determines whether a resource module writer factory has been provided to TSClientGen via a plugin
 		/// </summary>
@@ -67,6 +70,9 @@ namespace TSClientGen
 		/// <param name="culture">resource file culture name</param>
 		public IResourceModuleWriter WriteResourceFile(string filename, string culture)
 		{
+			var fullFilePath = Path.Combine(_outDir, filename);
+			ensureDirectories(fullFilePath);
+
 			var moduleWriter = _resourceModuleWriterFactory.Create(
 				_outDir, filename, culture, _defaultLocale);
 			return new ResourceFileWriter(moduleWriter, () =>
@@ -110,6 +116,12 @@ namespace TSClientGen
 			}
 		}
 		
+		private void ensureDirectories(string path)
+		{
+			var folder = new FileInfo(path).Directory!.FullName;
+			Directory.CreateDirectory(folder);
+		}
+
 		private readonly string _outDir;
 		private readonly string _defaultLocale;
 		private readonly IResourceModuleWriterFactory _resourceModuleWriterFactory;

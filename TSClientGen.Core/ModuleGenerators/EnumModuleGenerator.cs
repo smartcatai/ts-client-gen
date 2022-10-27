@@ -8,36 +8,27 @@ namespace TSClientGen
 	public class EnumModuleGenerator
 	{
 		public void Write(
-			IEnumerable<Type> enumTypes,
+			Type enumType,
 			bool useStringEnums,
 			string getResourceModuleName,
-			Dictionary<Type, List<Func<string>>> staticMemberGeneratorsByEnumType,
-			Dictionary<Type, TSEnumLocalizationAttributeBase> localizationByEnumType)
+			List<Func<string>> staticMembersGenerators,
+			TSEnumLocalizationAttributeBase localization)
 		{
 			var requireResourceImport = false;
-			var typesWithStaticMembers = new List<Type>();
 
-			foreach (var enumType in enumTypes)
-			{
-				writeEnum(enumType, useStringEnums);
+			writeEnum(enumType, useStringEnums);
 
-				if (staticMemberGeneratorsByEnumType.ContainsKey(enumType) || localizationByEnumType.ContainsKey(enumType))
-				{
-					typesWithStaticMembers.Add(enumType);
-				}
-			}
-
-			foreach (var enumType in typesWithStaticMembers)
+			if (staticMembersGenerators != null || localization != null)
 			{
 				_result.AppendLine($"export namespace {enumType.Name} {{").Indent();
 
-				if (localizationByEnumType.TryGetValue(enumType, out var localizationProvider))
+				if (localization != null)
 				{
-					writeEnumLocalizationFunctions(enumType, localizationProvider.AdditionalSets, _result);
+					writeEnumLocalizationFunctions(enumType, localization.AdditionalSets, _result);
 					requireResourceImport = true;
 				}
 
-				if (staticMemberGeneratorsByEnumType.TryGetValue(enumType, out var staticMembersGenerators))
+				if (staticMembersGenerators != null)
 				{
 					foreach (var generateStaticMembers in staticMembersGenerators)
 					{
@@ -45,7 +36,7 @@ namespace TSClientGen
 					}
 				}
 
-				_result.Unindent().AppendLine("}");
+				_result.AppendLine("}");
 			}
 
 			if (requireResourceImport)
@@ -95,7 +86,10 @@ namespace TSClientGen
 				.AppendLine("};")
 				.Unindent()
 				.AppendLine("});")
-				.AppendLine("}");
+				.Unindent()
+				.AppendLine("}")
+				.Unindent()
+				;
 		}
 
 		private void writeEnum(Type enumType, bool useStringEnums)

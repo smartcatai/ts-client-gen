@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using TSClientGen.Extensibility;
 using TSClientGen.Extensibility.ApiDescriptors;
 
@@ -102,25 +103,10 @@ namespace TSClientGen
 			var enumTypes = _typeMapping.GetEnums();
 			if (enumTypes.Any())
 			{
-				string separator = ", ";
-				if (enumTypes.Count > 3)
-					separator += "\r\n" + "\t";
-
-				if (enumTypes.Count < 4)
+				foreach (var enumType in enumTypes)
 				{
-					_result.Append("import { ")
-						.Append(string.Join(separator, enumTypes.Select(t => t.Name)))
-						.AppendLine($" }} from './{enumsModuleName}'")
-						.AppendLine();					
-				}
-				else
-				{
-					_result.AppendLine("import {");
-					foreach (var enumType in enumTypes)
-					{
-						_result.Append("\t").Append(enumType.Name).AppendLine(",");
-					}
-					_result.AppendLine($"}} from './{enumsModuleName}'");
+					var enumPath = $"{enumsModuleName}/{enumType.Name}";
+					_result.AppendLine($"import {{ {enumType.Name} }} from './{enumPath}'");
 				}
 			}
 		}
