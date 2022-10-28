@@ -101,13 +101,11 @@ namespace TSClientGen
 		public void WriteEnumImports(string enumsModuleName)
 		{
 			var enumTypes = _typeMapping.GetEnums();
-			if (enumTypes.Any())
+
+			foreach (var enumType in enumTypes)
 			{
-				foreach (var enumType in enumTypes)
-				{
-					var enumPath = $"{enumsModuleName}/{enumType.Name}";
-					_result.AppendLine($"import {{ {enumType.Name} }} from './{enumPath}'");
-				}
+				var enumPath = $"{enumsModuleName}/{enumType.Name}";
+				_result.AppendLine($"import {{ {enumType.Name} }} from './{enumPath}'");
 			}
 		}
 		
