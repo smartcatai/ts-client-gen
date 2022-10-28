@@ -30,6 +30,7 @@ namespace TSClientGen
 				plugin.TypeDescriptorProviders,
 				plugin.CustomApiClientWriter,
 				resultFileWriter,
+				new ImportEnumModuleGenerator(),
 				serializeToJson);
 
 			runner.Execute();

@@ -14,11 +14,11 @@ namespace TSClientGen.Tests
 		{
 			var generator = new EnumModuleGenerator();
 			generator.Write(
-				new[] {typeof(Foo)},
+				typeof(Foo),
 				true,
 				null,
-				new Dictionary<Type, List<Func<string>>>(),
-				new Dictionary<Type, TSEnumLocalizationAttributeBase>());
+				null,
+				null);
 
 			var result = generator.GetResult();
 			TextAssert.ContainsLinesInCorrectOrder(result,
@@ -31,13 +31,13 @@ namespace TSClientGen.Tests
 		public void Numeric_enum_values_are_written_to_TypeScript_enum_definition()
 		{
 			var generator = new EnumModuleGenerator();
-			var extensions = Enumerable.Empty<TSExtendEnumAttribute>().ToLookup(x => default(Type));
+
 			generator.Write(
-				new[] {typeof(Foo)},
+				typeof(Foo),
 				false,
 				null,
-				new Dictionary<Type, List<Func<string>>>(),
-				new Dictionary<Type, TSEnumLocalizationAttributeBase>());
+				null,
+				null);
 
 			var result = generator.GetResult();
 			TextAssert.ContainsLinesInCorrectOrder(result,
@@ -71,19 +71,15 @@ namespace TSClientGen.Tests
 			var generator = new EnumModuleGenerator();
 
 			generator.Write(
-				new[] {typeof(Foo), typeof(Bar)},
+				typeof(Foo),
 				false,
 				"locale",
-				new Dictionary<Type, List<Func<string>>>
-				{
-					{typeof(Foo), new List<Func<string>> {() => StaticMemberContents}}
-				},
-				new Dictionary<Type, TSEnumLocalizationAttributeBase>());
+				 new List<Func<string>> {() => StaticMemberContents} ,
+				null);
 
 			var result = generator.GetResult();
 			TextAssert.ContainsLinesInCorrectOrder(result,
 				"export enum Foo {",
-				"export enum Bar {",
 				"export namespace Foo {",
 				StaticMemberContents);
 		}
@@ -92,10 +88,6 @@ namespace TSClientGen.Tests
 		{
 			A = 1,
 			B = 3
-		}
-
-		enum Bar
-		{
 		}
 
 		public const string StaticMemberContents = "// Extending Enum with static members";

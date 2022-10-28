@@ -103,6 +103,7 @@ namespace TSClientGen.Tests
 				new Mock<IEnumerable<ITypeDescriptorProvider>>().Object,
 				new Mock<IApiClientWriter>().Object,
 				new Mock<IResultFileWriter>().Object,
+				new Mock<IImportEnumModuleGenerator>().Object,
 				o => o.ToString());
 		}
 	}

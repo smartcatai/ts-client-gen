@@ -12,17 +12,14 @@ namespace TSClientGen
 			_writer = writer;
 		}
 		
-		public void WriteEnumLocalizations(IDictionary<Type, TSEnumLocalizationAttributeBase> enumLocalizationProvidersByEnumType)
+		public void WriteEnumLocalizations(Type enumType, TSEnumLocalizationAttributeBase localization)
 		{
-			foreach (var pair in enumLocalizationProvidersByEnumType)
+			generateEnumValueEntries(enumType, localization);
+			if (localization.AdditionalSets != null)
 			{
-				generateEnumValueEntries(pair.Key, pair.Value);
-				if (pair.Value.AdditionalSets != null)
+				foreach (var set in localization.AdditionalSets)
 				{
-					foreach (var set in pair.Value.AdditionalSets)
-					{
-						generateEnumValueEntries(pair.Key, pair.Value, set);
-					}
+					generateEnumValueEntries(enumType, localization, set);
 				}
 			}
 		}

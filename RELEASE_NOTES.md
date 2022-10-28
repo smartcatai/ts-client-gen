@@ -1,5 +1,8 @@
 # Release Notes
 
+## 9.0.0 - 2022-10-27
+- Generate enums and their localization in separate files
+
 ## 8.0.0 - 2022-08-11
 - Removed useAxiosInstanceTransformer function for customization axios requests
 - Added timeout param for axios upload requests

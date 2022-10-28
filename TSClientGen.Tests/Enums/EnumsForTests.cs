@@ -2,6 +2,7 @@ using System;
 using System.Reflection;
 using System.Text;
 using TSClientGen.Tests;
+using TSClientGen.Tests.Enums;
 
 [assembly: ExtendEnumAsm(typeof(EnumToExtendViaAssemblyAttr))]
 [assembly: ExtendEnumAsm(typeof(EnumToExtendViaTwoAttributes))]
@@ -42,6 +43,18 @@ namespace TSClientGen.Tests
 	{
 		Value1,
 		Value2
+	}
+
+	public enum Enum1
+	{
+		Value0,
+		Value1,
+	}
+
+	public enum Enum2
+	{
+		Value0,
+		Value1,
 	}
 
 	public class ExtendEnumAttribute : TSClientGen.TSExtendEnumAttribute
