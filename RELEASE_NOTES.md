@@ -1,5 +1,8 @@
 # Release Notes
 
+## 9.0.1 - 2022-10-31
+- Add net 5.0 to FWTs
+
 ## 9.0.0 - 2022-10-27
 - Generate enums and their localization in separate files
 
