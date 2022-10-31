@@ -1,5 +1,8 @@
 # Release Notes
 
+## 8.0.1 - 2022-10-31
+- Add net 5.0 to FWTs
+
 ## 8.0.0 - 2022-08-11
 - Removed useAxiosInstanceTransformer function for customization axios requests
 - Added timeout param for axios upload requests

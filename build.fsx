@@ -111,6 +111,7 @@ Target.create "Pack" (fun p ->
 Target.create "GithubRelease" (fun _ ->
 
     let gitHubToken = Fake.IO.File.readAsString "github_token"
+    let gitHubToken = gitHubToken.Trim()
     let files = !! (nugetOutput + "/*.nupkg")
 
     GitHub.createClientWithToken gitHubToken
