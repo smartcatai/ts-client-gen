@@ -69,12 +69,14 @@ namespace TSClientGen.Tests
 		public void Should_write_static_members_for_enums_after_all_enums_declaration()
 		{
 			var generator = new EnumModuleGenerator();
+			var staticMembers = new StaticMembers();
+			staticMembers.AddGenerator(() => StaticMemberContents);
 
 			generator.Write(
 				typeof(Foo),
 				false,
 				"locale",
-				 new List<Func<string>> {() => StaticMemberContents} ,
+				 staticMembers,
 				null);
 
 			var result = generator.GetResult();
@@ -84,10 +86,35 @@ namespace TSClientGen.Tests
 				StaticMemberContents);
 		}
 
+		[Test]
+		public void Should_write_enum_imports_before_namespace()
+		{
+			var generator = new EnumModuleGenerator();
+			var staticMembers = new StaticMembers(enumImportTypes: new[] { typeof(Boo)});
+			staticMembers.AddGenerator(() => StaticMemberContents);
+
+			generator.Write(
+				typeof(Foo),
+				false,
+				"locale",
+				 staticMembers,
+				null);
+
+			var result = generator.GetResult();
+			TextAssert.ContainsLinesInCorrectOrder(result,
+				"import { Boo } from '../Boo';",
+				"export namespace Foo {",
+				StaticMemberContents);
+		}
+
 		enum Foo
 		{
 			A = 1,
 			B = 3
+		}
+
+		enum Boo
+		{
 		}
 
 		public const string StaticMemberContents = "// Extending Enum with static members";

@@ -11,14 +11,22 @@ namespace TSClientGen
 			Type enumType,
 			bool useStringEnums,
 			string getResourceModuleName,
-			List<Func<string>> staticMembersGenerators,
+			StaticMembers staticMembers,
 			TSEnumLocalizationAttributeBase localization)
 		{
-			var requireResourceImport = false;
+			if (staticMembers?.EnumImportTypes?.Any() == true)
+			{
+				foreach (var importEnumType in staticMembers.EnumImportTypes)
+					_result.AppendLine($"import {{ {importEnumType.Name} }} from '../{importEnumType.Name}';");
+
+				_result.AppendLine();
+			}
 
 			writeEnum(enumType, useStringEnums);
 
-			if (staticMembersGenerators != null || localization != null)
+			var requireResourceImport = false;
+
+			if (staticMembers?.Generators?.Any() == true || localization != null)
 			{
 				_result.AppendLine($"export namespace {enumType.Name} {{").Indent();
 
@@ -28,15 +36,15 @@ namespace TSClientGen
 					requireResourceImport = true;
 				}
 
-				if (staticMembersGenerators != null)
+				if (staticMembers?.Generators?.Any() == true)
 				{
-					foreach (var generateStaticMembers in staticMembersGenerators)
+					foreach (var generateStaticMembers in staticMembers.Generators)
 					{
 						_result.AppendText(generateStaticMembers());
 					}
 				}
 
-				_result.AppendLine("}");
+				_result.Unindent().AppendLine("}");
 			}
 
 			if (requireResourceImport)
@@ -88,7 +96,6 @@ namespace TSClientGen
 				.AppendLine("});")
 				.Unindent()
 				.AppendLine("}")
-				.Unindent()
 				;
 		}
 

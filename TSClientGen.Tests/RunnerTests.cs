@@ -24,7 +24,7 @@ namespace TSClientGen.Tests
 
 			var staticMemberGeneratorsByEnumType = runner
 				.CollectEnumStaticMemberGenerators(new[] { Assembly.GetExecutingAssembly() }, allEnums)
-				.Select(pair => (EnumType: pair.Key, GeneratorsCount: pair.Value.Count))
+				.Select(pair => (EnumType: pair.Key, GeneratorsCount: pair.Value.Generators.Count))
 				.ToList();
 
 			CollectionAssert.Contains(

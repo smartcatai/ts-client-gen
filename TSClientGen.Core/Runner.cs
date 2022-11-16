@@ -182,20 +182,20 @@ namespace TSClientGen
 			}
 		}
 
-		public Dictionary<Type, List<Func<string>>> CollectEnumStaticMemberGenerators(
+		public IReadOnlyDictionary<Type, StaticMembers> CollectEnumStaticMemberGenerators(
 			IReadOnlyCollection<Assembly> assemblies,
 			HashSet<Type> allEnums)
 		{
-			var generatorsByEnumType = new Dictionary<Type, List<Func<string>>>();
+			var staticMembersByEnumType = new Dictionary<Type, StaticMembers>();
 
 			foreach (var attr in assemblies.SelectMany(
 				asm => asm.GetCustomAttributes().OfType<ForAssembly.TSExtendEnumAttribute>()))
 			{
-				if (!generatorsByEnumType.TryGetValue(attr.EnumType, out var list))
+				if (!staticMembersByEnumType.TryGetValue(attr.EnumType, out var staticMembers))
 				{
-					list = generatorsByEnumType[attr.EnumType] = new List<Func<string>>();
+					staticMembers = staticMembersByEnumType[attr.EnumType] = new StaticMembers(attr.ImportEnumTypes);
 				}
-				list.Add(attr.GenerateStaticMembers);
+				staticMembers.AddGenerator(attr.GenerateStaticMembers);
 				allEnums.Add(attr.EnumType);
 			}
 
@@ -203,15 +203,15 @@ namespace TSClientGen
 			{
 				foreach (var attr in @enum.GetCustomAttributes().OfType<TSExtendEnumAttribute>())
 				{
-					if (!generatorsByEnumType.TryGetValue(@enum, out var list))
+					if (!staticMembersByEnumType.TryGetValue(@enum, out var staticMembers))
 					{
-						list = generatorsByEnumType[@enum] = new List<Func<string>>();
+						staticMembers = staticMembersByEnumType[@enum] = new StaticMembers(attr.ImportEnumTypes);
 					}
-					list.Add(attr.GenerateStaticMembers);
+					staticMembers.AddGenerator(attr.GenerateStaticMembers);
 				}
 			}
 
-			return generatorsByEnumType;
+			return staticMembersByEnumType;
 		}
 
 		public Dictionary<Type, TSEnumLocalizationAttributeBase> CollectEnumLocalizationAttributes(
@@ -250,8 +250,8 @@ namespace TSClientGen
 		public void GenerateEnumsModule(
 			IReadOnlyCollection<Type> enums,
 			string enumsModuleName,
-			Dictionary<Type, List<Func<string>>> staticMemberGeneratorsByEnumType,
-			Dictionary<Type, TSEnumLocalizationAttributeBase> localizationByEnumType)
+			IReadOnlyDictionary<Type, StaticMembers> staticMemberGeneratorsByEnumType,
+			IReadOnlyDictionary<Type, TSEnumLocalizationAttributeBase> localizationByEnumType)
 		{
 			var sw = new Stopwatch();
 			sw.Start();
