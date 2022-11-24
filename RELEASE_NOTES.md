@@ -1,5 +1,8 @@
 # Release Notes
 
+## 9.1.0 - 2022-11-16
+- Allow to specify enum imports for TSExtendEnumAttribute inheritors
+
 ## 9.0.1 - 2022-10-31
 - Add net 5.0 to FWTs
 
