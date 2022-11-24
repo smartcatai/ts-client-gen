@@ -9,7 +9,7 @@ namespace TSClientGen
 
 		public StaticMembers(IReadOnlyCollection<Type> enumImportTypes = null)
 		{
-			EnumImportTypes = enumImportTypes;
+			EnumImportTypes = enumImportTypes ?? Array.Empty<Type>();
 		}
 
 		public IReadOnlyCollection<Type> EnumImportTypes { get; }

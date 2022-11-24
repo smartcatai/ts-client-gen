@@ -14,7 +14,7 @@ namespace TSClientGen
 			StaticMembers staticMembers,
 			TSEnumLocalizationAttributeBase localization)
 		{
-			if (staticMembers?.EnumImportTypes?.Any() == true)
+			if (staticMembers?.EnumImportTypes.Any() == true)
 			{
 				foreach (var importEnumType in staticMembers.EnumImportTypes)
 					_result.AppendLine($"import {{ {importEnumType.Name} }} from '../{importEnumType.Name}';");
@@ -26,7 +26,7 @@ namespace TSClientGen
 
 			var requireResourceImport = false;
 
-			if (staticMembers?.Generators?.Any() == true || localization != null)
+			if (staticMembers?.Generators.Any() == true || localization != null)
 			{
 				_result.AppendLine($"export namespace {enumType.Name} {{").Indent();
 
@@ -36,7 +36,7 @@ namespace TSClientGen
 					requireResourceImport = true;
 				}
 
-				if (staticMembers?.Generators?.Any() == true)
+				if (staticMembers?.Generators.Any() == true)
 				{
 					foreach (var generateStaticMembers in staticMembers.Generators)
 					{
