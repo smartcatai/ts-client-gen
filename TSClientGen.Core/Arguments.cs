@@ -19,7 +19,10 @@ namespace TSClientGen
 
 		[Option("enum-module")]
 		public string EnumsModuleName { get; set; }
-		
+
+		[Option("disable-common-enum-module")]
+		public bool DisableCommonEnumModule { get; set; }
+
 		[Option("string-enums")]
 		public bool UseStringEnums { get; set; }		
 

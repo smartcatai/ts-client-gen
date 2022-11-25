@@ -286,8 +286,11 @@ namespace TSClientGen
 				_resultFileWriter.WriteFile(filePath, enumModuleGenerator.GetResult());
 			}
 
-			var importEnumModule = _importEnumModuleGenerator.Generate(enums, enumsModuleName);
-			_resultFileWriter.WriteFile($"{enumsModuleName}.ts", importEnumModule);
+			if (!_arguments.DisableCommonEnumModule)
+			{
+				var importEnumModule = _importEnumModuleGenerator.Generate(enums, enumsModuleName);
+				_resultFileWriter.WriteFile($"{enumsModuleName}.ts", importEnumModule);
+			}
 
 			if (localizationByEnumType.Any())
 			{

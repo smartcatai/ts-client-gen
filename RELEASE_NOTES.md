@@ -1,5 +1,9 @@
 # Release Notes
 
+## 9.2.0 - 2022-11-25
+- Add function for getting localization key
+- Allow to disable generating common enum module
+
 ## 9.1.0 - 2022-11-16
 - Allow to specify enum imports for TSExtendEnumAttribute inheritors
 
