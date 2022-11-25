@@ -61,23 +61,38 @@ namespace TSClientGen
 		{
 			if (additionalSets == null)
 			{
-				sb
-					.AppendLine($"export function localize(enumValue: {enumType.Name}) {{")
-					.Indent()
-					.AppendLine($"return getResource('{enumType.Name}_' + {enumType.Name}[enumValue]);")
-					.Unindent()
-					.AppendLine("}");
+				void writeLocalizationFunction(string functionName, bool withGetResourceCall)
+				{
+					var result = $"'{enumType.Name}_' + {enumType.Name}[enumValue]";
+					var returnLine = withGetResourceCall ? $"return getResource({result});" : $"return {result};";
+					sb
+						.AppendLine($"export function {functionName}(enumValue: {enumType.Name}) {{")
+						.Indent()
+						.AppendLine(returnLine)
+						.Unindent()
+						.AppendLine("}");
+				}
+				writeLocalizationFunction("localize", withGetResourceCall: true);
+				writeLocalizationFunction("getLocalizationKey", withGetResourceCall: false);
 			}
 			else
 			{
 				var setTsType = string.Join("|", additionalSets.Select(s => $"'{s}'"));
-				sb
-					.AppendLine($"export function localize(enumValue: {enumType.Name}, set?: {setTsType}) {{")
-					.Indent()
-					.AppendLine($"const prefix = '{enumType.Name}_' + (set ? set + '_' : '');")
-					.AppendLine($"return getResource(prefix + {enumType.Name}[enumValue]);")
-					.Unindent()
-					.AppendLine("}");
+
+				void writeLocalizationFunction(string functionName, bool withGetResourceCall)
+				{
+					var result = $"prefix + {enumType.Name}[enumValue]";
+					var returnLine = withGetResourceCall ? $"return getResource({result});" : $"return {result};";
+					sb
+						.AppendLine($"export function {functionName}(enumValue: {enumType.Name}, set?: {setTsType}) {{")
+						.Indent()
+						.AppendLine($"const prefix = '{enumType.Name}_' + (set ? set + '_' : '');")
+						.AppendLine(returnLine)
+						.Unindent()
+						.AppendLine("}");
+				}
+				writeLocalizationFunction("localize", withGetResourceCall: true);
+				writeLocalizationFunction("getLocalizationKey", withGetResourceCall: false);
 			}
 
 			sb
