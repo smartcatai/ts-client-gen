@@ -22,7 +22,7 @@ export type Method =
 export interface RequestOptions extends GetUriOptions {
 	method: Method;
 	requestBody?: any,
-	getAbortFunc: (abort: () => void) => void;
+	getAbortFunc?: (abort: () => void) => void;
 	onUploadProgress?: (progressEvent: ProgressEvent) => void;
 	jsonResponseExpected: boolean;
 	timeout?: number;

@@ -1,5 +1,8 @@
 # Release Notes
 
+## 9.2.1 - 2022-12-12
+- Make getAbortFunc in transport-contracts.ts optional.
+
 ## 9.2.0 - 2022-11-25
 - Add function for getting localization key
 - Allow to disable generating common enum module
