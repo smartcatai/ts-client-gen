@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using TSClientGen.Extensibility.ApiDescriptors;
 
 namespace TSClientGen
@@ -55,17 +56,43 @@ namespace TSClientGen
 			if (_apiMethod.QueryParams.Any())
 			{
 				requestParams.Add("queryStringParams");
-				var queryParams = _apiMethod.QueryParams.Select(p =>
+
+				//Если параметр один и является классом - необходимо вернуть только сам параметр
+				if (_apiMethod.QueryParams.Count == 1 && !_apiMethod.QueryParams.First().Type.IsSimpleType())
 				{
-					if (p.OriginalName == p.GeneratedName && p.Type != typeof(DateTime))
-						return p.OriginalName;
+					_result.AppendLine($"const queryStringParams = {_apiMethod.QueryParams.First().GeneratedName};");
+				}
+				else
+				{
+					var queryParams = _apiMethod.QueryParams.Select(p =>
+					{
+						//Генерация параметров для классов - необходимо сгенировать строку для каждого поля
+						if (!p.Type.IsSimpleType())
+						{
+							var properties = p.Type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+							if (properties.Length > 0)
+							{
+								var objectProperties = string.Empty;
+								foreach (var property in properties)
+								{
+									var propertyName = char.ToLowerInvariant(property.Name[0]) + property.Name.Substring(1);
+									objectProperties += $"{propertyName}: {p.GeneratedName}.{propertyName}, ";
+								}
 
-					if (p.Type == typeof(DateTime))
-						return $"{p.OriginalName}: {p.GeneratedName}.toISOString()";
+								return objectProperties.Remove(objectProperties.Length - 2);
+							}
+						}
+					
+						if (p.OriginalName == p.GeneratedName && p.Type != typeof(DateTime))
+							return p.OriginalName;
 
-					return $"{p.OriginalName}: {p.GeneratedName}";
-				});
-				_result.AppendLine($"const queryStringParams = {{ {string.Join(", ", queryParams)} }};");
+						if (p.Type == typeof(DateTime))
+							return $"{p.OriginalName}: {p.GeneratedName}.toISOString()";
+
+						return $"{p.OriginalName}: {p.GeneratedName}";
+					});
+					_result.AppendLine($"const queryStringParams = {{ {string.Join(", ", queryParams)} }};");
+				}
 			}
 
 			if (generateGetUrl)

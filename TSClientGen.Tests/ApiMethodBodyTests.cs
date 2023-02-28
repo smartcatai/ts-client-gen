@@ -68,6 +68,17 @@ namespace TSClientGen.Tests
 		}
 		
 		[Test]
+		public void Multiple_query_parameters_are_passed_to_request()
+		{			
+			var method = createMethodDescriptor("/func", ("id", typeof(int)), ("reason", typeof(string)));
+			var sb = new IndentedStringBuilder();
+			var generator = createGenerator(method, sb);
+			generator.WriteBody(false, false);
+			
+			TextAssert.ContainsLine("const queryStringParams = { id, reason };", sb.ToString());	
+		}
+		
+		[Test]
 		public void Aborting_request_is_supported()
 		{
 			var method = createMethodDescriptor("/func");
@@ -101,6 +112,50 @@ namespace TSClientGen.Tests
 			generator.WriteBody(true, false);
 			
 			TextAssert.ContainsLine("const queryStringParams = { id };", sb.ToString());	
+		}
+		
+		[Test]
+		public void Custom_types_parameter_are_converted_to_query_params()
+		{
+			var method = createMethodDescriptor("/func", ("requestParams", typeof(RequestParametersFirst)));
+			var sb = new IndentedStringBuilder();
+			var generator = createGenerator(method, sb);
+			generator.WriteBody(false, false);
+			
+			TextAssert.ContainsLine("const queryStringParams = requestParams;", sb.ToString());	
+		}
+		
+		[Test]
+		public void Custom_types_parameters_are_converted_to_query_params()
+		{
+			var method = createMethodDescriptor("/func", ("requestParams", typeof(RequestParametersFirst)), ("count", typeof(int)));
+			var sb = new IndentedStringBuilder();
+			var generator = createGenerator(method, sb);
+			generator.WriteBody(false, false);
+			
+			TextAssert.ContainsLine("const queryStringParams = { skip: requestParams.skip, reason: requestParams.reason, count };", sb.ToString());	
+		}
+		
+		[Test]
+		public void Custom_types_multiple_parameters_are_converted_to_query_params()
+		{
+			var method = createMethodDescriptor("/func", ("firstParams", typeof(RequestParametersFirst)), ("secondParams", typeof(RequestParametersSecond)));
+			var sb = new IndentedStringBuilder();
+			var generator = createGenerator(method, sb);
+			generator.WriteBody(false, false);
+			
+			TextAssert.ContainsLine("const queryStringParams = { skip: firstParams.skip, reason: firstParams.reason, check: secondParams.check };", sb.ToString());	
+		}
+
+		private class RequestParametersFirst
+		{
+			public int Skip { get; set; }
+			public string Reason { get; set; }
+		}
+		
+		private class RequestParametersSecond
+		{
+			public bool Check { get; set; }
 		}
 
 
