@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
 using System.Threading.Tasks;
 using TSClientGen.Extensibility.ApiDescriptors;
 
@@ -70,18 +72,7 @@ namespace TSClientGen
 						//Генерация параметров для классов - необходимо сгенировать строку для каждого поля
 						if (!_typeMapping.IsPrimitiveTsType(p.Type))
 						{
-							var properties = getTypeProperties(p.Type);
-							if (properties.Length > 0)
-							{
-								var objectProperties = string.Empty;
-								foreach (var property in properties)
-								{
-									var propertyName = char.ToLowerInvariant(property.Name[0]) + property.Name.Substring(1);
-									objectProperties += $"{propertyName}: {p.GeneratedName}.{propertyName}, ";
-								}
-
-								return objectProperties.Remove(objectProperties.Length - 2);
-							}
+							generateParametersForClass(p.Type, p.GeneratedName);
 						}
 					
 						if (p.OriginalName == p.GeneratedName && p.Type != typeof(DateTime))
@@ -146,19 +137,6 @@ namespace TSClientGen
 			_result.AppendLine($"return request<{tsReturnType}>({{ {string.Join(", ", requestParams)} }});");
 		}
 
-		private static PropertyInfo[] getTypeProperties(Type type)
-		{
-			var actualType = type;
-			if (type.IsGenericType &&
-			    (type.GetGenericTypeDefinition() == typeof(Nullable<>) ||
-			     type.GetGenericTypeDefinition() == typeof(Task<>)))
-			{
-				actualType = type.GetGenericArguments()[0];
-			}
-
-			return actualType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-		}
-
 		public IEnumerable<string> GetTypescriptParams()
 		{
 			foreach (var param in _apiMethod.AllParams.OrderBy(p => p.IsOptional))
@@ -212,7 +190,34 @@ namespace TSClientGen
 		{
 			return char.ToLowerInvariant(name[0]) + name.Substring(1);
 		}
+
+		private string generateParametersForClass(Type type, string parameterName)
+		{
+			var properties = getTypeProperties(type);
+			var objectProperties = new StringBuilder();
+			foreach (var property in properties)
+			{
+				var attr = property.GetCustomAttribute<DataMemberAttribute>();
+				var propertyName = attr != null? attr.Name : char.ToLowerInvariant(property.Name[0]) + property.Name.Substring(1);
+					
+				objectProperties.Append($"{propertyName}: {parameterName}.{propertyName}, ");
+			}
+
+			return objectProperties.ToString().Remove(objectProperties.Length - 2);
+		}
 		
+		private static PropertyInfo[] getTypeProperties(Type type)
+		{
+			var actualType = type;
+			if (type.IsGenericType &&
+			    (type.GetGenericTypeDefinition() == typeof(Nullable<>) ||
+			     type.GetGenericTypeDefinition() == typeof(Task<>)))
+			{
+				actualType = type.GetGenericArguments()[0];
+			}
+
+			return actualType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+		}
 		
 		private readonly ApiMethod _apiMethod;		
 		private readonly IIndentedStringBuilder _result;
