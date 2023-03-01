@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using TSClientGen.Extensibility.ApiDescriptors;
-using TSClientGen.Extensions;
 
 namespace TSClientGen
 {
@@ -59,7 +59,7 @@ namespace TSClientGen
 				requestParams.Add("queryStringParams");
 
 				//Если параметр один и является классом - необходимо вернуть только сам параметр
-				if (_apiMethod.QueryParams.Count == 1 && !_apiMethod.QueryParams.First().Type.IsSimpleType())
+				if (_apiMethod.QueryParams.Count == 1 && !_typeMapping.IsPrimitiveTsType(_apiMethod.QueryParams.First().Type))
 				{
 					_result.AppendLine($"const queryStringParams = {_apiMethod.QueryParams.First().GeneratedName};");
 				}
@@ -68,9 +68,9 @@ namespace TSClientGen
 					var queryParams = _apiMethod.QueryParams.Select(p =>
 					{
 						//Генерация параметров для классов - необходимо сгенировать строку для каждого поля
-						if (!p.Type.IsSimpleType())
+						if (!_typeMapping.IsPrimitiveTsType(p.Type))
 						{
-							var properties = p.Type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+							var properties = getTypeProperties(p.Type);
 							if (properties.Length > 0)
 							{
 								var objectProperties = string.Empty;
@@ -144,6 +144,19 @@ namespace TSClientGen
 			bool jsonResponseExpected = (tsReturnType != "void");
 			_result.AppendLine($"const jsonResponseExpected = {jsonResponseExpected.ToString().ToLower()};");
 			_result.AppendLine($"return request<{tsReturnType}>({{ {string.Join(", ", requestParams)} }});");
+		}
+
+		private static PropertyInfo[] getTypeProperties(Type type)
+		{
+			var actualType = type;
+			if (type.IsGenericType &&
+			    (type.GetGenericTypeDefinition() == typeof(Nullable<>) ||
+			     type.GetGenericTypeDefinition() == typeof(Task<>)))
+			{
+				actualType = type.GetGenericArguments()[0];
+			}
+
+			return actualType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
 		}
 
 		public IEnumerable<string> GetTypescriptParams()

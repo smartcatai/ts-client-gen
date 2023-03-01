@@ -94,6 +94,40 @@ namespace TSClientGen
 
 		public IReadOnlyDictionary<Type, string> GetGeneratedTypes() => _typeDefinitions;
 
+		public bool IsPrimitiveTsType(Type type)
+		{
+			if (type.IsEnum)
+			{
+				return true;
+			}
+			
+			if (type.IsGenericType)
+			{
+				if (type.GetGenericTypeDefinition() == typeof(Nullable<>) ||
+				    type.GetGenericTypeDefinition() == typeof(Task<>))
+				{
+					return IsPrimitiveTsType(type.GetGenericArguments()[0]);
+				}
+			}
+			
+			var substituteAttr = type.GetCustomAttributes<TSSubstituteTypeAttribute>().FirstOrDefault();
+			if (substituteAttr != null)
+			{
+				return true;
+			}
+
+			if (_typeNames.TryGetValue(type, out var tsType))
+			{
+				if (tsType.EndsWith("[]"))
+				{
+					return _primitiveTsTypes.Contains(tsType.Substring(0, tsType.Length - 2));
+				}
+				return _primitiveTsTypes.Contains(tsType);
+			}
+
+			return false;
+		}
+
 
 		private void addTypeWithSubstitution(Type type, TSSubstituteTypeAttribute substituteAttr)
 		{
@@ -339,6 +373,16 @@ namespace TSClientGen
 			{ typeof(double),	"number" },
 			{ typeof(decimal),	"number" },
 			{ typeof(Guid),		"string" }
-		};		
+		};
+
+		private static readonly IReadOnlyCollection<string> _primitiveTsTypes = new HashSet<string>
+		{
+			 "boolean",
+			 "Date",
+			 "any",
+			 "void",
+			 "string",
+			 "number"
+		};
 	}
 }
