@@ -72,7 +72,7 @@ namespace TSClientGen
 						//Генерация параметров для классов - необходимо сгенировать строку для каждого поля
 						if (!_typeMapping.IsPrimitiveTsType(p.Type))
 						{
-							generateParametersForClass(p.Type, p.GeneratedName);
+							return generateParametersForClass(p.Type, p.GeneratedName);
 						}
 					
 						if (p.OriginalName == p.GeneratedName && p.Type != typeof(DateTime))
