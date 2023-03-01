@@ -60,31 +60,23 @@ namespace TSClientGen
 			{
 				requestParams.Add("queryStringParams");
 
-				//Если параметр один и является классом - необходимо вернуть только сам параметр
-				if (_apiMethod.QueryParams.Count == 1 && !_typeMapping.IsPrimitiveTsType(_apiMethod.QueryParams.First().Type))
+				var queryParams = _apiMethod.QueryParams.Select(p =>
 				{
-					_result.AppendLine($"const queryStringParams = {_apiMethod.QueryParams.First().GeneratedName};");
-				}
-				else
-				{
-					var queryParams = _apiMethod.QueryParams.Select(p =>
+					//Генерация параметров для классов - необходимо сгенировать строку для каждого поля
+					if (!_typeMapping.IsPrimitiveTsType(p.Type))
 					{
-						//Генерация параметров для классов - необходимо сгенировать строку для каждого поля
-						if (!_typeMapping.IsPrimitiveTsType(p.Type))
-						{
-							return generateParametersForClass(p.Type, p.GeneratedName);
-						}
+						return generateParametersForClass(p.Type, p.GeneratedName);
+					}
 					
-						if (p.OriginalName == p.GeneratedName && p.Type != typeof(DateTime))
-							return p.OriginalName;
+					if (p.OriginalName == p.GeneratedName && p.Type != typeof(DateTime))
+						return p.OriginalName;
 
-						if (p.Type == typeof(DateTime))
-							return $"{p.OriginalName}: {p.GeneratedName}.toISOString()";
+					if (p.Type == typeof(DateTime))
+						return $"{p.OriginalName}: {p.GeneratedName}.toISOString()";
 
-						return $"{p.OriginalName}: {p.GeneratedName}";
-					});
-					_result.AppendLine($"const queryStringParams = {{ {string.Join(", ", queryParams)} }};");
-				}
+					return $"{p.OriginalName}: {p.GeneratedName}";
+				});
+				_result.AppendLine($"const queryStringParams = {{ {string.Join(", ", queryParams)} }};");
 			}
 
 			if (generateGetUrl)
@@ -197,10 +189,16 @@ namespace TSClientGen
 			var objectProperties = new StringBuilder();
 			foreach (var property in properties)
 			{
-				var attr = property.GetCustomAttribute<DataMemberAttribute>();
-				var propertyName = attr != null? attr.Name : char.ToLowerInvariant(property.Name[0]) + property.Name.Substring(1);
-					
-				objectProperties.Append($"{propertyName}: {parameterName}.{propertyName}, ");
+				if (property.GetCustomAttributes<IgnoreDataMemberAttribute>().Any())
+					continue;
+				
+				var propertyName = _typeMapping.GetPropertyName(property);
+				objectProperties.Append($"{propertyName}: {parameterName}.{propertyName}");
+				
+				if (property.PropertyType == typeof(DateTime))
+					objectProperties.Append(".toISOString()");
+				
+				objectProperties.Append(", ");
 			}
 
 			return objectProperties.ToString().Remove(objectProperties.Length - 2);

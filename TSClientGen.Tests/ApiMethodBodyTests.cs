@@ -133,7 +133,7 @@ namespace TSClientGen.Tests
 			var generator = createGenerator(method, sb);
 			generator.WriteBody(false, false);
 			
-			TextAssert.ContainsLine("const queryStringParams = requestParams;", sb.ToString());	
+			TextAssert.ContainsLine("const queryStringParams = { skip: requestParams.skip, reason: requestParams.reason };", sb.ToString());	
 		}
 		
 		[Test]
@@ -155,7 +155,7 @@ namespace TSClientGen.Tests
 			var generator = createGenerator(method, sb);
 			generator.WriteBody(false, false);
 			
-			TextAssert.ContainsLine("const queryStringParams = { skip: firstParams.skip, reason: firstParams.reason, check: secondParams.check };", sb.ToString());	
+			TextAssert.ContainsLine("const queryStringParams = { skip: firstParams.skip, reason: firstParams.reason, check: secondParams.check.toISOString() };", sb.ToString());	
 		}
 
 		private class RequestParametersFirst
@@ -166,13 +166,15 @@ namespace TSClientGen.Tests
 		
 		private class RequestParametersSecond
 		{
-			public bool Check { get; set; }
+			public DateTime Check { get; set; }
 		}
 
 
 		private static ApiMethodGenerator createGenerator(ApiMethod apiMethod, IndentedStringBuilder sb)
 		{
-			return new ApiMethodGenerator(apiMethod, sb, new TypeMapping());
+			var generator = new ApiMethodGenerator(apiMethod, sb, new TypeMapping());
+			generator.GetTypescriptParams().ToArray();
+			return generator;
 		}
 		
 		private static ApiMethod createMethodDescriptor(string url, params (string name, Type type)[] parameters)

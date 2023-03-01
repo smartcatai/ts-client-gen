@@ -282,11 +282,10 @@ namespace TSClientGen
 			if (p.GetCustomAttributes<IgnoreDataMemberAttribute>().Any())
 				return null;
 
-			var dataMember = p.GetCustomAttributes<DataMemberAttribute>().FirstOrDefault();
-			var propertyName = dataMember?.Name ?? toLowerCamelCase(p.Name);
-
+			var propertyName = GetPropertyName(p);
 			var propertyType = p.PropertyType;
 			string propertyInlineDefinition = null;
+			
 			var mapping = p.GetCustomAttributes<TSSubstituteTypeAttribute>().FirstOrDefault();
 			if (mapping?.SubstituteType != null)
 			{
@@ -304,6 +303,12 @@ namespace TSClientGen
 
 			return new TypePropertyDescriptor(propertyName, propertyType, tsZeroType.IsNullable, tsZeroType.IsOptional,
 				propertyInlineDefinition);
+		}
+
+		public string GetPropertyName(PropertyInfo propertyInfo)
+		{
+			var dataMember = propertyInfo.GetCustomAttributes<DataMemberAttribute>().FirstOrDefault();
+			return dataMember?.Name ?? toLowerCamelCase(propertyInfo.Name);
 		}
 
 		private string toLowerCamelCase(string name)
