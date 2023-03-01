@@ -1,6 +1,6 @@
 # Release Notes
 
-## 9.2.2 - 2022-12-12
+## 9.2.3 - 2023-03-01
 - Support custom types in query parameters
 - Fix incorrect `/` symbols in url
 
