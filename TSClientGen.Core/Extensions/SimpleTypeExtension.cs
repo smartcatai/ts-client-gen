@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace TSClientGen
+namespace TSClientGen.Extensions
 {
 	public static class SimpleTypeExtension
 	{
