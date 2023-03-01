@@ -14,11 +14,20 @@ namespace TSClientGen
 			typeof(TimeSpan),
 			typeof(Guid)
 		};
-		
+
 		public static bool IsSimpleType(
 			this Type type)
 		{
-			return type.IsPrimitive || _standartTypes.Contains(type);
+			if (type.IsPrimitive || _standartTypes.Contains(type))
+				return true;
+			
+			if (type.Name == "Nullable`1") 
+			{
+				var nullableType = type.GenericTypeArguments[0];
+				return nullableType.IsSimpleType();
+			}
+
+			return false;
 		}
 	}
 }

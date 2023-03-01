@@ -79,6 +79,17 @@ namespace TSClientGen.Tests
 		}
 		
 		[Test]
+		public void Multiple_query_parameters_with_nullables_are_passed_to_request()
+		{			
+			var method = createMethodDescriptor("/func", ("id", typeof(int?)), ("longId", typeof(long?)));
+			var sb = new IndentedStringBuilder();
+			var generator = createGenerator(method, sb);
+			generator.WriteBody(false, false);
+			
+			TextAssert.ContainsLine("const queryStringParams = { id, longId };", sb.ToString());	
+		}
+		
+		[Test]
 		public void Aborting_request_is_supported()
 		{
 			var method = createMethodDescriptor("/func");
