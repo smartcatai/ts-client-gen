@@ -1,6 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
+using System.Threading.Tasks;
 using TSClientGen.Extensibility.ApiDescriptors;
 
 namespace TSClientGen
@@ -55,8 +59,15 @@ namespace TSClientGen
 			if (_apiMethod.QueryParams.Any())
 			{
 				requestParams.Add("queryStringParams");
+
 				var queryParams = _apiMethod.QueryParams.Select(p =>
 				{
+					//Генерация параметров для классов - необходимо сгенировать строку для каждого поля
+					if (!_typeMapping.IsPrimitiveTsType(p.Type))
+					{
+						return generateParametersForClass(p.Type, p.GeneratedName);
+					}
+					
 					if (p.OriginalName == p.GeneratedName && p.Type != typeof(DateTime))
 						return p.OriginalName;
 
@@ -171,7 +182,40 @@ namespace TSClientGen
 		{
 			return char.ToLowerInvariant(name[0]) + name.Substring(1);
 		}
+
+		private string generateParametersForClass(Type type, string parameterName)
+		{
+			var properties = getTypeProperties(type);
+			var objectProperties = new StringBuilder();
+			foreach (var property in properties)
+			{
+				if (property.GetCustomAttributes<IgnoreDataMemberAttribute>().Any())
+					continue;
+				
+				var propertyName = _typeMapping.GetPropertyName(property);
+				objectProperties.Append($"{propertyName}: {parameterName}.{propertyName}");
+				
+				if (property.PropertyType == typeof(DateTime))
+					objectProperties.Append(".toISOString()");
+				
+				objectProperties.Append(", ");
+			}
+
+			return objectProperties.ToString().Remove(objectProperties.Length - 2);
+		}
 		
+		private static PropertyInfo[] getTypeProperties(Type type)
+		{
+			var actualType = type;
+			if (type.IsGenericType &&
+			    (type.GetGenericTypeDefinition() == typeof(Nullable<>) ||
+			     type.GetGenericTypeDefinition() == typeof(Task<>)))
+			{
+				actualType = type.GetGenericArguments()[0];
+			}
+
+			return actualType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+		}
 		
 		private readonly ApiMethod _apiMethod;		
 		private readonly IIndentedStringBuilder _result;

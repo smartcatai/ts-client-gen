@@ -94,6 +94,40 @@ namespace TSClientGen
 
 		public IReadOnlyDictionary<Type, string> GetGeneratedTypes() => _typeDefinitions;
 
+		public bool IsPrimitiveTsType(Type type)
+		{
+			if (type.IsEnum)
+			{
+				return true;
+			}
+			
+			if (type.IsGenericType)
+			{
+				if (type.GetGenericTypeDefinition() == typeof(Nullable<>) ||
+				    type.GetGenericTypeDefinition() == typeof(Task<>))
+				{
+					return IsPrimitiveTsType(type.GetGenericArguments()[0]);
+				}
+			}
+			
+			var substituteAttr = type.GetCustomAttributes<TSSubstituteTypeAttribute>().FirstOrDefault();
+			if (substituteAttr != null)
+			{
+				return true;
+			}
+
+			if (_typeNames.TryGetValue(type, out var tsType))
+			{
+				if (tsType.EndsWith("[]"))
+				{
+					return _primitiveTsTypes.Contains(tsType.Substring(0, tsType.Length - 2));
+				}
+				return _primitiveTsTypes.Contains(tsType);
+			}
+
+			return false;
+		}
+
 
 		private void addTypeWithSubstitution(Type type, TSSubstituteTypeAttribute substituteAttr)
 		{
@@ -248,11 +282,10 @@ namespace TSClientGen
 			if (p.GetCustomAttributes<IgnoreDataMemberAttribute>().Any())
 				return null;
 
-			var dataMember = p.GetCustomAttributes<DataMemberAttribute>().FirstOrDefault();
-			var propertyName = dataMember?.Name ?? toLowerCamelCase(p.Name);
-
+			var propertyName = GetPropertyName(p);
 			var propertyType = p.PropertyType;
 			string propertyInlineDefinition = null;
+			
 			var mapping = p.GetCustomAttributes<TSSubstituteTypeAttribute>().FirstOrDefault();
 			if (mapping?.SubstituteType != null)
 			{
@@ -270,6 +303,12 @@ namespace TSClientGen
 
 			return new TypePropertyDescriptor(propertyName, propertyType, tsZeroType.IsNullable, tsZeroType.IsOptional,
 				propertyInlineDefinition);
+		}
+
+		public string GetPropertyName(PropertyInfo propertyInfo)
+		{
+			var dataMember = propertyInfo.GetCustomAttributes<DataMemberAttribute>().FirstOrDefault();
+			return dataMember?.Name ?? toLowerCamelCase(propertyInfo.Name);
 		}
 
 		private string toLowerCamelCase(string name)
@@ -339,6 +378,16 @@ namespace TSClientGen
 			{ typeof(double),	"number" },
 			{ typeof(decimal),	"number" },
 			{ typeof(Guid),		"string" }
-		};		
+		};
+
+		private static readonly IReadOnlyCollection<string> _primitiveTsTypes = new HashSet<string>
+		{
+			 "boolean",
+			 "Date",
+			 "any",
+			 "void",
+			 "string",
+			 "number"
+		};
 	}
 }

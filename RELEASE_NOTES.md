@@ -1,5 +1,9 @@
 # Release Notes
 
+## 9.2.2 - 2022-12-12
+- Support custom types in query parameters
+- Fix incorrect `/` symbols in url
+
 ## 9.2.1 - 2022-12-12
 - Make getAbortFunc in transport-contracts.ts optional.
 

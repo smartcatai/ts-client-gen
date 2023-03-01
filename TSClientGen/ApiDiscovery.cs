@@ -73,7 +73,11 @@ namespace TSClientGen
 					p.GetCustomAttributes<FromBodyAttribute>().Any()))
 				.ToList();
 
-			string urlTemplate = $"{routePrefix}/{httpMethodAttribute?.Template ?? routeAttribute?.Template}"
+			var controllerRoute = routePrefix.EndsWith('/') ? routePrefix : routePrefix + '/';
+			var methodRoute = (httpMethodAttribute?.Template ?? routeAttribute?.Template) ?? string.Empty;
+			methodRoute = methodRoute.StartsWith('/') ? methodRoute[1..] : methodRoute;
+			
+			string urlTemplate = $"{controllerRoute}{methodRoute}"
 				.Replace("[controller]", controllerName)
 				.Replace("[action]", method.Name);
 			var descriptor = new ApiMethod(method, urlTemplate, new HttpMethod(httpMethod), parameters);
