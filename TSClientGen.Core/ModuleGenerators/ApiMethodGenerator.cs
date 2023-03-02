@@ -65,7 +65,11 @@ namespace TSClientGen
 					//Генерация параметров для классов - необходимо сгенировать строку для каждого поля
 					if (!_typeMapping.IsPrimitiveTsType(p.Type))
 					{
-						return generateParametersForClass(p.Type, p.GeneratedName);
+						var generatedParameters = generateParametersForClass(p.Type, p.GeneratedName);
+						if (!string.IsNullOrWhiteSpace(generatedParameters))
+						{
+							return generatedParameters;
+						}
 					}
 					
 					if (p.OriginalName == p.GeneratedName && p.Type != typeof(DateTime))
@@ -186,22 +190,27 @@ namespace TSClientGen
 		private string generateParametersForClass(Type type, string parameterName)
 		{
 			var properties = getTypeProperties(type);
+			if (properties.Length <= 0) 
+				return null;
+			
 			var objectProperties = new StringBuilder();
+			var propertyCreated = false;
 			foreach (var property in properties)
 			{
 				if (property.GetCustomAttributes<IgnoreDataMemberAttribute>().Any())
 					continue;
-				
+
 				var propertyName = _typeMapping.GetPropertyName(property);
 				objectProperties.Append($"{propertyName}: {parameterName}.{propertyName}");
-				
+
 				if (property.PropertyType == typeof(DateTime))
 					objectProperties.Append(".toISOString()");
-				
-				objectProperties.Append(", ");
-			}
 
-			return objectProperties.ToString().Remove(objectProperties.Length - 2);
+				objectProperties.Append(", ");
+				propertyCreated = true;
+			}
+				
+			return propertyCreated ? objectProperties.ToString().Remove(objectProperties.Length - 2) : null;
 		}
 		
 		private static PropertyInfo[] getTypeProperties(Type type)

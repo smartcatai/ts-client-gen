@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net.Http;
 using NUnit.Framework;
 using TSClientGen.Extensibility.ApiDescriptors;
+using TSClientGen.Tests.Models;
 
 namespace TSClientGen.Tests
 {
@@ -156,6 +157,17 @@ namespace TSClientGen.Tests
 			generator.WriteBody(false, false);
 			
 			TextAssert.ContainsLine("const queryStringParams = { skip: firstParams.skip, reason: firstParams.reason, check: secondParams.check.toISOString() };", sb.ToString());	
+		}
+		
+		[Test]
+		public void Custom_types_without_public_properties_are_converted_to_query_params()
+		{
+			var method = createMethodDescriptor("/func", ("firstParams", typeof(StructWithoutPublicProperties)));
+			var sb = new IndentedStringBuilder();
+			var generator = createGenerator(method, sb);
+			generator.WriteBody(false, false);
+			
+			TextAssert.ContainsLine("const queryStringParams = { firstParams };", sb.ToString());	
 		}
 
 		private class RequestParametersFirst
