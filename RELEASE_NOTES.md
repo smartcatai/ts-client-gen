@@ -1,5 +1,8 @@
 # Release Notes
 
+## 9.2.4 - 2023-03-02
+- Fix generating bug when type without public fields
+
 ## 9.2.3 - 2023-03-01
 - Support custom types in query parameters
 - Fix incorrect `/` symbols in url
