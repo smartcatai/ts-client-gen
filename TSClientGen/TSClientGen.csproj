@@ -7,12 +7,12 @@
     <IsPackable>true</IsPackable>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>tsclientgen</ToolCommandName>
-    <PackageVersion>9.2.4</PackageVersion>
+    <PackageVersion>9.2.5</PackageVersion>
     <Authors>Smartcat</Authors>
     <Description>Tool to generate TypeScript clients for ASP.NET Core web APIs</Description>
     <RepositoryUrl>https://github.com/smartcatai/ts-client-gen</RepositoryUrl>
     <PackageLicenseUrl>https://github.com/smartcatai/ts-client-gen/blob/develop/LICENSE.txt</PackageLicenseUrl>
-    <TargetFrameworks>net5.0;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>net7.0;net5.0;netcoreapp3.1</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\TSClientGen.Contract\TSClientGen.Contract.csproj" />
