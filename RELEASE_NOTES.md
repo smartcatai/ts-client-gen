@@ -1,5 +1,8 @@
 # Release Notes
 
+## 9.2.5 - 2023-08-09
+- Add net 7.0 to FWTs
+
 ## 9.2.4 - 2023-03-02
 - Fix generating bug when type without public fields
 
