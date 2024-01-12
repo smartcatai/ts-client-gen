@@ -13,13 +13,14 @@ export async function request<TResponse>(request: RequestOptions): Promise<TResp
 		throw new Error('Fetch API does not support timeout at the moment');
 	}
 
-	const fetchRequest: Partial<Request> = {
+	const fetchRequest: any = {
 		url: getUri(request),
 		method: request.method,
+		headers: request.headers,
 		body: request.requestBody,
 		credentials: 'include'
 	};
-	return fetch(fetchRequest as Request)
+	return fetch(fetchRequest)
 		.then(response => {
 			if (response.ok) {
 				return request.jsonResponseExpected ? response.json() : null;

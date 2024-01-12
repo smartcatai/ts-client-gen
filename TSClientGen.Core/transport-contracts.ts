@@ -1,10 +1,11 @@
 export interface NamedBlob {
-	name: string,
-	blob: Blob
+	name: string;
+	blob: Blob;
 }
 
 export interface HttpRequestOptions {
-	getAbortFunc?: (abort: () => void) => void
+	getAbortFunc?: (abort: () => void) => void;
+	headers?: { [key: string]: string };
 }
 
 export interface UploadFileHttpRequestOptions extends HttpRequestOptions {
@@ -26,6 +27,7 @@ export interface RequestOptions extends GetUriOptions {
 	onUploadProgress?: (progressEvent: ProgressEvent) => void;
 	jsonResponseExpected: boolean;
 	timeout?: number;
+	headers?: { [key: string]: string };
 }
 
 export interface GetUriOptions {

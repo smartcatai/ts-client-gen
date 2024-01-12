@@ -1,5 +1,8 @@
 # Release Notes
 
+## 9.2.6 - 2024-01-12
+- Add headers in transport-contracts.ts
+
 ## 9.2.5 - 2023-08-09
 - Add net 7.0 to FWTs
 
