@@ -31,6 +31,11 @@ export async function request<TResponse>(request: RequestOptions): Promise<TResp
 		default:
 			throw new Error(`Method ${request.method} not supported`);
 	}
+	if (request.headers) {
+		Object.keys(request.headers).forEach((key) => {
+			chain.set(key, request.headers[key]);
+		});
+	}
 	if (request.requestBody) {
 		chain = chain.send(request.requestBody);
 	}

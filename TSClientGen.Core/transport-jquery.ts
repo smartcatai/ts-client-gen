@@ -13,6 +13,7 @@ export async function request<TResponse>(request: RequestOptions): Promise<TResp
 		const options: any = {
 			url: getUri(request),
 			method: request.method,
+			headers: request.headers,
 			parseResponseAsJson: request.jsonResponseExpected,
 			success: function(data: TResponse) { resolve(data); },
 			error: function(jqXhr: JQueryXHR) { reject(jqXhr); }
