@@ -15,6 +15,10 @@ export async function request<TResponse>(request: RequestOptions): Promise<TResp
 			method: request.method,
 			headers: request.headers,
 			parseResponseAsJson: request.jsonResponseExpected,
+			beforeSend: function(_, options) {
+				const baseURL = ((options.baseURL || '') + '/').replace(/\/\/$/, '/');
+				options.url = baseURL + options.url;
+			},
 			success: function(data: TResponse) { resolve(data); },
 			error: function(jqXhr: JQueryXHR) { reject(jqXhr); }
 		};
