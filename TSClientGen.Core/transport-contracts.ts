@@ -6,6 +6,7 @@ export interface NamedBlob {
 export interface HttpRequestOptions {
 	getAbortFunc?: (abort: () => void) => void;
 	headers?: { [key: string]: string };
+	baseURL?: string;
 }
 
 export interface UploadFileHttpRequestOptions extends HttpRequestOptions {
@@ -28,6 +29,7 @@ export interface RequestOptions extends GetUriOptions {
 	jsonResponseExpected: boolean;
 	timeout?: number;
 	headers?: { [key: string]: string };
+	baseURL?: string;
 }
 
 export interface GetUriOptions {

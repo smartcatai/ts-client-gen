@@ -47,10 +47,11 @@ export async function request<TResponse>(request: RequestOptions): Promise<TResp
 		reject));
 }
 
-export function getUri(options: GetUriOptions): string {
-	const params = options.queryStringParams;
+export function getUri(request: RequestOptions): string {
+	const baseURL = ((request.baseURL || '') + '/').replace(/\/\/$/, '/');
+	const params = request.queryStringParams;
 	if (!params)
-		return options.url;
+		return request.url;
 
 	const parts = Object.keys(params)
 		.filter((key) => params[key] != null)
@@ -61,5 +62,5 @@ export function getUri(options: GetUriOptions): string {
 			return encodeURIComponent(key) + '=' + encodeURIComponent(value);
 		});
 
-	return options.url + (options.url.indexOf('?') === -1 ? '?' : '&') + parts.join('&');
+	return baseURL + request.url + (request.url.indexOf('?') === -1 ? '?' : '&') + parts.join('&');
 }
