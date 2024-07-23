@@ -54,15 +54,11 @@ namespace TSClientGen
 				.AppendLine($"export class {_apiClientModule.ApiClientClassName} {{")
 				.Indent();
 
-			_result.Append("constructor(");
-			if (_apiClientModule.SupportsExternalHost)
-			{
-				_result.Append("private hostname?: string");
-			}
+			_result.AppendLine("constructor(private baseURL = '', private headers: { [key: string]: string } = {}) {");
 
-			_result.AppendLine(") {");
 			_customApiClientWriter?.ExtendApiClientConstructor(_result, _apiClientModule);
 			_result.AppendLine("}");
+			_result.AppendLine();
 			
 			foreach (var method in _apiClientModule.Methods)
 			{
@@ -108,7 +104,7 @@ namespace TSClientGen
 				_result.AppendLine($"import {{ {enumType.Name} }} from './{enumPath}'");
 			}
 		}
-		
+
 		public void WriteStaticContent(TSStaticContentAttribute staticContentModule)
 		{
 			foreach (var entry in staticContentModule.Content)
@@ -116,28 +112,27 @@ namespace TSClientGen
 				_result.AppendLine($"export let {entry.Key} = {_serializeToJson(entry.Value)};");
 			}
 		}
-		
+
 		public string GetResult()
 		{
 			return _result.ToString();
 		}
-		
-		
+
 		private void writeMethod(Action writeSignature, Action writeBody)
 		{
 			writeSignature();
 			_result.AppendLine(" {").Indent();
 			writeBody();
 			_result.Unindent().AppendLine("}").AppendLine();
-		}		
-		
+		}
+
 		private readonly ApiClientModule _apiClientModule;
 		private readonly TypeMapping _typeMapping;
 		private readonly IApiClientWriter _customApiClientWriter;
 		private readonly Func<object, string> _serializeToJson;
 		private readonly string _transportModuleName;
 		private readonly IIndentedStringBuilder _result = new IndentedStringBuilder();
-		
-		public const string TransportContractsModuleName = "transport-contracts";		
+
+		public const string TransportContractsModuleName = "transport-contracts";
 	}
 }

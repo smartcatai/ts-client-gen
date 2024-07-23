@@ -50,9 +50,9 @@ namespace TSClientGen
 				url = url.Replace(param.Key, "${" + paramValue + "}");
 			}
 
-			_result.AppendLine(supportsExternalHost
-				? $"const url = (this.hostname || '') + `{url}`;"
-				: $"const url = `{url}`;");
+			_result.AppendLine("baseURL = baseURL || this.baseURL;");
+			_result.AppendLine("headers = Object.assign({}, this.headers || {}, headers || {});");
+			_result.AppendLine($"const url = `{url}`;");
 
 			var requestParams = new List<string> {"url"};
 
@@ -177,7 +177,6 @@ namespace TSClientGen
 			}
 		}
 
-		
 		private string getTypescriptParam(ApiMethodParam param)
 		{
 			var tsType = _typeMapping.GetTSType(param.Type);
@@ -214,7 +213,7 @@ namespace TSClientGen
 				
 			return propertyCreated ? objectProperties.ToString().Remove(objectProperties.Length - 2) : null;
 		}
-		
+
 		private static PropertyInfo[] getTypeProperties(Type type)
 		{
 			var actualType = type;
@@ -227,8 +226,8 @@ namespace TSClientGen
 
 			return actualType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
 		}
-		
-		private readonly ApiMethod _apiMethod;		
+
+		private readonly ApiMethod _apiMethod;
 		private readonly IIndentedStringBuilder _result;
 		private readonly TypeMapping _typeMapping;
 	}
