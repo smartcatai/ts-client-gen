@@ -16,7 +16,7 @@ namespace TSClientGen.Tests
 			var method = createMethodDescriptor("/func", ("startDate", typeof(DateTime)));
 			var sb = new IndentedStringBuilder();
 			var generator = createGenerator(method, sb);
-			generator.WriteBody(false, false);
+			generator.WriteBody(false);
 			
 			TextAssert.ContainsLine("const queryStringParams = { startDate: startDate.toISOString() };", sb.ToString());	
 		}
@@ -27,7 +27,7 @@ namespace TSClientGen.Tests
 			var method = createMethodDescriptor("/func/{startDate}", ("startDate", typeof(DateTime)));
 			var sb = new IndentedStringBuilder();
 			var generator = createGenerator(method, sb);
-			generator.WriteBody(false, false);
+			generator.WriteBody(false);
 			
 			TextAssert.ContainsLine("const url = `/func/${startDate.toISOString()}`;", sb.ToString());
 		}
@@ -41,7 +41,7 @@ namespace TSClientGen.Tests
 				typeof(void), false, false);
 			var sb = new IndentedStringBuilder();
 			var generator = createGenerator(method, sb);
-			generator.WriteBody(false, false);
+			generator.WriteBody(false);
 			
 			TextAssert.ContainsLine($"const method = '{httpMethod}';", sb.ToString());
 		}
@@ -52,7 +52,7 @@ namespace TSClientGen.Tests
 			var method = createMethodDescriptor("/func/{id}", ("id", typeof(int)));
 			var sb = new IndentedStringBuilder();
 			var generator = createGenerator(method, sb);
-			generator.WriteBody(false, false);
+			generator.WriteBody(false);
 			
 			TextAssert.ContainsLine("const url = `/func/${id}`;", sb.ToString());
 		}
@@ -63,7 +63,7 @@ namespace TSClientGen.Tests
 			var method = createMethodDescriptor("/func", ("id", typeof(int)));
 			var sb = new IndentedStringBuilder();
 			var generator = createGenerator(method, sb);
-			generator.WriteBody(false, false);
+			generator.WriteBody(false);
 			
 			TextAssert.ContainsLine("const queryStringParams = { id };", sb.ToString());	
 		}
@@ -74,7 +74,7 @@ namespace TSClientGen.Tests
 			var method = createMethodDescriptor("/func", ("id", typeof(int)), ("reason", typeof(string)));
 			var sb = new IndentedStringBuilder();
 			var generator = createGenerator(method, sb);
-			generator.WriteBody(false, false);
+			generator.WriteBody(false);
 			
 			TextAssert.ContainsLine("const queryStringParams = { id, reason };", sb.ToString());	
 		}
@@ -85,7 +85,7 @@ namespace TSClientGen.Tests
 			var method = createMethodDescriptor("/func", ("id", typeof(int?)), ("longId", typeof(long?)));
 			var sb = new IndentedStringBuilder();
 			var generator = createGenerator(method, sb);
-			generator.WriteBody(false, false);
+			generator.WriteBody(false);
 			
 			TextAssert.ContainsLine("const queryStringParams = { id, longId };", sb.ToString());	
 		}
@@ -96,7 +96,7 @@ namespace TSClientGen.Tests
 			var method = createMethodDescriptor("/func");
 			var sb = new IndentedStringBuilder();
 			var generator = createGenerator(method, sb);
-			generator.WriteBody(false, false);
+			generator.WriteBody(false);
 			
 			TextAssert.ContainsLine("return request<void>({ url, getAbortFunc, headers, baseURL, method, jsonResponseExpected });", sb.ToString());
 		}
@@ -110,7 +110,7 @@ namespace TSClientGen.Tests
 				typeof(void), true, false);
 			var sb = new IndentedStringBuilder();
 			var generator = createGenerator(method, sb);
-			generator.WriteBody(false, false);
+			generator.WriteBody(false);
 			
 			TextAssert.ContainsLine("return request<void>({ url, requestBody, getAbortFunc, headers, baseURL, onUploadProgress, timeout, method, jsonResponseExpected });", sb.ToString());
 		}
@@ -121,7 +121,7 @@ namespace TSClientGen.Tests
 			var method = createMethodDescriptor("/get", ("id", typeof(int)));
 			var sb = new IndentedStringBuilder();
 			var generator = createGenerator(method, sb);
-			generator.WriteBody(true, false);
+			generator.WriteBody(true);
 			
 			TextAssert.ContainsLine("const queryStringParams = { id };", sb.ToString());	
 		}
@@ -132,7 +132,7 @@ namespace TSClientGen.Tests
 			var method = createMethodDescriptor("/func", ("requestParams", typeof(RequestParametersFirst)));
 			var sb = new IndentedStringBuilder();
 			var generator = createGenerator(method, sb);
-			generator.WriteBody(false, false);
+			generator.WriteBody(false);
 			
 			TextAssert.ContainsLine("const queryStringParams = { skip: requestParams.skip, reason: requestParams.reason };", sb.ToString());	
 		}
@@ -143,7 +143,7 @@ namespace TSClientGen.Tests
 			var method = createMethodDescriptor("/func", ("requestParams", typeof(RequestParametersFirst)), ("count", typeof(int)));
 			var sb = new IndentedStringBuilder();
 			var generator = createGenerator(method, sb);
-			generator.WriteBody(false, false);
+			generator.WriteBody(false);
 			
 			TextAssert.ContainsLine("const queryStringParams = { skip: requestParams.skip, reason: requestParams.reason, count };", sb.ToString());	
 		}
@@ -154,7 +154,7 @@ namespace TSClientGen.Tests
 			var method = createMethodDescriptor("/func", ("firstParams", typeof(RequestParametersFirst)), ("secondParams", typeof(RequestParametersSecond)));
 			var sb = new IndentedStringBuilder();
 			var generator = createGenerator(method, sb);
-			generator.WriteBody(false, false);
+			generator.WriteBody(false);
 			
 			TextAssert.ContainsLine("const queryStringParams = { skip: firstParams.skip, reason: firstParams.reason, check: secondParams.check.toISOString() };", sb.ToString());	
 		}
@@ -165,7 +165,7 @@ namespace TSClientGen.Tests
 			var method = createMethodDescriptor("/func", ("firstParams", typeof(StructWithoutPublicProperties)));
 			var sb = new IndentedStringBuilder();
 			var generator = createGenerator(method, sb);
-			generator.WriteBody(false, false);
+			generator.WriteBody(false);
 			
 			TextAssert.ContainsLine("const queryStringParams = { firstParams };", sb.ToString());	
 		}

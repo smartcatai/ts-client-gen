@@ -1,5 +1,9 @@
 # Release Notes
 
+## 9.3.1 - 2024-07-24
+- Fix js-errors with baseURL & headers in a getUrl methods of client
+- Removed TSSupportsExternalHostAttribute, baseURL always exists in a client constructor
+
 ## 9.3.0 - 2024-07-23
 - Add baseURL & headers to constructor by default
 

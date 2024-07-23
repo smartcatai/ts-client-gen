@@ -36,7 +36,7 @@ namespace TSClientGen
 				.Append(")");
 		}
 
-		public void WriteBody(bool generateGetUrl, bool supportsExternalHost)
+		public void WriteBody(bool generateGetUrl)
 		{
 			string url = _apiMethod.UrlTemplate;
 			foreach (var param in _apiMethod.UrlParamsByPlaceholder)
@@ -50,9 +50,16 @@ namespace TSClientGen
 				url = url.Replace(param.Key, "${" + paramValue + "}");
 			}
 
-			_result.AppendLine("baseURL = baseURL || this.baseURL;");
-			_result.AppendLine("headers = Object.assign({}, this.headers || {}, headers || {});");
-			_result.AppendLine($"const url = `{url}`;");
+			if (generateGetUrl)
+			{
+				_result.AppendLine($"const url = this.baseURL + `{url}`;");
+			}
+			else
+			{
+				_result.AppendLine("baseURL = baseURL || this.baseURL;");
+				_result.AppendLine("headers = Object.assign({}, this.headers || {}, headers || {});");
+				_result.AppendLine($"const url = `{url}`;");
+			}
 
 			var requestParams = new List<string> {"url"};
 

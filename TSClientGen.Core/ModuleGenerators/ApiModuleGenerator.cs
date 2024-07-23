@@ -68,12 +68,12 @@ namespace TSClientGen
 				{
 					writeMethod(
 						() => methodWriter.WriteGetUrlSignature(), 
-						() => methodWriter.WriteBody(true, _apiClientModule.SupportsExternalHost));
+						() => methodWriter.WriteBody(true));
 				}
 
 				writeMethod(
 					() => methodWriter.WriteSignature(),
-					() => methodWriter.WriteBody(false, _apiClientModule.SupportsExternalHost));
+					() => methodWriter.WriteBody(false));
 			}
 			
 			_customApiClientWriter?.ExtendApiClientClass(_result, _apiClientModule);
