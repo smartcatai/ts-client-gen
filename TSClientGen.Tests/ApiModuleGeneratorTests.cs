@@ -70,7 +70,7 @@ namespace TSClientGen.Tests
 		}
 
 		[Test]
-		public void Should_write_empty_constructor_by_default()
+		public void Should_write_parametrized_constructor_always()
 		{
 			var mapping = new TypeMapping();
 			var whitespaces = new Regex(@"\s");
@@ -79,7 +79,7 @@ namespace TSClientGen.Tests
 			generator.WriteApiClientClass();
 
 			var result = whitespaces.Replace(generator.GetResult(), "");
-			StringAssert.Contains("constructor(){}", result);
+			StringAssert.Contains("constructor(privatebaseURL='',privateheaders:{[key:string]:string}={}){}", result);
 		}
 
 		[Test]
@@ -117,7 +117,7 @@ namespace TSClientGen.Tests
 
 			TextAssert.ContainsLine("foo.after();", generator.GetResult());
 		}
-		
+
 		[Test]
 		public void Should_extend_constructor_if_api_generation_extensions_provided()
 		{
@@ -129,7 +129,7 @@ namespace TSClientGen.Tests
 
 			TextAssert.ContainsLine("foo.extendConstructor();", generator.GetResult());
 		}
-		
+
 		[Test]
 		public void Should_extend_class_body_if_api_generation_extensions_provided()
 		{
@@ -152,10 +152,9 @@ namespace TSClientGen.Tests
 				(val) => throw new NotImplementedException(),
 				"transport");
 		}
-		
-		
+
 		class Controller {}
-		
+
 		class Model
 		{
 			public Enum1 EnumProp { get; }
@@ -164,7 +163,7 @@ namespace TSClientGen.Tests
 
 		class NestedModel
 		{
-			public Enum2 EnumProp { get; } 			
+			public Enum2 EnumProp { get; }
 		}
 
 		[TSRequireDescendantTypes]

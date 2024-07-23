@@ -1,6 +1,9 @@
 # Release Notes
 
-## 9.2.6 - 2024-06-05
+## 9.3.0 - 2024-07-23
+- Add baseURL & headers to constructor by default
+
+## 9.2.7 - 2024-06-05
 - Add baseURL in transport-contracts.ts
 
 ## 9.2.6 - 2024-01-12
