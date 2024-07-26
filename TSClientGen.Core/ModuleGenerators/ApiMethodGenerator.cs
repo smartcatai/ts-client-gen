@@ -56,8 +56,8 @@ namespace TSClientGen
 			}
 			else
 			{
-				_result.AppendLine("baseURL = baseURL || this.baseURL;");
-				_result.AppendLine("headers = Object.assign({}, this.headers || {}, headers || {});");
+				_result.AppendLine("baseURL = baseURL || (this && this.baseURL) || '';");
+				_result.AppendLine("headers = Object.assign({}, (this && this.headers) || {}, headers || {});");
 				_result.AppendLine($"const url = `{url}`;");
 			}
 
@@ -98,6 +98,8 @@ namespace TSClientGen
 
 			if (_apiMethod.UploadsFiles)
 			{
+				_result.AppendLine("headers['Content-Type'] = 'multipart/form-data';");
+
 				requestParams.Add("requestBody");
 				_result
 					.AppendLine("const requestBody = new FormData();")
