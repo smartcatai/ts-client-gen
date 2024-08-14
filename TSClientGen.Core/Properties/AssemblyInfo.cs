@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 
-[assembly: AssemblyVersion("9.3.2")]
-[assembly: AssemblyInformationalVersion("9.3.2")]
+[assembly: AssemblyVersion("9.4.0")]
+[assembly: AssemblyInformationalVersion("9.4.0")]
 
 [assembly: AssemblyTitle("TSClientGen.Core")]
 [assembly: AssemblyDescription("Main assembly with the code generation stuff")]

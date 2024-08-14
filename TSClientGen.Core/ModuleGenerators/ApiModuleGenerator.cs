@@ -54,7 +54,7 @@ namespace TSClientGen
 				.AppendLine($"export class {_apiClientModule.ApiClientClassName} {{")
 				.Indent();
 
-			_result.AppendLine("constructor(private baseURL = '', private headers: { [key: string]: string } = {}) {");
+			_result.AppendLine("constructor(private baseURL = '', private headers: Record<string, string> = {}) {");
 
 			_customApiClientWriter?.ExtendApiClientConstructor(_result, _apiClientModule);
 			_result.AppendLine("}");

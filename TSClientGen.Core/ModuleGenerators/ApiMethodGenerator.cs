@@ -50,18 +50,16 @@ namespace TSClientGen
 				url = url.Replace(param.Key, "${" + paramValue + "}");
 			}
 
-			if (generateGetUrl)
-			{
-				_result.AppendLine($"const url = this.baseURL + `{url}`;");
-			}
-			else
-			{
-				_result.AppendLine("baseURL = baseURL || (this && this.baseURL) || '';");
-				_result.AppendLine("headers = Object.assign({}, (this && this.headers) || {}, headers || {});");
-				_result.AppendLine($"const url = `{url}`;");
-			}
+			var requestParams = new List<string> { "baseURL", "url" };
 
-			var requestParams = new List<string> {"url"};
+			_result.AppendLine("const baseURL = this?.baseURL ?? '';");
+			_result.AppendLine($"const url = `{url}`;");
+
+			if (!generateGetUrl)
+			{
+				requestParams.Add("headers");
+				_result.AppendLine("const headers = this?.headers ?? {};");
+			}
 
 			if (_apiMethod.QueryParams.Any())
 			{
@@ -126,8 +124,6 @@ namespace TSClientGen
 			}
 
 			requestParams.Add("getAbortFunc");
-			requestParams.Add("headers");
-			requestParams.Add("baseURL");
 			if (_apiMethod.UploadsFiles)
 			{
 				requestParams.Add("onUploadProgress");
@@ -159,8 +155,8 @@ namespace TSClientGen
 				yield return "files: Array<NamedBlob | File>";
 
 			yield return _apiMethod.UploadsFiles
-				? "{ getAbortFunc, headers, baseURL, onUploadProgress, timeout }: UploadFileHttpRequestOptions = {}"
-				: "{ getAbortFunc, headers, baseURL }: HttpRequestOptions = {}";
+				? "{ getAbortFunc, onUploadProgress, timeout }: UploadFileHttpRequestOptions = {}"
+				: "{ getAbortFunc }: HttpRequestOptions = {}";
 		}
 
 		public IEnumerable<string> GetTypescriptParamsForUrl()
@@ -175,7 +171,7 @@ namespace TSClientGen
 		{
 			var identifiersInUse = new HashSet<string>(
 				moduleImports.Concat(
-					new[] {"files", "getAbortFunc", "headers", "baseURL", "onUploadProgress", "timeout", "url", "method", "queryStringParams", "requestBody", "blob"}));
+					new[] {"files", "getAbortFunc", "onUploadProgress", "timeout", "url", "method", "queryStringParams", "requestBody", "blob"}));
 
 			foreach (var param in _apiMethod.AllParams.Where(param => !_apiMethod.UploadsFiles || !param.IsBodyContent))
 			{

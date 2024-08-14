@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 
-[assembly: AssemblyVersion("9.3.2")]
-[assembly: AssemblyInformationalVersion("9.3.2")]
+[assembly: AssemblyVersion("9.4.0")]
+[assembly: AssemblyInformationalVersion("9.4.0")]
 
 [assembly: AssemblyTitle("TSClientGen.Contract")]
 [assembly: AssemblyDescription("Contracts assembly with attributes for decorating api for TSClientGen tool")]
