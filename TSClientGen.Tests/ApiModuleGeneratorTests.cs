@@ -79,7 +79,7 @@ namespace TSClientGen.Tests
 			generator.WriteApiClientClass();
 
 			var result = whitespaces.Replace(generator.GetResult(), "");
-			StringAssert.Contains("constructor(privatebaseURL='',privateheaders:{[key:string]:string}={}){}", result);
+			StringAssert.Contains("constructor(privatebaseURL='',privateheaders:Record<string,string>={}){}", result);
 		}
 
 		[Test]

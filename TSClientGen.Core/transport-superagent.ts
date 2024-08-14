@@ -37,30 +37,27 @@ export async function request<TResponse>(request: RequestOptions): Promise<TResp
 		});
 	}
 	if (request.requestBody) {
-		chain = chain.send(request.requestBody);
+		chain = chain.send(request.requestBody as object);
 	}
 	if (request.onUploadProgress) {
-		chain = chain.on('progress', request.onUploadProgress);
+		chain = chain.on('progress', (event) => {
+			request.onUploadProgress({
+				event,
+				lengthComputable: event.lengthComputable,
+				loaded: event.loaded,
+				total: event.total,
+			});
+		});
 	}
-	return new Promise((resolve, reject) => chain.then(
-		response => resolve(response.body),
-		reject));
+	return new Promise((resolve, reject) => chain.then((response) => resolve(response.body), reject));
 }
 
-export function getUri(request: RequestOptions): string {
-	const baseURL = ((request.baseURL || '') + '/').replace(/\/\/$/, '/');
-	const params = request.queryStringParams;
-	if (!params)
-		return request.url;
-
-	const parts = Object.keys(params)
-		.filter((key) => params[key] != null)
-		.map((key) => {
-			const value = typeof params[key] == 'object'
-				? JSON.stringify(params[key])
-				: params[key];
-			return encodeURIComponent(key) + '=' + encodeURIComponent(value);
-		});
-
-	return baseURL + request.url + (request.url.indexOf('?') === -1 ? '?' : '&') + parts.join('&');
+export function getUri({ baseURL, url, queryStringParams }: GetUriOptions): string {
+	const urlSearchParams = new URLSearchParams();
+	Object.keys(queryStringParams ?? {}).forEach((key) => {
+		if (queryStringParams[key] != null) {
+			urlSearchParams.set(key, queryStringParams[key].toString());
+		}
+	});
+	return `${baseURL.replace(/[\/]+$/, '')}/${url}${urlSearchParams.size ? '?' : ''}${urlSearchParams}`;
 }

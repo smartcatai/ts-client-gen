@@ -1,5 +1,10 @@
 # Release Notes
 
+## 9.4.0 - 2024-08-13
+- Add to UploadProgressEvent original ProgressEvent
+- Add baseURL to getUri
+- Remove baseURL & headers from api method parameters
+
 ## 9.3.2 - 2024-07-26
 - Changed transport contracts & api method generator for support the newest versions of axios
 

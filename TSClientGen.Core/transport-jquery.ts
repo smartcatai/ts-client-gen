@@ -8,48 +8,54 @@ export async function request<TResponse>(request: RequestOptions): Promise<TResp
 	if (request.timeout != null) {
 		throw new Error('Fetch API does not support timeout at the moment');
 	}
-	
+
 	return new Promise((resolve, reject) => {
 		const options: any = {
 			url: getUri(request),
 			method: request.method,
 			headers: request.headers,
 			parseResponseAsJson: request.jsonResponseExpected,
-			beforeSend: function(_, options) {
-				const baseURL = ((options.baseURL || '') + '/').replace(/\/\/$/, '/');
-				options.url = baseURL + options.url;
+			success(data: TResponse) {
+				resolve(data);
 			},
-			success: function(data: TResponse) { resolve(data); },
-			error: function(jqXhr: JQueryXHR) { reject(jqXhr); }
+			error(jqXhr: JQueryXHR) {
+				reject(jqXhr);
+			},
 		};
-		
+
 		if (request.requestBody instanceof FormData) {
 			options.contentType = false;
 			options.processData = false;
 			options.data = request.requestBody;
-			if (options.onUploadProgress) {
-				options.xhr = function () {
+			if (request.onUploadProgress) {
+				options.xhr = () => {
 					const xhr = new XMLHttpRequest();
-					xhr.upload.onprogress = options.onUploadProgress;
+					xhr.upload.addEventListener('progress', (event) => {
+						request.onUploadProgress({
+							event,
+							lengthComputable: event.lengthComputable,
+							loaded: event.loaded,
+							total: event.total,
+						});
+					});
 					return xhr;
 				};
 			}
 		} else if (request.requestBody) {
 			options.contentType = 'application/json';
-			options.data = JSON.stringify(request.requestBody)
+			options.data = JSON.stringify(request.requestBody);
 		}
-		
+
 		$.ajax(options);
 	});
 }
 
-export function getUri(options: GetUriOptions): string {
-	let url = options.url;
-	if (options.queryStringParams) {
-		const queryString = $.param(options.queryStringParams);
-		if (queryString) {
-			url = url + '?' + queryString;
+export function getUri({ baseURL, url, queryStringParams }: GetUriOptions): string {
+	const urlSearchParams = new URLSearchParams();
+	Object.keys(queryStringParams ?? {}).forEach((key) => {
+		if (queryStringParams[key] != null) {
+			urlSearchParams.set(key, queryStringParams[key].toString());
 		}
-	}
-	return url;
+	});
+	return `${baseURL.replace(/[\/]+$/, '')}/${url}${urlSearchParams.size ? '?' : ''}${urlSearchParams}`;
 }
