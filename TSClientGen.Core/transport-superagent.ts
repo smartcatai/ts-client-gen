@@ -1,63 +1,57 @@
-import { GetUriOptions, RequestOptions } from './transport-contracts';
 import * as superagent from 'superagent';
+import { GetUriOptions, RequestOptions } from './transport-contracts';
 
-export async function request<TResponse>(request: RequestOptions): Promise<TResponse> {
-	if (request.getAbortFunc != null) {
-		throw new Error('SuperAgent does not support aborting http requests');
-	}
+export async function request<TResponse>(options: RequestOptions): Promise<TResponse> {
+	const url = getUri(options);
+	const chain = superagent[options.method](url);
 
-	if (request.timeout != null) {
-		throw new Error('Fetch API does not support timeout at the moment');
-	}
-
-	let chain: superagent.SuperAgentRequest;
-	const url = getUri(request);
-	switch (request.method) {
-		case 'get':
-			chain = superagent.get(url);
-			break;
-		case 'post':
-			chain = superagent.post(url);
-			break;
-		case 'put':
-			chain = superagent.put(url);
-			break;
-		case 'delete':
-			chain = superagent.delete(url);
-			break;
-		case 'patch':
-			chain = superagent.patch(url);
-			break;
-		default:
-			throw new Error(`Method ${request.method} not supported`);
-	}
-	if (request.headers) {
-		Object.keys(request.headers).forEach((key) => {
-			chain.set(key, request.headers[key]);
+	if (options.headers) {
+		Object.keys(options.headers).forEach((key) => {
+			chain.set(key, options.headers[key]);
 		});
 	}
-	if (request.requestBody) {
-		chain = chain.send(request.requestBody as object);
+
+	if (options.data != null) {
+		chain.send(options.data as object);
 	}
-	if (request.onUploadProgress) {
-		chain = chain.on('progress', (event) => {
-			request.onUploadProgress({
-				event,
+
+	if (options.abortSignal != null) {
+		const handler = () => {
+			chain.abort();
+			options.abortSignal.removeEventListener('abort', handler);
+		};
+		options.abortSignal.addEventListener('abort', handler);
+	}
+
+	if (options.timeout != null) {
+		chain.timeout(options.timeout);
+	}
+
+	if (options.onUploadProgress != null) {
+		chain.on('progress', (e) => {
+			const event = {
+				lengthComputable: e.total != null,
+				loaded: e.loaded,
+				total: e.total,
+			};
+			options.onUploadProgress({
+				event: event as ProgressEvent,
 				lengthComputable: event.lengthComputable,
 				loaded: event.loaded,
 				total: event.total,
 			});
 		});
 	}
+
 	return new Promise((resolve, reject) => chain.then((response) => resolve(response.body), reject));
 }
 
-export function getUri({ baseURL, url, queryStringParams }: GetUriOptions): string {
+export function getUri(options: GetUriOptions): string {
 	const urlSearchParams = new URLSearchParams();
-	Object.keys(queryStringParams ?? {}).forEach((key) => {
-		if (queryStringParams[key] != null) {
-			urlSearchParams.set(key, queryStringParams[key].toString());
+	Object.keys(options.params ?? {}).forEach((key) => {
+		if (options.params[key] != null) {
+			urlSearchParams.set(key, options.params[key].toString());
 		}
 	});
-	return `${baseURL.replace(/[\/]+$/, '')}/${url}${urlSearchParams.size ? '?' : ''}${urlSearchParams}`;
+	return `${options.baseURL.replace(/\/+$/, '')}/${options.url}${urlSearchParams.size ? '?' : ''}${urlSearchParams}`;
 }

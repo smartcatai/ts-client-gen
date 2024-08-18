@@ -18,7 +18,7 @@ namespace TSClientGen.Tests
 			var generator = createGenerator(method, sb);
 			generator.WriteBody(false);
 			
-			TextAssert.ContainsLine("const queryStringParams = { startDate: startDate.toISOString() };", sb.ToString());	
+			TextAssert.ContainsLine("const params = { startDate: startDate.toISOString() };", sb.ToString());	
 		}
 		
 		[Test]
@@ -65,7 +65,7 @@ namespace TSClientGen.Tests
 			var generator = createGenerator(method, sb);
 			generator.WriteBody(false);
 			
-			TextAssert.ContainsLine("const queryStringParams = { id };", sb.ToString());	
+			TextAssert.ContainsLine("const params = { id };", sb.ToString());	
 		}
 		
 		[Test]
@@ -76,7 +76,7 @@ namespace TSClientGen.Tests
 			var generator = createGenerator(method, sb);
 			generator.WriteBody(false);
 			
-			TextAssert.ContainsLine("const queryStringParams = { id, reason };", sb.ToString());	
+			TextAssert.ContainsLine("const params = { id, reason };", sb.ToString());	
 		}
 		
 		[Test]
@@ -87,7 +87,7 @@ namespace TSClientGen.Tests
 			var generator = createGenerator(method, sb);
 			generator.WriteBody(false);
 			
-			TextAssert.ContainsLine("const queryStringParams = { id, longId };", sb.ToString());	
+			TextAssert.ContainsLine("const params = { id, longId };", sb.ToString());	
 		}
 		
 		[Test]
@@ -98,7 +98,7 @@ namespace TSClientGen.Tests
 			var generator = createGenerator(method, sb);
 			generator.WriteBody(false);
 			
-			TextAssert.ContainsLine("return request<void>({ baseURL, url, headers, getAbortFunc, method, jsonResponseExpected });", sb.ToString());
+			TextAssert.ContainsLine("return request<void>({ baseURL, url, method, headers, abortSignal });", sb.ToString());
 		}
 		
 		[Test]
@@ -112,7 +112,7 @@ namespace TSClientGen.Tests
 			var generator = createGenerator(method, sb);
 			generator.WriteBody(false);
 			
-			TextAssert.ContainsLine("return request<void>({ baseURL, url, headers, requestBody, getAbortFunc, onUploadProgress, timeout, method, jsonResponseExpected });", sb.ToString());
+			TextAssert.ContainsLine("return request<void>({ baseURL, url, method, headers, data, timeout, abortSignal, onUploadProgress });", sb.ToString());
 		}
 
 		[Test]
@@ -123,7 +123,7 @@ namespace TSClientGen.Tests
 			var generator = createGenerator(method, sb);
 			generator.WriteBody(true);
 			
-			TextAssert.ContainsLine("const queryStringParams = { id };", sb.ToString());	
+			TextAssert.ContainsLine("const params = { id };", sb.ToString());	
 		}
 		
 		[Test]
@@ -134,7 +134,7 @@ namespace TSClientGen.Tests
 			var generator = createGenerator(method, sb);
 			generator.WriteBody(false);
 			
-			TextAssert.ContainsLine("const queryStringParams = { skip: requestParams.skip, reason: requestParams.reason };", sb.ToString());	
+			TextAssert.ContainsLine("const params = { skip: requestParams.skip, reason: requestParams.reason };", sb.ToString());	
 		}
 		
 		[Test]
@@ -145,7 +145,7 @@ namespace TSClientGen.Tests
 			var generator = createGenerator(method, sb);
 			generator.WriteBody(false);
 			
-			TextAssert.ContainsLine("const queryStringParams = { skip: requestParams.skip, reason: requestParams.reason, count };", sb.ToString());	
+			TextAssert.ContainsLine("const params = { skip: requestParams.skip, reason: requestParams.reason, count };", sb.ToString());	
 		}
 		
 		[Test]
@@ -156,7 +156,7 @@ namespace TSClientGen.Tests
 			var generator = createGenerator(method, sb);
 			generator.WriteBody(false);
 			
-			TextAssert.ContainsLine("const queryStringParams = { skip: firstParams.skip, reason: firstParams.reason, check: secondParams.check.toISOString() };", sb.ToString());	
+			TextAssert.ContainsLine("const params = { skip: firstParams.skip, reason: firstParams.reason, check: secondParams.check.toISOString() };", sb.ToString());	
 		}
 		
 		[Test]
@@ -167,7 +167,7 @@ namespace TSClientGen.Tests
 			var generator = createGenerator(method, sb);
 			generator.WriteBody(false);
 			
-			TextAssert.ContainsLine("const queryStringParams = { firstParams };", sb.ToString());	
+			TextAssert.ContainsLine("const params = { firstParams };", sb.ToString());	
 		}
 
 		private class RequestParametersFirst

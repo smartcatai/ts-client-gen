@@ -38,106 +38,33 @@ namespace TSClientGen
 
 		public void WriteBody(bool generateGetUrl)
 		{
-			string url = _apiMethod.UrlTemplate;
-			foreach (var param in _apiMethod.UrlParamsByPlaceholder)
-			{
-				string paramValue = param.Value.GeneratedName;
-				if (param.Value.Type == typeof(DateTime))
-				{
-					paramValue += ".toISOString()";
-				}
-
-				url = url.Replace(param.Key, "${" + paramValue + "}");
-			}
-
-			var requestParams = new List<string> { "baseURL", "url" };
-
-			_result.AppendLine("const baseURL = this?.baseURL ?? '';");
-			_result.AppendLine($"const url = `{url}`;");
-
-			if (!generateGetUrl)
-			{
-				requestParams.Add("headers");
-				_result.AppendLine("const headers = this?.headers ?? {};");
-			}
-
-			if (_apiMethod.QueryParams.Any())
-			{
-				requestParams.Add("queryStringParams");
-
-				var queryParams = _apiMethod.QueryParams.Select(p =>
-				{
-					//Генерация параметров для классов - необходимо сгенировать строку для каждого поля
-					if (!_typeMapping.IsPrimitiveTsType(p.Type))
-					{
-						var generatedParameters = generateParametersForClass(p.Type, p.GeneratedName);
-						if (!string.IsNullOrWhiteSpace(generatedParameters))
-						{
-							return generatedParameters;
-						}
-					}
-					
-					if (p.OriginalName == p.GeneratedName && p.Type != typeof(DateTime))
-						return p.OriginalName;
-
-					if (p.Type == typeof(DateTime))
-						return $"{p.OriginalName}: {p.GeneratedName}.toISOString()";
-
-					return $"{p.OriginalName}: {p.GeneratedName}";
-				});
-				_result.AppendLine($"const queryStringParams = {{ {string.Join(", ", queryParams)} }};");
-			}
-
 			if (generateGetUrl)
 			{
-				_result.AppendLine($"return getUri({{ {string.Join(", ", requestParams)} }});");
-				return;
-			}
-
-			if (_apiMethod.UploadsFiles)
-			{
-				_result.AppendLine("headers['Content-Type'] = 'multipart/form-data';");
-
-				requestParams.Add("requestBody");
-				_result
-					.AppendLine("const requestBody = new FormData();")
-					.AppendLine("for (const f of files) {").Indent()
-					.AppendLine("const namedBlob = f as NamedBlob;")
-					.AppendLine("if (namedBlob.blob && namedBlob.name) {").Indent()
-					.AppendLine("requestBody.append('file', namedBlob.blob, namedBlob.name);").Unindent()
-					.AppendLine("} else {").Indent()
-					.AppendLine("requestBody.append('file', f as File);").Unindent()
-					.AppendLine("}").Unindent()
-					.AppendLine("}");
-
-				if (_apiMethod.BodyParam != null)
+				var requestParams = new List<string>
 				{
-					_result.AppendLine(
-						$"const blob = new Blob([JSON.stringify({_apiMethod.BodyParam.GeneratedName})], {{ type: 'application/json' }});");
-					_result.AppendLine("requestBody.append('Value', blob);");
-				}
+					writeBaseURL(),
+					writeUrl(),
+					writeParams(),
+				};
+				_result.AppendLine($"return getUri({{ {string.Join(", ", requestParams.Where(p => p != null))} }});");
 			}
-			else if (_apiMethod.BodyParam != null)
+			else
 			{
-				requestParams.Add("requestBody");
-				_result.AppendLine($"const requestBody = {_apiMethod.BodyParam.GeneratedName};");
+				var requestParams = new List<string>
+				{
+					writeBaseURL(),
+					writeUrl(),
+					writeMethod(),
+					writeHeaders(),
+					writeData(),
+					writeParams(),
+					writeTimeout(),
+					writeAbortSignal(),
+					writeOnUploadProgress(),
+				};
+				var tsReturnType = _typeMapping.GetTSType(_apiMethod.ReturnType);
+				_result.AppendLine($"return request<{tsReturnType}>({{ {string.Join(", ", requestParams.Where(p => p != null))} }});");
 			}
-
-			requestParams.Add("getAbortFunc");
-			if (_apiMethod.UploadsFiles)
-			{
-				requestParams.Add("onUploadProgress");
-				requestParams.Add("timeout");
-			}
-
-			requestParams.Add("method");
-			_result.AppendLine($"const method = '{_apiMethod.HttpMethod.Method.ToLower()}';");
-
-			requestParams.Add("jsonResponseExpected");
-			string tsReturnType = _typeMapping.GetTSType(_apiMethod.ReturnType);
-			bool jsonResponseExpected = (tsReturnType != "void");
-			_result.AppendLine($"const jsonResponseExpected = {jsonResponseExpected.ToString().ToLower()};");
-			_result.AppendLine($"return request<{tsReturnType}>({{ {string.Join(", ", requestParams)} }});");
 		}
 
 		public IEnumerable<string> GetTypescriptParams()
@@ -155,8 +82,8 @@ namespace TSClientGen
 				yield return "files: Array<NamedBlob | File>";
 
 			yield return _apiMethod.UploadsFiles
-				? "{ getAbortFunc, onUploadProgress, timeout }: UploadFileHttpRequestOptions = {}"
-				: "{ getAbortFunc }: HttpRequestOptions = {}";
+				? "{ abortSignal, timeout, onUploadProgress }: UploadFileHttpRequestOptions = {}"
+				: "{ abortSignal }: HttpRequestOptions = {}";
 		}
 
 		public IEnumerable<string> GetTypescriptParamsForUrl()
@@ -171,7 +98,7 @@ namespace TSClientGen
 		{
 			var identifiersInUse = new HashSet<string>(
 				moduleImports.Concat(
-					new[] {"files", "getAbortFunc", "onUploadProgress", "timeout", "url", "method", "queryStringParams", "requestBody", "blob"}));
+					new[] { "abortSignal", "blob", "data", "files", "method", "onUploadProgress", "params", "timeout", "url" }));
 
 			foreach (var param in _apiMethod.AllParams.Where(param => !_apiMethod.UploadsFiles || !param.IsBodyContent))
 			{
@@ -180,6 +107,117 @@ namespace TSClientGen
 
 				identifiersInUse.Add(param.GeneratedName);
 			}
+		}
+
+		private string writeBaseURL()
+		{
+			_result.AppendLine("const baseURL = this?.baseURL ?? '';");
+			return "baseURL";
+		}
+
+		private string writeUrl()
+		{
+			string url = _apiMethod.UrlTemplate;
+			foreach (var param in _apiMethod.UrlParamsByPlaceholder)
+			{
+				string paramValue = param.Value.GeneratedName;
+				if (param.Value.Type == typeof(DateTime))
+				{
+					paramValue += ".toISOString()";
+				}
+
+				url = url.Replace(param.Key, "${" + paramValue + "}");
+			}
+			_result.AppendLine($"const url = `{url}`;");
+			return "url";
+		}
+
+		private string writeMethod()
+		{
+			_result.AppendLine($"const method = '{_apiMethod.HttpMethod.Method.ToLower()}';");
+			return "method";
+		}
+
+		private string writeHeaders()
+		{
+			_result.AppendLine("const headers = this?.headers ?? {};");
+			return "headers";
+		}
+
+		private string writeData()
+		{
+			if (_apiMethod.UploadsFiles)
+			{
+				_result
+					.AppendLine("const data = new FormData();")
+					.AppendLine("for (const f of files) {").Indent()
+					.AppendLine("const namedBlob = f as NamedBlob;")
+					.AppendLine("if (namedBlob.blob && namedBlob.name) {").Indent()
+					.AppendLine("data.append('file', namedBlob.blob, namedBlob.name);").Unindent()
+					.AppendLine("} else {").Indent()
+					.AppendLine("data.append('file', f as File);").Unindent()
+					.AppendLine("}").Unindent()
+					.AppendLine("}");
+
+				if (_apiMethod.BodyParam != null)
+				{
+					_result.AppendLine(
+						$"const blob = new Blob([JSON.stringify({_apiMethod.BodyParam.GeneratedName})], {{ type: 'application/json' }});");
+					_result.AppendLine("data.append('Value', blob);");
+				}
+				return "data";
+			}
+			else if (_apiMethod.BodyParam != null)
+			{
+				_result.AppendLine($"const data = {_apiMethod.BodyParam.GeneratedName};");
+				return "data";
+			}
+			return null;
+		}
+
+		private string writeParams()
+		{
+			if (_apiMethod.QueryParams.Any())
+			{
+				var queryParams = _apiMethod.QueryParams.Select(p =>
+				{
+					//Генерация параметров для классов - необходимо сгенировать строку для каждого поля
+					if (!_typeMapping.IsPrimitiveTsType(p.Type))
+					{
+						var generatedParameters = generateParametersForClass(p.Type, p.GeneratedName);
+						if (!string.IsNullOrWhiteSpace(generatedParameters))
+						{
+							return generatedParameters;
+						}
+					}
+
+					if (p.OriginalName == p.GeneratedName && p.Type != typeof(DateTime))
+						return p.OriginalName;
+
+					if (p.Type == typeof(DateTime))
+						return $"{p.OriginalName}: {p.GeneratedName}.toISOString()";
+
+					return $"{p.OriginalName}: {p.GeneratedName}";
+				});
+				_result.AppendLine($"const params = {{ {string.Join(", ", queryParams)} }};");
+				return "params";
+			}
+			return null;
+		}
+
+		private string writeTimeout()
+		{
+			return _apiMethod.UploadsFiles ? "timeout" : null;
+		}
+
+		private string writeAbortSignal()
+		{
+			return "abortSignal";
+		}
+
+		private string writeOnUploadProgress()
+		{
+			return _apiMethod.UploadsFiles ? "onUploadProgress" : null;
 		}
 
 		private string getTypescriptParam(ApiMethodParam param)

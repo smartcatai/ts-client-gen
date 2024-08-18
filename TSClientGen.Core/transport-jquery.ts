@@ -1,61 +1,63 @@
-import { GetUriOptions, RequestOptions } from './transport-contracts';
+import $ from 'jquery';
+import { getRequestHeaders, GetUriOptions, RequestOptions } from './transport-contracts';
 
-export async function request<TResponse>(request: RequestOptions): Promise<TResponse> {
-	if (request.getAbortFunc != null) {
-		throw new Error('JQuery does not support aborting http requests');
-	}
-
-	if (request.timeout != null) {
-		throw new Error('Fetch API does not support timeout at the moment');
-	}
-
-	return new Promise((resolve, reject) => {
-		const options: any = {
-			url: getUri(request),
-			method: request.method,
-			headers: request.headers,
-			parseResponseAsJson: request.jsonResponseExpected,
+export async function request<TResponse>(options: RequestOptions): Promise<TResponse> {
+	return new Promise<TResponse>((resolve, reject) => {
+		const ajaxOptions: JQueryAjaxSettings = {
+			url: getUri(options),
+			method: options.method,
+			headers: getRequestHeaders(options),
+			data:
+				options.data instanceof FormData
+					? options.data
+					: options.data != null
+						? JSON.stringify(options.data)
+						: undefined,
+			timeout: options.timeout,
+			processData: false,
 			success(data: TResponse) {
-				resolve(data);
+				resolve(data || undefined);
 			},
-			error(jqXhr: JQueryXHR) {
+			error(jqXhr: $.JQueryXHR) {
 				reject(jqXhr);
 			},
 		};
 
-		if (request.requestBody instanceof FormData) {
-			options.contentType = false;
-			options.processData = false;
-			options.data = request.requestBody;
-			if (request.onUploadProgress) {
-				options.xhr = () => {
-					const xhr = new XMLHttpRequest();
-					xhr.upload.addEventListener('progress', (event) => {
-						request.onUploadProgress({
-							event,
-							lengthComputable: event.lengthComputable,
-							loaded: event.loaded,
-							total: event.total,
-						});
-					});
-					return xhr;
+		if (options.abortSignal != null) {
+			ajaxOptions.beforeSend = (jqXhr: JQueryXHR) => {
+				const handler = () => {
+					jqXhr.abort(options.abortSignal.reason);
+					options.abortSignal.removeEventListener('abort', handler);
 				};
-			}
-		} else if (request.requestBody) {
-			options.contentType = 'application/json';
-			options.data = JSON.stringify(request.requestBody);
+				options.abortSignal.addEventListener('abort', handler);
+			};
 		}
 
-		$.ajax(options);
+		if (options.onUploadProgress != null) {
+			ajaxOptions.xhr = () => {
+				const xhr = new XMLHttpRequest();
+				xhr.upload.addEventListener('progress', (event) => {
+					options.onUploadProgress({
+						event,
+						lengthComputable: event.lengthComputable,
+						loaded: event.loaded,
+						total: event.total,
+					});
+				});
+				return xhr;
+			};
+		}
+
+		$.ajax(ajaxOptions);
 	});
 }
 
-export function getUri({ baseURL, url, queryStringParams }: GetUriOptions): string {
+export function getUri(options: GetUriOptions): string {
 	const urlSearchParams = new URLSearchParams();
-	Object.keys(queryStringParams ?? {}).forEach((key) => {
-		if (queryStringParams[key] != null) {
-			urlSearchParams.set(key, queryStringParams[key].toString());
+	Object.keys(options.params ?? {}).forEach((key) => {
+		if (options.params[key] != null) {
+			urlSearchParams.set(key, options.params[key].toString());
 		}
 	});
-	return `${baseURL.replace(/[\/]+$/, '')}/${url}${urlSearchParams.size ? '?' : ''}${urlSearchParams}`;
+	return `${options.baseURL.replace(/\/+$/, '')}/${options.url}${urlSearchParams.size ? '?' : ''}${urlSearchParams}`;
 }

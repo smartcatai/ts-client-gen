@@ -1,40 +1,32 @@
-import { GetUriOptions, RequestOptions } from './transport-contracts';
+import { getRequestHeaders, GetUriOptions, RequestOptions } from './transport-contracts';
 
-export async function request<TResponse>(request: RequestOptions): Promise<TResponse> {
-	if (request.getAbortFunc != null) {
-		throw new Error('Fetch API does not support aborting http requests at the moment');
-	}
-
-	if (request.onUploadProgress != null) {
-		throw new Error('Fetch API does not support upload progress notifications at the moment');
-	}
-
-	if (request.timeout != null) {
+export async function request<TResponse>(options: RequestOptions): Promise<TResponse> {
+	if (options.timeout != null) {
 		throw new Error('Fetch API does not support timeout at the moment');
 	}
 
-	const fetchRequest: any = {
-		url: getUri(request),
-		method: request.method,
-		headers: request.headers,
-		body: request.requestBody,
-		credentials: 'include',
-	};
+	if (options.onUploadProgress != null) {
+		throw new Error('Fetch API does not support upload progress notifications at the moment');
+	}
 
-	return fetch(fetchRequest).then((response) => {
-		if (response.ok) {
-			return request.jsonResponseExpected ? response.json() : null;
-		}
-		throw new Error(`Network response was not ok. Status - ${response.status}, status text - ${response.statusText}`);
-	});
+	const response = await fetch({
+		url: getUri(options),
+		method: options.method,
+		headers: getRequestHeaders(options),
+		body: options.data,
+		signal: options.abortSignal,
+		credentials: 'include',
+	} as any);
+
+	return +response.headers.get('Content-Length') > 0 ? response.json() : undefined;
 }
 
-export function getUri({ baseURL, url, queryStringParams }: GetUriOptions): string {
+export function getUri(options: GetUriOptions): string {
 	const urlSearchParams = new URLSearchParams();
-	Object.keys(queryStringParams ?? {}).forEach((key) => {
-		if (queryStringParams[key] != null) {
-			urlSearchParams.set(key, queryStringParams[key].toString());
+	Object.keys(options.params ?? {}).forEach((key) => {
+		if (options.params[key] != null) {
+			urlSearchParams.set(key, options.params[key].toString());
 		}
 	});
-	return `${baseURL.replace(/[\/]+$/, '')}/${url}${urlSearchParams.size ? '?' : ''}${urlSearchParams}`;
+	return `${options.baseURL.replace(/\/+$/, '')}/${options.url}${urlSearchParams.size ? '?' : ''}${urlSearchParams}`;
 }

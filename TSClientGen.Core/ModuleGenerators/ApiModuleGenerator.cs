@@ -78,10 +78,7 @@ namespace TSClientGen
 			
 			_customApiClientWriter?.ExtendApiClientClass(_result, _apiClientModule);
 
-			_result
-				.Unindent()
-				.AppendLine("}").AppendLine()
-				.AppendLine($"export default new {_apiClientModule.ApiClientClassName}();").AppendLine();
+			_result.Unindent().AppendLine("}").AppendLine();
 
 			_customApiClientWriter?.WriteCodeAfterApiClientClass(_result, _apiClientModule);
 		}

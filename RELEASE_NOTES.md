@@ -1,5 +1,12 @@
 # Release Notes
 
+## 10.0.1 - 2024-08-19
+- Removed `export default *Client()` from result generation
+- Removed `jsonResponseExpected` in `transport-contracts.ts`
+- Replaced `getAbortFunc` with `abortSignal` in `transport-contracts.ts`
+- Renamed `requestBody` => `data` and `queryStringParams` => `params` in `transport-contracts.ts`
+- Improved `headers` generation for upload files
+
 ## 9.4.0 - 2024-08-13
 - Add to UploadProgressEvent original ProgressEvent
 - Add baseURL to getUri
