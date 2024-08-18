@@ -49,7 +49,7 @@ namespace TSClientGen.Tests
 			
 			var generator = createGenerator(method);
 			Assert.AreEqual(
-				"{ getAbortFunc }: HttpRequestOptions = {}",
+				"{ abortSignal }: HttpRequestOptions = {}",
 				generator.GetTypescriptParams().Last());
 		}
 
@@ -62,7 +62,7 @@ namespace TSClientGen.Tests
 				{
 					new ApiMethodParam("someImport", typeof(string), false, false),
 					new ApiMethodParam("method", typeof(string), false, false),
-					new ApiMethodParam("queryStringParams", typeof(Model), false, false),
+					new ApiMethodParam("params", typeof(Model), false, false),
 				},
 				typeof(void),
 				false,
@@ -71,10 +71,10 @@ namespace TSClientGen.Tests
 			var generator = createGenerator(method);
 			generator.ResolveConflictingParamNames(new[] { "someImport" });
 			CollectionAssert.AreEqual(
-				new[] { "someImportParam: string", "methodParam: string", "queryStringParamsParam: Model" },
+				new[] { "someImportParam: string", "methodParam: string", "paramsParam: Model" },
 				generator.GetTypescriptParams().Take(method.AllParams.Count));
 			CollectionAssert.AreEqual(
-				new[] { "someImportParam: string", "methodParam: string", "queryStringParamsParam: Model" },
+				new[] { "someImportParam: string", "methodParam: string", "paramsParam: Model" },
 				generator.GetTypescriptParamsForUrl().Take(method.AllParams.Count));
 		}
 		
@@ -91,7 +91,7 @@ namespace TSClientGen.Tests
 			
 			var generator = createGenerator(method);
 			Assert.AreEqual(
-				"{ getAbortFunc, onUploadProgress, timeout }: UploadFileHttpRequestOptions = {}",
+				"{ abortSignal, timeout, onUploadProgress }: UploadFileHttpRequestOptions = {}",
 				generator.GetTypescriptParams().Last());
 		}
 
