@@ -1,5 +1,8 @@
 # Release Notes
 
+## 10.0.2 - 2024-10-01
+- Add net 8.0 to FWTs
+
 ## 10.0.1 - 2024-08-19
 - Removed `export default *Client()` from result generation
 - Removed `jsonResponseExpected` in `transport-contracts.ts`
