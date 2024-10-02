@@ -1,7 +1,7 @@
 # Release Notes
 
 ## 10.0.2 - 2024-10-01
-- Add net 8.0 to FWTs
+- Add net 8.0 to TFMs
 
 ## 10.0.1 - 2024-08-19
 - Removed `export default *Client()` from result generation
