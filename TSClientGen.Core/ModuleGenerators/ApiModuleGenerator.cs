@@ -54,7 +54,8 @@ namespace TSClientGen
 				.AppendLine($"export class {_apiClientModule.ApiClientClassName} {{")
 				.Indent();
 
-			_result.AppendLine("constructor(private baseURL = '', private headers: Record<string, string> = {}) {");
+			_result.AppendLine(
+				$"constructor({string.Join(",", _customApiClientWriter?.GetApiClientConstructorParams() ?? _defaultApiConstructorParameters)}) {{");
 
 			_customApiClientWriter?.ExtendApiClientConstructor(_result, _apiClientModule);
 			_result.AppendLine("}");
@@ -130,6 +131,11 @@ namespace TSClientGen
 		private readonly string _transportModuleName;
 		private readonly IIndentedStringBuilder _result = new IndentedStringBuilder();
 
+		private readonly string[] _defaultApiConstructorParameters = {
+			"private baseURL = ''",
+			"private headers: Record<string, string> = {}"
+		};
+			
 		public const string TransportContractsModuleName = "transport-contracts";
 	}
 }

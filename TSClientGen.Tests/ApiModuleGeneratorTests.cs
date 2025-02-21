@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
 using TSClientGen.Extensibility;
@@ -142,6 +143,19 @@ namespace TSClientGen.Tests
 			TextAssert.ContainsLine("public bar() { return foo.bar(); }", generator.GetResult());
 		}
 
+		[Test]
+		public void Should_replace_constructor_params_with_custom_one()
+		{
+			var mapping = new TypeMapping();
+			var customWriterMock = new CustomApiWriter();
+			var generator = createGenerator(mapping, customWriterMock);
+
+			generator.WriteApiClientClass();
+
+			var result = new Regex(@"\s").Replace(generator.GetResult(), "");
+			StringAssert.Contains("constructor(privatecustomParam:string){", result);
+		}
+
 		private ApiModuleGenerator createGenerator(TypeMapping typeMapping, IApiClientWriter customWriter = null)
 		{
 			var module = new ApiClientModule("client", "client", new ApiMethod[0], typeof(Controller));
@@ -192,6 +206,14 @@ namespace TSClientGen.Tests
 			public void WriteCodeAfterApiClientClass(IIndentedStringBuilder builder, ApiClientModule apiClientModule)
 			{
 				builder.AppendLine("foo.after();");
+			}
+
+			public IEnumerable<string> GetApiClientConstructorParams()
+			{
+				return new[]
+				{
+					"private customParam: string"
+				};
 			}
 
 			public void ExtendApiClientConstructor(IIndentedStringBuilder builder, ApiClientModule apiClientModule)
