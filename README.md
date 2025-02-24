@@ -360,6 +360,7 @@ The [IApiClientWriter](https://github.com/smartcatai/ts-client-gen/blob/develop/
 - `WriteCodeAfterApiClientClass` - appends code to the very end of the module (after the api client class definition and default export).
 - `ExtendApiClientConstructor`- appends code to the api client class constructor (by default is has an empty body). Use this to add some custom initialization for the api client class.
 - `ExtendApiClientClass` - appends code to the end of the api client class definition, after all methods have been defined. Use this to add custom members to the api client class.
+- `GetApiClientConstructorParams` - override parameters of the api client class constructor. This method is called before the constructor is written to the module. You can add, remove or modify parameters of the constructor. This is useful for adding some additional parameters to the constructor that are not present in the server-side api controller class.
 
 ### Expose server-side resources to client-side codebase
 
