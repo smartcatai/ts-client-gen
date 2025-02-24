@@ -1,5 +1,8 @@
 # Release Notes
 
+## 10.1.0 - 2024-10-01
+- New `GetApiClientConstructorParams` method has been added to the `IApiClientWriter` interface to override the constructor parameters of the generated client.
+
 ## 10.0.2 - 2024-10-01
 - Add net 8.0 to TFMs
 
